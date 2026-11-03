@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Barra lateral + barra superior — PADRÃO ÚNICO do painel (versão original e v2, modo claro e escuro).
+   Carregado por ÚLTIMO nas páginas do painel; os seletores começam por ":root body" (e usam !important nas medidas) para valer acima
+   das regras antigas espalhadas em app.css / dashboard-v2.css / screens-v2.css. Mudou o menu ou o topo? Mude aqui.
+   Medidas: barra 248 px · itens 40 px (fonte 13) · rótulos de grupo 10 px · logo 48 px · topo 72 px · botões do topo 40 px.
+   Item ativo: amarelo #FFD204 com texto escuro nos dois modos. Seleção (itens e botões) em quadrado de cantos arredondados.
+   ========================================================================== */
+:root body{--sidebar-w:248px;--topbar-h:72px}
+
+/* ---------- barra lateral (claro) ---------- */
+:root body .sidebar{width:var(--sidebar-w)!important;padding:24px 18px 18px!important;gap:4px;background:#fff!important;border-right:1px solid #ebe7de!important;box-shadow:none!important}
+:root body .sidebar a.brand{display:flex;align-items:center;gap:12px;padding:0 4px 22px!important;margin:0}
+:root body .sidebar a.brand img{width:48px!important;height:48px!important;border-radius:50%;object-fit:cover;flex:none;box-shadow:none!important}
+:root body .sidebar a.brand span{font-size:16px!important;font-weight:600!important;line-height:1.25!important;color:#171713!important}
+:root body .sidebar .nav-label{font-size:10px!important;font-weight:700!important;letter-spacing:.1em!important;text-transform:uppercase;color:#6f6a5e!important;padding:14px 8px 6px!important;min-height:0!important}
+:root body .sidebar .nav-label .ic,:root body .sidebar .nav-label svg{width:14px!important;height:14px!important;color:currentColor!important}
+:root body .sidebar .nav-item{min-height:40px!important;padding:9px 12px!important;border-radius:10px!important;font-size:13px!important;font-weight:550!important;gap:12px!important;line-height:1.3!important;color:#4a463d!important;background:transparent;box-shadow:none}
+:root body .sidebar .nav-item .ic,:root body .sidebar .nav-item>svg,:root body .sidebar .nav-item>img{width:20px!important;height:20px!important;flex:0 0 auto}
+:root body .sidebar .nav-item:hover{background:#f5f2ea!important;color:#171713!important}
+/* ícones do menu: cinza escuro (6:1 no claro), mesmo com o tema antigo "Aura" guardado no navegador (que pintava de branco) */
+:root body .sidebar .nav-item:not(.active):not(.on) .ic,:root body .sidebar .nav-item:not(.active):not(.on)>svg{color:#5b5e57!important}
+:root body .sidebar .nav-item:not(.active):not(.on):hover .ic,:root body .sidebar .nav-item:not(.active):not(.on):hover>svg{color:#171713!important}
+:root[data-mode="dark"] body .sidebar .nav-item:not(.active):not(.on) .ic,:root[data-mode="dark"] body .sidebar .nav-item:not(.active):not(.on)>svg{color:#c4c4cb!important}
+:root[data-mode="dark"] body .sidebar .nav-item:not(.active):not(.on):hover .ic,:root[data-mode="dark"] body .sidebar .nav-item:not(.active):not(.on):hover>svg{color:#fff!important}
+
+:root body .sidebar .nav-item.active,:root body .sidebar .nav-item.on{background:#ffd204!important;color:#24251f!important;box-shadow:0 4px 12px rgba(245,158,11,.14)!important}
+:root body .sidebar .nav-item.active>span,:root body .sidebar .nav-item.active .ic,:root body .sidebar .nav-item.active svg{color:#24251f!important}
+:root body .sidebar .nav-item.active img{filter:grayscale(1);opacity:1}
+:root body .sidebar .sidebar-foot{border-top:1px solid #ebe7de!important;padding-top:14px!important}
+:root body .sidebar .plan-box{background:#fafaf8!important;border:1px solid #ebe7de!important;border-radius:14px!important;padding:14px!important;box-shadow:none!important}
+:root body .sidebar .plan-box strong{font-size:15px!important;font-weight:600!important}
+:root body .sidebar .tc-grid{display:grid!important}
+:root body .sidebar .sb-hide{height:40px!important;border-radius:12px!important;font-size:13px!important;font-weight:600!important;border:1px solid #ebe7de!important;background:#fff!important;color:#4a463d!important}
+
+/* ---------- barra superior (claro) ---------- */
+:root body .topbar{height:var(--topbar-h)!important;padding:0 28px!important;gap:16px!important;background:rgba(255,255,255,.96)!important;border-bottom:1px solid #ebe7de!important;box-shadow:none!important}
+:root body .topbar .brandbar{display:flex;align-items:center;gap:12px}
+:root body .topbar .brandbar img{height:30px!important;width:auto!important}
+:root body .topbar .brandbar small{font-size:11px!important;font-weight:600!important;letter-spacing:.2em!important;color:#615f56!important}
+:root body .topbar .icon-btn{width:40px!important;height:40px!important;border-radius:12px!important;border:1px solid #ebe7de!important;background:#fff!important;color:#3e3e35!important;box-shadow:none!important}
+:root body .topbar .top-stats{height:38px!important;font-size:14px!important;border:1px solid #ebe7de!important;background:#fff!important}
+:root body .topbar .user-btn b{font-size:13px!important;font-weight:600!important;color:#171713!important}
+:root body .topbar .user-btn small{font-size:12px!important;color:#615f56!important}
+@media (min-width:1100px){:root body #top-stats-slot{display:flex!important}}
+
+/* ---------- modo escuro (mesmas medidas, cores neutras) ---------- */
+:root[data-mode="dark"] body .sidebar{background:#131315!important;border-right-color:rgba(255,255,255,.12)!important}
+:root[data-mode="dark"] body .sidebar a.brand span{color:#f2f2f4!important}
+:root[data-mode="dark"] body .sidebar .nav-label{color:#a8a8b0!important}
+:root[data-mode="dark"] body .sidebar .nav-item{color:#d6d6dc!important}
+:root[data-mode="dark"] body .sidebar .nav-item:hover{background:rgba(255,255,255,.07)!important;color:#fff!important}
+:root[data-mode="dark"] body .sidebar .nav-item.active,:root[data-mode="dark"] body .sidebar .nav-item.on{background:#ffd204!important;color:#24251f!important}
+:root[data-mode="dark"] body .sidebar .sidebar-foot{border-top-color:rgba(255,255,255,.12)!important}
+:root[data-mode="dark"] body .sidebar .plan-box{background:#18181b!important;border-color:rgba(255,255,255,.14)!important}
+:root[data-mode="dark"] body .sidebar .sb-hide{background:#18181b!important;border-color:rgba(255,255,255,.16)!important;color:#e8e8ec!important}
+:root[data-mode="dark"] body .topbar{background:rgba(14,14,16,.94)!important;border-bottom-color:rgba(255,255,255,.12)!important}
+:root[data-mode="dark"] body .topbar .brandbar small{color:#a8a8b0!important}
+:root[data-mode="dark"] body .topbar .icon-btn{background:#18181b!important;border-color:rgba(255,255,255,.16)!important;color:#e8e8ec!important}
+:root[data-mode="dark"] body .topbar .top-stats{background:#18181b!important;border-color:rgba(255,255,255,.16)!important}
+:root[data-mode="dark"] body .topbar .user-btn b{color:#f2f2f4!important}
+:root[data-mode="dark"] body .topbar .user-btn small{color:#a8a8b0!important}
+
+/* ---------- barra recolhida (só ícones) e celular ---------- */
+@media (min-width:1025px){
+  :root body.sb-mini{--sidebar-w:84px}
+  :root body.sb-mini .sidebar{padding:16px 12px!important}
+  :root body.sb-mini .sidebar a.brand{justify-content:center;padding:0 0 12px!important}
+  :root body.sb-mini .sidebar a.brand img{width:44px!important;height:44px!important}
+  :root body.sb-mini .sidebar .nav-item{justify-content:center;padding:0!important;min-height:46px!important;height:46px;width:46px;margin:0 auto 6px;border-radius:12px!important}
+  :root body.sb-mini .sidebar .sb-hide{width:44px;height:44px!important;padding:0;margin:8px auto 0}
+}
+@media (max-width:600px){
+  :root body{--topbar-h:60px}
+  :root body .topbar{padding:0 14px!important;gap:10px!important}
+  :root body .topbar .brandbar img{height:26px!important}
+}
+
+/* mesmo tamanho nas duas versões: o original rodava a 90% no computador (app.css), o v2 a 100% — padrão agora é 100% */
+
+@media (min-width:1025px){:root{zoom:1}}
+
+/* resumo do topo: texto e ícones na mesma cor, legíveis nos dois modos */
+:root body .topbar .top-stats,:root body .topbar .top-stats *{color:#24251f!important}
+:root body .topbar .top-stats svg,:root body .topbar .top-stats .ic{color:currentColor!important;stroke:currentColor}
+:root[data-mode="dark"] body .topbar .top-stats,:root[data-mode="dark"] body .topbar .top-stats *{color:#ececf0!important}
+:root body .topbar .top-stats .ts-live i,:root body .topbar .top-stats i.dot{background:#12b76a}
+/* box do plano: título e etiqueta "Teste grátis" iguais nas duas versões (etiqueta pequena, quebra para baixo se não couber) */
+:root body .sidebar .plan-box .row.between{flex-wrap:wrap;gap:6px 8px;min-width:0}
+:root body .sidebar .plan-box .pill{font-size:10px!important;padding:3px 8px!important;white-space:nowrap}
+
+/* ===== Título das telas: um só padrão (Painel, Clientes e as demais) =====
+   kicker pequeno em dourado, título em duas linhas (a de baixo em marca-texto), texto de apoio, botões ABAIXO do título e uma linha divisória.
+   Mesmo fundo liso, mesma margem lateral. Mude aqui, não em dashboard-v2.css / customers-v2.css. */
+:root:not([data-mode="dark"]) body:is(:has(.dv2-dashboard),:has(.cv2-customers)),:root:not([data-mode="dark"]) body:is(:has(.dv2-dashboard),:has(.cv2-customers)) .main{background-color:#f7f8fa!important;background-image:none!important}
+@media(min-width:601px){body:is(:has(.dv2-dashboard),:has(.cv2-customers)) #view{padding:24px!important;max-width:none!important}}
+:root body :is(.sv2-heading,.dv2-heading,.cv2-heading){display:block;margin:0 0 30px;padding:0 0 26px;border-bottom:1px solid #e4e6e4;gap:0}
+:root body :is(.dv2-heading,.cv2-heading){display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:20px}
+:root body .sv2-heading-row{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:20px}
+:root body :is(.sv2-actions,.dv2-heading-actions,.cv2-heading-actions){display:flex;flex-wrap:wrap;flex-direction:row;gap:10px;align-items:center;width:auto;flex:none}
+:root body .sv2-actions:not(:has(*)){display:none}
+:root body :is(.dv2-eyebrow,.cv2-eyebrow){font-size:10px;letter-spacing:.21em;font-weight:750;line-height:1.3;color:#725a00}
+:root body :is(.dv2-heading,.cv2-heading) h1{color:#24251f;line-height:1.13;margin:12px 0}
+:root body :is(.dv2-heading,.cv2-heading) p{font-size:14px;line-height:1.7;color:#64685d;max-width:612px}
+:root[data-mode="dark"] body :is(.sv2-heading,.dv2-heading,.cv2-heading){border-bottom-color:rgba(255,255,255,.12)}
+:root[data-mode="dark"] body :is(.dv2-eyebrow,.cv2-eyebrow){color:#cea200}
+:root[data-mode="dark"] body :is(.dv2-heading,.cv2-heading) h1{color:#e8e8ec}
+:root[data-mode="dark"] body :is(.dv2-heading,.cv2-heading) p{color:#a0a499}
+@media(max-width:600px){:root body :is(.dv2-heading-actions,.cv2-heading-actions,.sv2-actions){width:100%}:root body .dv2-heading-actions>.dv2-button,:root body .cv2-heading-actions>.cv2-button{flex:1}}
+:root body .dv2-demo-note{display:none}   /* a faixa "Prévia com dados de exemplo" já aparece em todas as telas (v2-polish.js) */
+/* modo escuro de Painel e Clientes: sem o brilho amarelado do fundo e com o mesmo texto claro das outras telas (antes herdavam um marrom que virava laranja) */
+:root[data-mode="dark"] body:is(:has(.dv2-dashboard),:has(.cv2-customers)) .main{background-image:none!important}
+:root[data-mode="dark"] body:is(:has(.dv2-dashboard),:has(.cv2-customers)){color:#e8e8ec}
+:root[data-mode="dark"] body :is(.dv2-stat,.dv2-stat>b,.dv2-stat>div>span){color:#e8e8ec}
+:root[data-mode="dark"] body :is(.dv2-stat>small,.dv2-stat svg){color:#a0a499}
+:root[data-mode="dark"] body .dv2-stat.dv2-stat-featured,:root[data-mode="dark"] body .dv2-stat.dv2-stat-featured :is(b,span,small,svg){color:#171713}
+:root[data-mode="dark"] body:is(:has(.dv2-dashboard),:has(.cv2-customers)) .main{background-color:transparent!important}
+:root[data-mode="dark"] body :is(.cv2-button:not(.cv2-primary),.dv2-icon-button){color:#e8e8ec}
+
+/* Caixa das ações do título (igual à de "Seus catálogos"): texto à esquerda, botões à direita */
+:root body .act-box{align-self:stretch;width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;padding:18px 24px;margin:4px 0 0}
+:root body .act-box .act-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:220px}
+:root body .act-box .act-copy b{font-size:18px;font-weight:600;color:#171713;line-height:1.3}
+:root body .act-box .act-copy span{font-size:14px;line-height:1.5;color:#64685d}
+:root body .act-box :is(.sv2-actions,.dv2-heading-actions,.cv2-heading-actions){margin-left:auto;justify-content:flex-end}
+:root[data-mode="dark"] body .act-box .act-copy b{color:#e8e8ec}
+:root[data-mode="dark"] body .act-box .act-copy span{color:#a0a499}
+@media(max-width:600px){:root body .act-box{padding:16px;gap:14px}:root body .act-box :is(.sv2-actions,.dv2-heading-actions,.cv2-heading-actions){margin-left:0;justify-content:stretch}}

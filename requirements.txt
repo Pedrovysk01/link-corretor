@@ -1,0 +1,7 @@
+# Dependências Python dos testes (tests/) e das ferramentas (tools/). Versões com que tudo foi testado.
+#   pip install -r requirements.txt && python -m playwright install chromium
+# Node: 20 ou mais novo (tools/build-site.mjs e tools/i18n/ usam só o que vem com o Node; tools/i18n/package.json traz o acorn).
+playwright==1.60.0     # todos os tests/check-*.py e tools/make-site-images.py
+Pillow==12.1.1         # tools/vitrine.py (arte do cartão e da capa), tools/make-site-images.py
+openpyxl==3.1.5        # planilha de acessos de tools/contas_prospects.py (sem ele sai só o CSV)
+cryptography==46.0.3   # tests/check-wallet.py (gera as credenciais FALSAS de carteira)

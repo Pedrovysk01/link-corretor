@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><script>
+// Banco falso que registra o que o painel grava, para testar a sincronização das pesquisas sem tocar na produção.
+window.LOG = [];
+const DB = { businesses: [{ id: "b1", name: "Teste", slug: "teste", settings: {}, plan: "free", created_at: new Date().toISOString() }], cards: [{ id: "55555555-5555-4555-8555-000000000001", business_id: "b1", name: "Teste", stamps: 8, header: "RECOMPENSAS", reward_text: "Junte carimbos", reward_label: "Um café", theme: "classico", active: true, model: "premium", design: {}, created_at: new Date().toISOString() }], campaigns: [], page_items: [], staff: [], locations: [], surveys: [{ id: "11111111-1111-4111-8111-111111111111", business_id: "b1", title: "Primeira", status: "active", questions: [], after_stamp: false, archived_at: null, created_at: new Date().toISOString() }], survey_responses: [], stamp_events: [],
+  customers: [{ id: "33333333-3333-4333-8333-000000000001", business_id: "b1", name: "Bia Pedido", email: "bia@x.test", phone: "48999990000", token: "a".repeat(32), code: "K7P4QX", marketing_consent: false, customer_cards: [], created_at: new Date().toISOString() }],
+  stamp_requests: [{ id: "44444444-4444-4444-8444-000000000001", business_id: "b1", customer_id: "33333333-3333-4333-8333-000000000001", kind: "welcome", qty: 1, status: "pending", note: null, created_at: new Date().toISOString() }] };
+let n = 0; const uuid = () => "22222222-2222-4222-8222-" + String(++n).padStart(12, "0");
+function q(table) {
+  const st = { op: "select", rows: DB[table] || [], filters: [] };
+  const api = {
+    select() { return api; }, eq(k, v) { st.filters.push([k, v]); return api; }, gte() { return api; }, lte() { return api; }, in() { return api; }, order() { return api; }, single() { st.single = true; return api; }, limit() { return api; },
+    insert(row) { st.op = "insert"; st.row = row; return api; }, update(row) { st.op = "update"; st.row = row; return api; }, delete() { st.op = "delete"; return api; },
+    then(res, rej) {
+      let data = null, error = null;
+      if (st.op === "select") { data = st.rows.filter((r) => st.filters.every(([k, v]) => r[k] === undefined || r[k] === v)); if (st.single) data = data[0] || null; }
+      if (st.op === "insert") { data = Object.assign({ id: uuid(), created_at: new Date().toISOString() }, st.row); DB[table].push(data); LOG.push(["insert", table, data.title || data.name]); }
+      if (st.op === "update") { const id = st.filters.find((f) => f[0] === "id"); const r = DB[table].find((x) => x.id === (id && id[1])); if (r) Object.assign(r, st.row); LOG.push(["update", table, st.row.title || st.row.name, st.row.status]); data = r; }
+      if (st.op === "delete") { const id = st.filters.find((f) => f[0] === "id"); DB[table] = DB[table].filter((x) => x.id !== (id && id[1])); LOG.push(["delete", table, id && id[1]]); }
+      return Promise.resolve({ data, error }).then(res, rej);
+    },
+  };
+  return api;
+}
+// RPCs: o teste pode definir window.RPC_RESULTS[nome] (senão devolve "b1"). Funções (Edge Functions): o teste define window.FN_RESULTS[nome] (add_init_script) e pode expor window.fnCall para ver as chamadas
+const invoke = async (name, opts) => {
+  const body = (opts && opts.body) || {}; LOG.push(["fn", name, body]); if (window.fnCall) window.fnCall(name, JSON.stringify(body));
+  const r = (window.FN_RESULTS || {})[name];
+  return r || { data: null, error: { message: "Edge Function returned a non-2xx status code", context: { json: async () => ({ error: "função não encontrada" }) } } };
+};
+window.supabase = { createClient: () => ({ from: q, rpc: async (n, args) => { LOG.push(["rpc", n, args || {}]); return (window.RPC_RESULTS || {})[n] || { data: "b1", error: null }; }, functions: { invoke }, channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+  auth: { getSession: async () => ({ data: { session: { user: { id: "u1" } } } }), getUser: async () => ({ data: { user: { id: "u1", email: "dono@x.test", user_metadata: {} } } }), onAuthStateChange() {}, signOut: async () => ({}) } }) };
+window.DBFAKE = DB;
+</script>

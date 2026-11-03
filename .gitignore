@@ -1,0 +1,57 @@
+# ---- segredos (NUNCA versionar) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+supabase/.env
+supabase/.temp/
+supabase/.branches/
+
+# ---- caches e lixo local ----
+.cache/
+.vercel/
+node_modules/
+__pycache__/
+*.pyc
+*.log
+*.bak
+*.bak[0-9]*
+Thumbs.db
+.DS_Store
+tools/i18n/leftovers_*.json
+
+# ---- material de terceiros (capturas/PDFs da FaveCard ficam FORA do repositório) ----
+*.htm
+favecard-*
+_referencia-*/
+_framer_shots*/
+
+# ---- editor/ferramentas ----
+.claude/
+.vscode/
+.idea/
+
+# site gerado (a Vercel roda tools/build-site.mjs)
+dist/
+_framer_tmp/
+
+# base de prospecção (dados de terceiros, gerada por tools/prospeccao.py a partir do Prospector SC)
+data/
+
+# chaves de serviço (Google Wallet etc.): nunca no Git
+docs/wallet key/
+*-service-account*.json
+seu-cliente-fiel-*.json
+
+# vídeos gerados (pesados; ficam só no computador)
+docs/videos-gerados/
+
+mobile/node_modules/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+*.apk
+
+# auditoria de design system (saídas locais)
+.ds-audit/

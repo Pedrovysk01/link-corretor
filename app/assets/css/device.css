@@ -1,0 +1,73 @@
+/* ==========================================================================
+   Mockups de aparelho (frente, fundo transparente) — CSS puro, escaláveis.
+   Uso: <div class="device iphone" style="--dw:300px"> <div class="dev-screen">…</div> </div>
+   Modelos: .iphone (Dynamic Island, bordas retas), .android (furo de câmera central), .iphone-notch (entalhe)
+   Cores:   .c-black (padrão) .c-titanium .c-white .c-blue .c-pink
+   ========================================================================== */
+.device{
+  --dw:300px;                 /* largura total do aparelho */
+  --ratio:2.16;               /* altura/largura do corpo (≈ iPhone 15) */
+  --bezel:calc(var(--dw) * 0.028);
+  --r:calc(var(--dw) * 0.165);
+  --frame:#1c1c20; --frame-edge:#3a3a40; --frame-hi:rgba(255,255,255,.08);
+  position:relative;width:var(--dw);height:calc(var(--dw) * var(--ratio));margin:0 auto;
+  background:var(--frame);border-radius:var(--r);
+  box-shadow:
+    inset 0 0 0 calc(var(--dw) * 0.006) var(--frame-edge),
+    inset 0 0 0 calc(var(--dw) * 0.012) var(--frame),
+    inset 0 0 0 calc(var(--dw) * 0.016) var(--frame-hi),
+    0 calc(var(--dw) * 0.1) calc(var(--dw) * 0.2) calc(var(--dw) * -0.06) rgba(16,24,40,.45);
+  font-size:calc(var(--dw) / 26);
+}
+.device .dev-screen{
+  position:absolute;inset:var(--bezel);border-radius:calc(var(--r) - var(--bezel));overflow:hidden;background:#000;
+  isolation:isolate;
+}
+.device .dev-screen > *{height:100%}
+/* botões laterais */
+.device::before,.device::after{content:"";position:absolute;background:var(--frame-edge);border-radius:2px}
+.device::before{left:calc(var(--dw) * -0.012);top:19%;width:calc(var(--dw) * 0.012);height:9%;box-shadow:0 14% 0 0 var(--frame-edge)}   /* volume */
+.device::after{right:calc(var(--dw) * -0.012);top:25%;width:calc(var(--dw) * 0.012);height:14%}                                        /* power */
+.device .dev-mute{position:absolute;left:calc(var(--dw) * -0.012);top:13%;width:calc(var(--dw) * 0.012);height:4%;background:var(--frame-edge);border-radius:2px}
+.device .dev-vol2{position:absolute;left:calc(var(--dw) * -0.012);top:30%;width:calc(var(--dw) * 0.012);height:9%;background:var(--frame-edge);border-radius:2px}
+/* sensores */
+.device .dev-island{position:absolute;z-index:5;left:50%;transform:translateX(-50%);top:calc(var(--bezel) + var(--dw) * 0.028);width:calc(var(--dw) * 0.3);height:calc(var(--dw) * 0.085);border-radius:999px;background:#000}
+.device .dev-island::after{content:"";position:absolute;right:calc(var(--dw) * 0.03);top:50%;transform:translateY(-50%);width:calc(var(--dw) * 0.035);height:calc(var(--dw) * 0.035);border-radius:50%;background:#101828;box-shadow:inset 0 0 0 1px #233}
+.device.android .dev-island{width:calc(var(--dw) * 0.045);height:calc(var(--dw) * 0.045);top:calc(var(--bezel) + var(--dw) * 0.03);border-radius:50%}
+.device.android .dev-island::after{display:none}
+.device.android{--ratio:2.2;--r:calc(var(--dw) * 0.12)}
+.device.iphone-notch .dev-island{width:calc(var(--dw) * 0.5);height:calc(var(--dw) * 0.08);top:var(--bezel);border-radius:0 0 999px 999px}
+.device.iphone-notch .dev-island::after{right:calc(var(--dw) * 0.12)}
+/* indicador home */
+.device .dev-home{position:absolute;z-index:5;left:50%;transform:translateX(-50%);bottom:calc(var(--bezel) + var(--dw) * 0.02);width:calc(var(--dw) * 0.36);height:calc(var(--dw) * 0.014);border-radius:999px;background:rgba(0,0,0,.35);mix-blend-mode:multiply}
+/* status bar falsa (hora à esquerda, sinais à direita) */
+.device .dev-status{position:absolute;z-index:4;top:calc(var(--bezel) + var(--dw) * 0.03);left:calc(var(--bezel) + var(--dw) * 0.09);right:calc(var(--bezel) + var(--dw) * 0.08);display:flex;justify-content:space-between;font-size:calc(var(--dw) * 0.042);font-weight:600;color:#111;pointer-events:none;line-height:1}
+.device .dev-status .sig{display:inline-flex;gap:calc(var(--dw) * 0.012);align-items:center}
+.device .dev-status .sig i{display:inline-block;width:calc(var(--dw) * 0.05);height:calc(var(--dw) * 0.028);border-radius:2px;background:currentColor}
+.device .dev-status .sig i.bat{width:calc(var(--dw) * 0.07);height:calc(var(--dw) * 0.035);border:calc(var(--dw) * 0.004) solid currentColor;background:transparent;border-radius:3px;position:relative}
+.device .dev-status .sig i.bat::after{content:"";position:absolute;inset:1px;right:25%;background:currentColor;border-radius:1px}
+.device.dark-status .dev-status{color:#fff}
+/* cores da moldura */
+.device.c-titanium{--frame:#8e8e93;--frame-edge:#c7c7cc;--frame-hi:rgba(255,255,255,.35)}
+.device.c-white{--frame:#e5e5ea;--frame-edge:#f5f5f7;--frame-hi:rgba(255,255,255,.6)}
+.device.c-blue{--frame:#1f3a5f;--frame-edge:#3b5f8f;--frame-hi:rgba(255,255,255,.15)}
+.device.c-pink{--frame:#e8b4c2;--frame-edge:#f4cdd8;--frame-hi:rgba(255,255,255,.4)}
+.device.c-green{--frame:#2f4f3a;--frame-edge:#4f7a5c;--frame-hi:rgba(255,255,255,.12)}
+/* conteúdo de tela rolável (prévia longa) */
+.device .dev-screen .dev-scroll{height:100%;overflow:hidden;position:relative}
+
+/* ==========================================================================
+   Mockups com PNG real (WebMobileFirst — uso comercial livre, sem atribuição).
+   A tela fica POR BAIXO da moldura; a área vazada foi medida pixel a pixel.
+   ========================================================================== */
+.device-png{--dw:300px;position:relative;margin:0 auto;flex:none}
+.device-png .dp-screen{position:absolute;overflow:hidden;background:#000;box-shadow:0 0 0 1px #000;isolation:isolate;font-size:calc(var(--dw) / 26)}
+/* fundo preto + 1px de sangria por baixo da moldura: sem isso o branco do fundo aparecia como uma linha fina entre a moldura e a tela (borda com pixel fracionado) */
+.device-png .dp-screen > :first-child{height:100%}
+.device-png .dp-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none;-webkit-user-drag:none;z-index:2}
+.device-png .dev-status{position:absolute;z-index:3;top:calc(var(--dw) * .043);left:calc(var(--dw) * .085);right:calc(var(--dw) * .08);display:flex;justify-content:space-between;align-items:center;font-size:calc(var(--dw) * .04);font-weight:600;color:#111;pointer-events:none;line-height:1;height:auto}
+.device-png .dev-status .sig{display:inline-flex;gap:calc(var(--dw) * .012);align-items:center}
+.device-png .dev-status .sig i{display:inline-block;width:calc(var(--dw) * .045);height:calc(var(--dw) * .026);border-radius:2px;background:currentColor}
+.device-png .dev-status .sig i.bat{width:calc(var(--dw) * .065);height:calc(var(--dw) * .032);border:calc(var(--dw) * .004) solid currentColor;background:transparent;border-radius:3px;position:relative}
+.device-png .dev-status .sig i.bat::after{content:"";position:absolute;inset:1px;right:25%;background:currentColor;border-radius:1px}
+.device-png.dark-status .dev-status{color:#fff}

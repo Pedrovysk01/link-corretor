@@ -1,0 +1,135 @@
+/* Painel da plataforma (superadmin) — usa os componentes de app.css; aqui só o que é próprio desta tela */
+body.adm{background:var(--gray-50)}
+.adm .app{min-height:100vh}
+.adm .sidebar-foot{padding:14px 16px;font-size:12.5px;color:var(--gray-500);display:flex;flex-direction:column;gap:6px}
+.adm .src{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--gray-600);padding:4px 10px;border-radius:999px;background:var(--gray-100)}
+.adm .src i{width:8px;height:8px;border-radius:50%;background:var(--ok-500,#12b76a)}
+.adm .src.demo i{background:var(--warn-500,#f79009)}
+.adm .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.adm .kpi{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px 18px}
+.adm .kpi .k{font-size:12.5px;color:var(--gray-500)}.adm .kpi .v{font-size:26px;font-weight:600;color:var(--gray-900);margin-top:6px;line-height:1.1}
+.adm .kpi .d{font-size:12px;color:var(--gray-500);margin-top:4px}
+.adm .kpi.money .v{color:var(--brand-700)}
+.adm table.t th{white-space:nowrap}
+.adm .tabs{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--gray-100);width:max-content;max-width:100%;overflow-x:auto}
+.adm .tabs button{border:0;background:none;padding:8px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:var(--gray-600);cursor:pointer;white-space:nowrap}
+.adm .tabs button.on{background:#fff;color:var(--brand-700);box-shadow:var(--shadow-sm)}
+.adm .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.adm .form-grid .field.wide{grid-column:1/-1}
+.adm .item-row{display:grid;grid-template-columns:120px 1fr 1fr 90px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-100)}
+.adm .item-row:last-child{border:0}
+.adm .item-row .input.sm,.adm .item-row .select.sm{min-height:36px;padding:6px 10px;font-size:13px}
+.adm .drop{border:2px dashed var(--gray-300);border-radius:var(--radius-lg);padding:28px;text-align:center;color:var(--gray-600);background:#fff}
+.adm .drop.over{border-color:var(--brand-500);background:var(--brand-25,#fff7ed)}
+.adm pre.json{max-height:320px;overflow:auto;background:var(--gray-900);color:#e5e7eb;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.45}
+.adm .login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.adm .login .card{width:420px;max-width:100%;padding:32px;display:flex;flex-direction:column;gap:16px}
+.adm .pill.gray{background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200)}
+.adm .pill.green{background:var(--ok-50,#ecfdf3);color:var(--ok-700,#067647);border:1px solid var(--ok-100,#d1fadf)}
+.adm .pill.red{background:var(--err-50);color:var(--err-700);border:1px solid var(--err-100,#fee4e2)}
+.adm .pill.amber{background:var(--warn-50,#fffaeb);color:var(--warn-700,#b54708);border:1px solid var(--warn-100,#fef0c7)}
+.adm .audit li{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:13px}
+.adm .audit li small{color:var(--gray-500)}
+@media (max-width:860px){.adm .item-row{grid-template-columns:1fr 1fr}.adm .item-row>.row{grid-column:1/-1;justify-content:flex-end}.adm .audit li{grid-template-columns:1fr}}
+html[data-mode="dark"] body.adm{background:var(--bg,#0f1628)}
+html[data-mode="dark"] .adm .kpi,html[data-mode="dark"] .adm .drop{background:var(--card,#141c33);border-color:var(--line,#263055)}
+
+/* barra lateral: logo completo (SEU CLIENTE + F·I·E·L) */
+.adm .sidebar .adm-logo{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:20px 18px 14px;text-decoration:none!important}
+.adm .sidebar .adm-logo img{width:150px;max-width:100%;height:auto;display:block}
+.adm .sidebar .adm-logo small{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-500);font-weight:600;padding-left:2px}
+.adm .sidebar-foot .src{align-self:flex-start}
+/* barra do topo: só números, com ícones de linha, em 2 grupos — negócios à esquerda, assinaturas e receita à direita */
+.adm .adm-top{justify-content:flex-start;gap:12px;min-width:0;max-width:100%;overflow:hidden}
+.adm .adm-top #sb-toggle{display:none}
+.adm .adm-stats{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;overflow-x:auto;scrollbar-width:none}.adm .adm-stats::-webkit-scrollbar{display:none}
+.adm .adm-ts{padding:5px 8px;gap:2px;flex:none}
+.adm .adm-ts .ts-it{gap:7px;padding:5px 10px 5px 8px}
+.adm .adm-ts .ts-it .ts-ic{width:18px;height:18px;color:var(--gray-600);flex:none}
+.adm .adm-ts .ts-it:hover .ts-ic,.adm .adm-ts .ts-it:focus-visible .ts-ic{color:var(--brand-600)}
+.adm .adm-ts .ts-it small{font-size:12px;color:var(--gray-500);font-weight:500}
+.adm .adm-ts .ts-it.ts-bad b,.adm .adm-ts .ts-it.ts-bad small,.adm .adm-ts .ts-it.ts-bad .ts-ic{color:var(--err-700)}
+@media (max-width:1500px){.adm .adm-ts .ts-it small{display:none}}
+.adm .adm-ts-r{margin-left:auto}
+@media (max-width:1024px){.adm .adm-top #sb-toggle{display:inline-flex;flex:none}
+  /* celular/tablet: se não couber numa linha, o grupo da direita desce e continua encostado à direita (nada some da tela) */
+  .adm .adm-top{height:auto;min-height:var(--topbar-h);padding-top:10px;padding-bottom:10px}
+  .adm .adm-stats{flex-wrap:wrap;overflow:visible;row-gap:8px}
+  .adm .adm-ts{max-width:100%;overflow-x:auto;scrollbar-width:none}.adm .adm-ts::-webkit-scrollbar{display:none}}
+@media (max-width:420px){.adm .adm-ts{padding:4px 4px}.adm .adm-ts .ts-it{gap:5px;padding:4px 6px}.adm .adm-ts .ts-it .ts-ic{width:16px;height:16px}}
+html[data-mode="dark"] .adm .adm-ts{background:var(--card,#141c33)}
+html[data-mode="dark"] .adm .adm-ts .ts-it .ts-ic{color:var(--gray-400,#98a2b3)}
+.adm .main{min-width:0}
+.adm .list-row{flex-wrap:wrap}.adm .list-row>div{min-width:min(100%,180px)}
+/* Pagamentos › Formas de pagamento (pv- = provedor; prefixado para não colidir com classes genéricas) */
+.adm .pv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.adm .pv-tile{display:flex;flex-direction:column;gap:8px;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:14px;background:#fff;cursor:pointer;min-width:0}
+.adm .pv-tile.on{border-color:var(--brand-500);box-shadow:0 0 0 3px var(--brand-100,#ffe7cc)}
+.adm .pv-tile.off{background:var(--gray-50);cursor:default}
+.adm .pv-tile input[type=radio]{accent-color:var(--brand-600);width:16px;height:16px;margin:0}
+.adm .pv-tile .pv-hook{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;min-width:0}
+.adm .pv-tile .pv-hook code{font-size:11px;word-break:break-all;flex:1 1 160px;min-width:0}
+.adm .pv-tile .pv-pix{display:flex;flex-direction:column;gap:6px}
+.adm .pv-tile .pv-pix .row>.input{flex:1;min-width:0}
+.adm .pv-tile .input.sm{min-height:36px;padding:6px 10px;font-size:13px}
+html[data-mode="dark"] .adm .pv-tile{background:var(--card,#141c33);border-color:var(--line,#263055)}
+html[data-mode="dark"] .adm .pv-tile.off{background:var(--bg,#0f1628)}
+
+/* Negócio › Dados › Logo */
+.adm .adm-logo-edit{display:flex;gap:14px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--gray-100)}
+.adm .adm-logo-edit img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--gray-200);background:#fff;flex:none}
+
+/* Menu do painel: títulos das colunas e escolha do ícone (nv- = itens de menu) */
+.adm .item-row.nv-head{padding:0 0 4px;border:0;font-size:12px;font-weight:600;color:var(--gray-500)}
+.adm .nv-ic{justify-content:flex-start;gap:8px;min-height:36px;width:100%;overflow:hidden;white-space:nowrap}
+.adm .nv-icgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.adm .nv-icopt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border:1px solid var(--gray-200);border-radius:12px;background:#fff;font:inherit;font-size:12.5px;color:var(--gray-700);cursor:pointer}
+.adm .nv-icopt:hover,.adm .nv-icopt:focus-visible{border-color:var(--brand-500)}
+.adm .nv-icopt.on{border-color:var(--brand-600);box-shadow:0 0 0 3px var(--brand-100,#ffe7cc);color:var(--brand-700)}
+@media (max-width:860px){.adm .item-row.nv-head{display:none}}
+html[data-mode="dark"] .adm .nv-icopt{background:var(--card,#141c33);border-color:var(--line,#263055)}
+/* Negócios › funções em uso (colunas opcionais) */
+.adm .adm-feats{border:1px solid var(--gray-200);border-radius:12px;padding:10px 14px;margin-bottom:12px;background:var(--gray-50)}
+.adm .adm-feats summary{cursor:pointer;font-weight:600;font-size:13.5px;display:flex;gap:8px;align-items:center;color:var(--gray-800)}
+.adm .adm-feats-b{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.adm .adm-feats-g{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.adm .adm-feats-g>b{width:100%;font-size:11.5px;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em}
+.adm .adm-fon{display:inline-flex;align-items:center;gap:5px;color:var(--ok-700,#067647);font-weight:600}
+.adm .adm-fon small{color:var(--gray-600);font-weight:500}
+.adm .adm-fbar{display:inline-block;width:56px;height:6px;border-radius:999px;background:var(--gray-200);vertical-align:middle;margin-right:8px;overflow:hidden}
+.adm .adm-fbar i{display:block;height:100%;background:linear-gradient(90deg,#D93D1A,#F26716 36%,#F28C0F 68%,#F2BB16)}
+html[data-mode="dark"] .adm .adm-feats{background:var(--card,#141c33);border-color:var(--line,#263055)}
+
+/* Negócio › Sugestões (tools/ficha_jev.py + Jev): cartão por sugestão, "hoje × sugerido", prévia do bloco */
+.adm .tabs .adm-sug-n{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:var(--brand-500);color:#0d0d0d;font-size:11px;font-weight:700;line-height:1}
+.adm .adm-sug{border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.adm .adm-sug-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.adm .adm-sug-h>b{flex:1;min-width:180px;color:var(--gray-900)}
+.adm .adm-sug-ic{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--brand-50);color:var(--brand-700);flex:0 0 auto}
+.adm .adm-sug-ic .ic{width:18px;height:18px}
+.adm .adm-sug-tags{display:flex;gap:6px;flex-wrap:wrap}
+.adm .adm-sug-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm .adm-sug-cmp>div{border-radius:10px;padding:10px 12px;background:var(--gray-50);border:1px solid var(--gray-200);min-width:0}
+.adm .adm-sug-cmp>div.new{background:var(--brand-25,#fff7ed);border-color:var(--brand-200)}
+.adm .adm-sug-cmp small{display:block;font-size:12px;color:var(--gray-600);margin-bottom:2px}
+.adm .adm-sug-prev{border-radius:10px;padding:10px 12px;background:var(--gray-50);border:1px solid var(--gray-200);display:flex;flex-direction:column;gap:4px;min-width:0}
+.adm .adm-sug-prev p{margin:0;font-size:13px;color:var(--gray-700)}
+.adm .adm-sug-prev ul{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:0}
+.adm .adm-sug-prev li{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0;border-bottom:1px dashed var(--gray-200);color:var(--gray-800)}
+.adm .adm-sug-prev li span:first-child{min-width:0;overflow-wrap:anywhere}
+.adm .adm-sug-prev li span:last-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.adm .adm-sug-prev small{font-size:12px;color:var(--gray-600);overflow-wrap:anywhere}
+.adm .adm-sug .hint{margin:0;overflow-wrap:anywhere}
+.adm .adm-sug-a{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.adm .adm-sug-done summary{cursor:pointer;font-weight:600;color:var(--gray-700);padding:4px 0}
+.adm .adm-sug-done ul{list-style:none;margin:8px 0 0;padding:0}
+.adm .adm-sug-done li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:13px}
+.adm .adm-sug-done li>span:nth-child(2){flex:1;min-width:160px}
+@media (max-width:560px){.adm .adm-sug-cmp{grid-template-columns:1fr}}
+html[data-mode="dark"] .adm .adm-sug{background:var(--card,#141c33);border-color:var(--line,#263055)}
+
+/* mesma regra no painel da plataforma à parte: sem barras de rolagem dentro das caixas e tabelas */
+
+*:not(html):not(body){scrollbar-width:none!important}
+
+:where(*:not(html):not(body))::-webkit-scrollbar{display:none;width:0;height:0}

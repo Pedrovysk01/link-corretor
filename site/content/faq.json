@@ -1,0 +1,27 @@
+[
+  { "group": "Começando", "items": [
+    { "home": true, "q": "O que é um cartão fidelidade digital?", "a": "É a versão no celular do cartãozinho de carimbos. A cada compra o cliente recebe um carimbo e, ao completar o cartão, ganha uma recompensa definida por você. Em vez de papel, o cartão fica salvo no navegador do celular do cliente e o negócio acompanha tudo em um painel." },
+    { "home": true, "q": "O cliente precisa baixar algum aplicativo?", "a": "Não. O cliente aponta a câmera do celular para o QR Code do balcão, informa nome e telefone ou e-mail e o cartão abre no navegador. Ele pode guardar um atalho na tela inicial para abrir com um toque." },
+    { "home": true, "q": "Quanto tempo leva para começar?", "a": "Poucos minutos: você cria a conta, escolhe o nome, o logotipo, o número de carimbos e a recompensa, e imprime o QR Code. A partir daí, o primeiro cliente já pode entrar no cartão." },
+    { "q": "Preciso de algum equipamento?", "a": "Não. O painel funciona no navegador do computador, do tablet ou do celular. O QR Code pode ser impresso em uma folha comum; o próprio painel gera cartazes e etiquetas prontas para imprimir." },
+    { "q": "Funciona para o meu tipo de negócio?", "a": "Funciona para qualquer negócio local em que o cliente volta: cafeterias, padarias, restaurantes, salões, barbearias, pet shops, lava-rápidos, academias, sorveterias, lojas e serviços em geral." }
+  ]},
+  { "group": "Carimbos e clientes", "items": [
+    { "home": true, "q": "Como eu dou o carimbo?", "a": "De duas formas: pelo painel, buscando o cliente pelo nome ou telefone, ou lendo o QR Code do cartão do cliente com o celular. Cada carimbo fica registrado com data, hora e quem carimbou, e o último pode ser desfeito em caso de engano." },
+    { "q": "Quantos carimbos o cartão pode ter?", "a": "Você escolhe entre 4 e 16 carimbos. O último círculo é sempre a recompensa, e você escreve o que o cliente ganha, como \"um café por conta da casa\"." },
+    { "q": "Dá para colocar a minha marca no cartão?", "a": "Sim. O cartão usa o seu logotipo e o nome do negócio, e você escolhe fundos por segmento, cores e fundos de datas comemorativas, como Natal, Dia das Mães e aniversário do cliente." },
+    { "q": "E se o cliente trocar de celular ou perder o cartão?", "a": "Os carimbos ficam salvos no seu painel, não só no celular. O cliente reabre o cartão pelo link ou pelo QR Code que recebeu e, se precisar, você confirma os carimbos no painel." },
+    { "q": "Posso falar com os clientes depois?", "a": "Sim. Você cria campanhas com prazo (como carimbo em dobro), uma oferta automática de aniversário e pesquisas de satisfação. O cliente só recebe comunicações de marketing se tiver dado consentimento no cadastro." }
+  ]},
+  { "group": "Preços e planos", "items": [
+    { "home": true, "q": "Quanto custa?", "a": "O plano Free é gratuito para até {free} clientes. O plano Pro custa R$ {price} por mês e atende até {pro} clientes, com os recursos avançados. Toda conta nova começa com {trial} dias de teste dos recursos Pro." },
+    { "q": "Preciso de cartão de crédito para começar?", "a": "Não. Você cria a conta e usa o plano Free sem informar forma de pagamento." },
+    { "q": "Posso cancelar quando quiser?", "a": "Sim. Você pode voltar ao plano Free quando quiser; os clientes já cadastrados continuam no cartão e seguem acumulando carimbos. Acima de {free}, só não entram clientes novos até você assinar de novo." },
+    { "q": "Existe desconto no plano anual?", "a": "Sim. No pagamento anual você paga R$ {annual} por mês (R$ 708 de uma vez, em 12 meses), contra R$ 79 na cobrança mensal." }
+  ]},
+  { "group": "Privacidade e segurança", "items": [
+    { "home": true, "q": "De quem são os dados dos clientes?", "a": "Do seu negócio. Pela LGPD, o negócio é o controlador dos dados dos clientes dele e o Seu Cliente Fiel atua como operador, tratando os dados apenas para prestar o serviço. Você pode exportar a lista de clientes em planilha a qualquer momento." },
+    { "home": true, "q": "O cadastro do cliente é feito de acordo com a LGPD?", "a": "O cadastro informa para que os dados serão usados, pede apenas o necessário (nome e telefone ou e-mail) e separa o consentimento para receber ofertas, que é opcional. O cliente pode pedir a exclusão dos dados ao negócio ou a nós." },
+    { "q": "Os dados ficam seguros?", "a": "As conexões são criptografadas (HTTPS), cada negócio só acessa os próprios clientes por regras no banco de dados, e informações sensíveis como plano e dono da conta só podem ser alteradas pelo servidor." }
+  ]}
+]
