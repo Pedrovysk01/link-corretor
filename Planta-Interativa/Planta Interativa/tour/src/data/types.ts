@@ -107,6 +107,12 @@ export interface Property {
   readonly bathrooms: number
   readonly wallHeight: number
   readonly surroundings: Surroundings
+  /** Área privativa do apartamento (m²), quando o plano mostra mais de uma unidade; senão a soma dos ambientes. */
+  readonly area?: number
+  /** Região que a câmera enquadra ao abrir e na visão geral (o apartamento escolhido, dentro do pavimento com os dois). */
+  readonly focus?: Rect
+  /** Passagens abertas (sem porta) entre ambientes vizinhos: geram o botão de atravessar, como uma porta. */
+  readonly passages?: readonly { readonly a: string; readonly b: string; readonly at: Vec2 }[]
   /** Com `cidade`: pavimentos entre o piso mostrado e o pódio (torre real com a fachada). */
   readonly floorsBelow?: number
   /** Imagem de capa do empreendimento, relativa a public/. Opcional. */

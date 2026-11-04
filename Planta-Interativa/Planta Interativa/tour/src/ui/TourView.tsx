@@ -1,5 +1,6 @@
 import { useProgress } from '@react-three/drei'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useLayoutEffect, useState } from 'react'
+import { querIntro } from '../lib/intro'
 import { isWebGLAvailable } from '../lib/webgl'
 import { useActiveRoom, useProperty } from '../state/store'
 import { FloorPlan } from './FloorPlan'
@@ -27,6 +28,10 @@ export function TourView() {
   const [hasWebGL] = useState(isWebGLAvailable)
   const [isSceneReady, setSceneReady] = useState(false)
   const { active: isLoadingAssets, progress } = useProgress()
+  // A abertura mapa→planta esconde painéis e rótulos desde o primeiro quadro; a CameraRig libera quando a câmera chega.
+  useLayoutEffect(() => {
+    if (querIntro(property, room !== null)) document.body.classList.add('intro-on')
+  }, [property, room])
   const isTourReady = isSceneReady && !isLoadingAssets
 
   return (

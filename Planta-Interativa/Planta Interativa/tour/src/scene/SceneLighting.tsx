@@ -8,7 +8,7 @@ const SUN_DISTANCE = 40
 const SHADOW_MAP: Record<Quality, number> = { high: 4096, low: 2048, minimal: 1024 }
 const GARDEN_HAZE: [number, number] = [160, 900]
 const SKYLINE_HAZE: [number, number] = [140, 700]
-const CIDADE_HAZE: [number, number] = [400, 2600]
+const CIDADE_HAZE: [number, number] = [1800, 7000]
 
 interface SceneLightingProps {
   readonly bounds: Rect

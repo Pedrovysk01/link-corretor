@@ -59,7 +59,7 @@ export const montemeranoLazer: Property = {
       description: 'Piscina infantil rasa, com espreguiçadeiras ao lado e visão direta do estar.',
       features: ['Raia rasa', 'Espreguiçadeiras', 'Visão do estar'],
       view: { eye: [13.4, 3.3], look: [16.5, 0.8] },
-      furniture: [{ kind: 'pool', at: [15.25, 1.9], size: [4.1, 2.9] }, { kind: 'lounger', at: [11.8, 2.0], rotation: 90 }],
+      furniture: [{ kind: 'pool', at: [15.25, 1.9], size: [4.1, 2.9] }, { kind: 'lounger', at: [13.5, 3.5] }],
     },
     {
       id: 'piscina',

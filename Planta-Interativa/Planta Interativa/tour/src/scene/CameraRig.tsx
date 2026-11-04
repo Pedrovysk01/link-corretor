@@ -5,7 +5,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Box3, Vector3 } from 'three'
 import type { Property, Rect, Room } from '../data/types'
 import { planBounds, viewFor } from '../lib/geometry'
+import { introJaFeita, introKey, prefersReducedMotion, querIntro } from '../lib/intro'
 import { useActiveRoom, viewerStore } from '../state/store'
+import { cidadeGroundY } from './Cidade'
 import { EYE_HEIGHT } from './constants'
 
 const { ACTION } = CameraControlsImpl
@@ -18,7 +20,10 @@ const KEY_TURN = Math.PI / 12
 const POSE_PUBLISH_MS = 100
 const OVERVIEW_MIN_DISTANCE = 6
 
-const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+/** Abertura do 3D: começa sobre o mapa de satélite da cidade e desce em zoom contínuo até o corte do pavimento. */
+const INTRO_MS = 7000
+const INTRO_START_HEIGHT = 1200
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 const overviewPose = (bounds: Rect) => {
   const cx = bounds.x + bounds.w / 2
@@ -61,8 +66,8 @@ const flyIntoRoom = (controls: CameraControlsImpl, room: Room, animate: boolean)
   return controls.setLookAt(eye[0], EYE_HEIGHT, eye[1], eye[0] + dir.x, EYE_HEIGHT + dir.y, eye[1] + dir.z, animate)
 }
 
-const flyToOverview = (controls: CameraControlsImpl, bounds: Rect, animate: boolean, isCurrent: () => boolean) => {
-  const { eye, target, size } = overviewPose(bounds)
+const flyToOverview = (controls: CameraControlsImpl, bounds: Rect, focus: Rect, animate: boolean, isCurrent: () => boolean) => {
+  const { eye, target, size } = overviewPose(focus)
   controls.minDistance = 0
   controls.maxDistance = Infinity
   configureOverview(controls, bounds)
@@ -74,10 +79,76 @@ const flyToOverview = (controls: CameraControlsImpl, bounds: Rect, animate: bool
   })
 }
 
-const moveCamera = (controls: CameraControlsImpl, room: Room | null, bounds: Rect, isCurrent: () => boolean) => {
+const runIntro = (controls: CameraControlsImpl, bounds: Rect, focus: Rect, floorsBelow: number, isCurrent: () => boolean, onEnd: () => void) => {
+  configureOverview(controls, bounds)
+  const { eye, target } = overviewPose(focus)
+  const endDir = eye.clone().sub(target)
+  const endDist = endDir.length()
+  endDir.normalize()
+  const startDir = new Vector3(0, 1, 0.12).normalize() // quase a prumo, olhando o mapa
+  const startTarget = new Vector3(target.x, cidadeGroundY(floorsBelow), target.z)
+  const pos = new Vector3()
+  const dir = new Vector3()
+  const tgt = new Vector3()
+  controls.setBoundary()
+  controls.minDistance = 0
+  controls.maxDistance = Infinity
+  controls.minPolarAngle = 0
+  controls.maxPolarAngle = Math.PI
+  controls.enabled = false
+  let raf = 0
+  let t0 = performance.now()
+  let ended = false
+  const finish = () => {
+    if (ended) return
+    ended = true
+    cancelAnimationFrame(raf)
+    window.removeEventListener('pointerdown', skip, true)
+    window.removeEventListener('wheel', skip, true)
+    window.removeEventListener('keydown', skip, true)
+    controls.enabled = true
+    document.body.classList.remove('intro-on')
+    onEnd()
+  }
+  const skip = () => {
+    t0 = performance.now() - INTRO_MS
+  }
+  window.addEventListener('pointerdown', skip, true)
+  window.addEventListener('wheel', skip, true)
+  window.addEventListener('keydown', skip, true)
+  const frame = (now: number) => {
+    if (!isCurrent()) return finish()
+    const p = Math.min(1, (now - t0) / INTRO_MS)
+    const e = easeInOut(p)
+    const dist = INTRO_START_HEIGHT * Math.pow(endDist / INTRO_START_HEIGHT, e) // zoom constante: cada instante aproxima na mesma proporção
+    dir.lerpVectors(startDir, endDir, e * e).normalize() // só inclina perto do fim
+    tgt.lerpVectors(startTarget, target, e)
+    pos.copy(tgt).addScaledVector(dir, dist)
+    void controls.setLookAt(pos.x, pos.y, pos.z, tgt.x, tgt.y, tgt.z, false)
+    if (p < 1) raf = requestAnimationFrame(frame)
+    else finish()
+  }
+  raf = requestAnimationFrame(frame)
+  return finish
+}
+
+/** Espera a tela de carregamento sair para a abertura não rodar escondida. */
+const whenLoaded = (start: () => void) => {
+  let tries = 0
+  const id = window.setInterval(() => {
+    const loader = document.querySelector('.loader')
+    if (!loader || loader.classList.contains('is-done') || ++tries > 120) {
+      window.clearInterval(id)
+      start()
+    }
+  }, 100)
+  return () => window.clearInterval(id)
+}
+
+const moveCamera = (controls: CameraControlsImpl, room: Room | null, bounds: Rect, focus: Rect, isCurrent: () => boolean) => {
   const animate = !prefersReducedMotion()
   if (!room) {
-    flyToOverview(controls, bounds, animate, isCurrent)
+    flyToOverview(controls, bounds, focus, animate, isCurrent)
     return
   }
   configureRoom(controls)
@@ -95,12 +166,31 @@ export function CameraRig({ property }: { readonly property: Property }) {
   const lastPublishRef = useRef(0)
   const room = useActiveRoom()
   const bounds = useMemo(() => planBounds(property.rooms), [property])
+  const focus = property.focus ?? bounds
 
   useEffect(() => {
     if (!controls) return
     const token = ++transitionRef.current
-    moveCamera(controls, room, bounds, () => token === transitionRef.current)
-  }, [controls, room, bounds])
+    const isCurrent = () => token === transitionRef.current
+    const key = introKey(property)
+    if (key && querIntro(property, room !== null)) {
+      let cancelIntro: (() => void) | null = null
+      document.body.classList.add('intro-on') // painéis e rótulos só voltam quando a câmera chega
+      const cancelWait = whenLoaded(() => {
+        introJaFeita.add(key)
+        cancelIntro = runIntro(controls, bounds, focus, property.floorsBelow ?? 1, isCurrent, () => {
+          if (isCurrent()) flyToOverview(controls, bounds, focus, false, isCurrent)
+        })
+      })
+      return () => {
+        cancelWait()
+        cancelIntro?.()
+        if (!introJaFeita.has(key)) document.body.classList.remove('intro-on')
+      }
+    }
+    document.body.classList.remove('intro-on')
+    moveCamera(controls, room, bounds, focus, isCurrent)
+  }, [controls, room, bounds, focus, property])
 
   useEffect(() => {
     if (!room || !controls) return

@@ -108,8 +108,9 @@ export const planBounds = (rooms: readonly Room[]): Rect => {
 }
 
 /** Finds which rooms each door or slider connects by probing either side of it. */
-export const doorLinks = ({ rooms, walls }: Pick<Property, 'rooms' | 'walls'>): DoorLink[] =>
-  walls.flatMap((wall) => {
+export const doorLinks = ({ rooms, walls, passages = [] }: Pick<Property, 'rooms' | 'walls'> & { passages?: Property['passages'] }): DoorLink[] => [
+  ...(passages ?? []).map(({ a, b, at }) => ({ a: a < b ? a : b, b: a < b ? b : a, at })),
+  ...walls.flatMap((wall) => {
     const length = wallLength(wall)
     const dir: Vec2 = [(wall.to[0] - wall.from[0]) / length, (wall.to[1] - wall.from[1]) / length]
     const normal: Vec2 = [-dir[1], dir[0]]
@@ -124,7 +125,8 @@ export const doorLinks = ({ rooms, walls }: Pick<Property, 'rooms' | 'walls'>): 
         const [a, b] = [sideA.id, sideB.id].sort()
         return [{ a, b, at }]
       })
-  })
+  }),
+]
 
 export const linksFrom = (links: readonly DoorLink[], roomId: string): { roomId: string; at: Vec2 }[] =>
   links.flatMap((link) => {

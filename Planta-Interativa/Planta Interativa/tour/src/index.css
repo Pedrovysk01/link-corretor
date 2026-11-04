@@ -1075,3 +1075,18 @@ html.lc-casca-on .hint { bottom: calc(var(--gutter) + 76px); }
   html.lc-casca-on .plan,
   html.lc-casca-on .plan-toggle { display: none; }
 }
+
+/* abertura do 3D (mapa → planta): some tudo que atrapalha a vista enquanto a câmera desce */
+.panel,
+.plan,
+.scene-labels,
+.hint {
+  transition: opacity 0.7s var(--ease);
+}
+body.intro-on .panel,
+body.intro-on .plan,
+body.intro-on .scene-labels,
+body.intro-on .hint {
+  opacity: 0;
+  pointer-events: none;
+}

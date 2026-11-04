@@ -6,7 +6,8 @@ import type { Property } from '../types'
  * com o núcleo (escada/elevador) recortando o lado oeste entre z 4,4 e z 12,0. +x = leste (mar), +z = sul.
  * Pé-direito de 2,70 m assumido. Acabamentos lidos dos renders — ilustrativos até confirmação do memorial.
  */
-export const montemerano01: Property = {
+/** Desenho do Apto 01 (a planta da direita); `montemerano-andar.ts` junta com o Apto 02 espelhado. */
+export const apto01: Property = {
   id: 'montemerano-01',
   name: 'Villa Montemerano · Apto 01',
   shortName: 'Montemerano 01',
@@ -226,6 +227,14 @@ export const montemerano01: Property = {
         { kind: 'plant', at: [6.2, 21.0] },
       ],
     },
+  ],
+  // Passagens abertas do apartamento (sem porta): hall–circulação, hall–living, living–cozinha, living–sacada, cozinha–sacada
+  passages: [
+    { a: 'hall', b: 'circ', at: [2.1, 12.0] },
+    { a: 'hall', b: 'living', at: [2.3, 12.9] },
+    { a: 'living', b: 'kitchen', at: [2.3, 18.2] },
+    { a: 'living', b: 'sacada', at: [4.45, 19.6] },
+    { a: 'kitchen', b: 'sacada', at: [2.3, 20.5] },
   ],
   walls: [
     // Externas

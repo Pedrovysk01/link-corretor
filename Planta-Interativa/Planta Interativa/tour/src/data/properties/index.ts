@@ -1,10 +1,10 @@
 import type { Property } from '../types'
 import { skylineResidence } from './apartment'
-import { montemerano01 } from './montemerano'
+import { montemerano01, montemerano02 } from './montemerano-andar'
 import { montemeranoLazer } from './montemerano-lazer'
 import { villaSerena } from './villa'
 
-export const PROPERTIES: readonly Property[] = [montemerano01, montemeranoLazer, villaSerena, skylineResidence]
+export const PROPERTIES: readonly Property[] = [montemerano01, montemerano02, montemeranoLazer, villaSerena, skylineResidence]
 
 export const getProperty = (id: string): Property => {
   const property = PROPERTIES.find((p) => p.id === id)

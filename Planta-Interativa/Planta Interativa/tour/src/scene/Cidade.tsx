@@ -1,21 +1,24 @@
 import { useTexture } from '@react-three/drei'
 import { useMemo } from 'react'
-import { BackSide, MeshBasicMaterial, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, type Texture } from 'three'
+import { BackSide, CanvasTexture, MeshBasicMaterial, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, type Texture } from 'three'
 import type { Rect } from '../data/types'
+import { ENTORNO } from './entorno.generated'
 import { MATERIALS } from './materials'
 
-/** Entorno real do empreendimento: a torre com o render da fachada, o pódio, o chão em imagem de satélite e um
- *  panorama cilíndrico feito dos quadros do drone. Sem prédios genéricos: o que se vê é o entorno real (ATENÇÃO: o mosaico atual foi feito em Itapema; o empreendimento fica em Perequê, Porto Belo). */
+/** Entorno real do empreendimento: a torre com o render da fachada, o pódio, o chão em imagem de satélite (um mosaico largo
+ *  e outro de detalhe ao redor do lote) e um panorama cilíndrico feito dos quadros do drone. Sem prédios genéricos.
+ *  A coordenada do lote vem de scripts/build-satelite.py (entorno.generated.ts): troque por a exata e rode de novo. */
 
-const STOREY = 3
+export const STOREY = 3
 /** Pavimentos que a textura da fachada mostra (render "Externa 01"); a repetição vertical mantém 3 m por andar. */
 const FACADE_FLOORS = 22
 const PODIUM_FLOORS = 3
-/** Lado do mosaico de satélite (m) — ver scripts: 5×5 tiles Esri z16 em Itapema ≈ 2 721 m. */
-const SAT_SIZE = 2721
 const PANO_RADIUS = 1150
 /** entorno-pano.jpg tem 4096×345: a altura do cilindro segue a proporção para não esticar. */
 const PANO_HEIGHT = (2 * Math.PI * PANO_RADIUS * 345) / 4096
+
+/** Altura (y) do chão: abaixo do corte, descendo os pavimentos e o pódio. */
+export const cidadeGroundY = (floorsBelow: number) => -Math.max(1, floorsBelow) * STOREY - PODIUM_FLOORS * STOREY
 
 const BASE = import.meta.env.BASE_URL
 
@@ -30,6 +33,20 @@ const prep = (t: Texture, repeat?: readonly [number, number]) => {
   return t
 }
 
+/** Máscara radial: o mosaico de detalhe some suavemente nas bordas e se funde ao mosaico largo. */
+const bordaSuave = () => {
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  const g = c.getContext('2d')!
+  const grad = g.createRadialGradient(128, 128, 60, 128, 128, 128)
+  grad.addColorStop(0, '#fff')
+  grad.addColorStop(0.62, '#fff')
+  grad.addColorStop(1, '#000')
+  g.fillStyle = grad
+  g.fillRect(0, 0, 256, 256)
+  return new CanvasTexture(c)
+}
+
 interface CidadeProps {
   readonly bounds: Rect
   /** Pavimentos entre o piso mostrado e o pódio (o apartamento tipo fica alto; o lazer, logo acima do pódio). */
@@ -37,24 +54,35 @@ interface CidadeProps {
 }
 
 export function Cidade({ bounds, floorsBelow }: CidadeProps) {
-  const [facade, podium, sat, pano] = useTexture([`${BASE}img/fachada.webp`, `${BASE}img/podio.webp`, `${BASE}img/entorno-satelite.jpg`, `${BASE}img/entorno-pano.jpg`])
+  const [facade, podium, sat, satPerto, pano] = useTexture([
+    `${BASE}img/fachada.webp`,
+    `${BASE}img/podio.webp`,
+    `${BASE}img/entorno-satelite.jpg`,
+    `${BASE}img/entorno-satelite-perto.jpg`,
+    `${BASE}img/entorno-pano.jpg`,
+  ])
   const cx = bounds.x + bounds.w / 2
   const cz = bounds.z + bounds.d / 2
   const drop = Math.max(1, floorsBelow) * STOREY
   const podiumH = PODIUM_FLOORS * STOREY
-  const groundY = -drop - podiumH
+  const groundY = cidadeGroundY(floorsBelow)
 
   const mats = useMemo(() => {
-    const f = prep(facade.clone(), [1, floorsBelow / FACADE_FLOORS])
-    const side = new MeshStandardMaterial({ map: f, roughness: 0.55, metalness: 0.1 })
+    const side = new MeshStandardMaterial({ map: prep(facade.clone(), [1, floorsBelow / FACADE_FLOORS]), roughness: 0.55, metalness: 0.1 })
     const cap = MATERIALS.tower
     const p = new MeshStandardMaterial({ map: prep(podium.clone(), [2, 1]), roughness: 0.6 })
-    return { sides: [side, side, cap, cap, side, side], podium: [p, p, cap, cap, p, p], ground: new MeshStandardMaterial({ map: prep(sat), roughness: 1 }), pano: new MeshBasicMaterial({ map: prep(pano), side: BackSide, fog: false }) }
-  }, [facade, podium, sat, pano, floorsBelow])
+    return {
+      sides: [side, side, cap, cap, side, side],
+      podium: [p, p, cap, cap, p, p],
+      largo: new MeshBasicMaterial({ map: prep(sat) }),
+      perto: new MeshBasicMaterial({ map: prep(satPerto), alphaMap: bordaSuave(), transparent: true, depthWrite: false }),
+      pano: new MeshBasicMaterial({ map: prep(pano), side: BackSide, fog: false }),
+    }
+  }, [facade, podium, sat, satPerto, pano, floorsBelow])
 
   return (
     <group>
-      {/* torre: planta encaixada no topo, fachada real nos lados */}
+      {/* torre: planta encaixada no topo (corte horizontal), fachada real nos lados */}
       <mesh position={[cx, -drop / 2 - 0.3, cz]} material={mats.sides} receiveShadow>
         <boxGeometry args={[bounds.w + 0.6, drop - 0.6, bounds.d + 0.6]} />
       </mesh>
@@ -62,9 +90,12 @@ export function Cidade({ bounds, floorsBelow }: CidadeProps) {
       <mesh position={[cx, -drop - podiumH / 2, cz]} material={mats.podium}>
         <boxGeometry args={[bounds.w + 12, podiumH, bounds.d + 10]} />
       </mesh>
-      {/* chão: imagem de satélite centrada no lote aproximado */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, groundY, cz]} material={mats.ground}>
-        <planeGeometry args={[SAT_SIZE, SAT_SIZE]} />
+      {/* chão: mosaico largo + mosaico de detalhe, centrados de modo que o lote caia sob a torre */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx + ENTORNO.largo.offX, groundY - 0.2, cz + ENTORNO.largo.offZ]} material={mats.largo}>
+        <planeGeometry args={[ENTORNO.largo.size, ENTORNO.largo.size]} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx + ENTORNO.perto.offX, groundY, cz + ENTORNO.perto.offZ]} material={mats.perto} renderOrder={1}>
+        <planeGeometry args={[ENTORNO.perto.size, ENTORNO.perto.size]} />
       </mesh>
       {/* horizonte: faixa do drone (morros, cidade, mar) em volta de tudo; o céu acima é o HDRI */}
       <mesh position={[cx, groundY + PANO_HEIGHT / 2 - 40, cz]} material={mats.pano}>

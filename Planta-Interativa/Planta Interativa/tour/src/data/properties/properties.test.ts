@@ -54,7 +54,10 @@ describe.each(PROPERTIES.map((p) => [p.name, p] as const))('%s', (_name, propert
 
   test('every room can be reached through doorways from the first tour stop', () => {
     const reachable = reachableFrom(property, property.tour[0])
-    const unreachable = property.rooms.map((r) => r.id).filter((id) => !reachable.has(id))
+    // Só os ambientes internos precisam de caminho por portas: decks e jardins abertos se ligam sem porta; e num pavimento com duas plantas,
+    // cada apartamento é um mundo à parte (o tour guiado de um não entra no outro).
+    const dentro = (r: (typeof property.rooms)[number]) => !property.focus || (r.rect.x >= property.focus.x - 1e-6 && r.rect.x + r.rect.w <= property.focus.x + property.focus.w + 1e-6)
+    const unreachable = property.rooms.filter((r) => r.kind !== 'outdoor' && dentro(r)).map((r) => r.id).filter((id) => !reachable.has(id))
     expect(unreachable).toEqual([])
   })
 

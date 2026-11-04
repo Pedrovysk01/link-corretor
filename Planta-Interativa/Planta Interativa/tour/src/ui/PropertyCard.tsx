@@ -10,7 +10,7 @@ export function PropertyCard({ property }: { readonly property: Property }) {
   const facts = [
     { label: 'Suítes', value: property.bedrooms },
     { label: 'Banheiros', value: property.bathrooms },
-    { label: 'Área interna', value: formatArea(interiorArea(property.rooms)) },
+    { label: 'Área interna', value: formatArea(property.area ?? interiorArea(property.rooms)) },
     { label: 'Entrega', value: property.completion },
   ].filter((f) => f.value !== 0)
   return (

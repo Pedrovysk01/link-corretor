@@ -44,7 +44,7 @@ export function TourCanvas({ onReady }: { readonly onReady: () => void }) {
       flat
       dpr={DPR_RANGE[quality]}
       gl={{ antialias: false, powerPreference: 'high-performance', stencil: false }}
-      camera={{ fov: 55, near: 0.05, far: 2000, position: [cx, 30, cz + 30] }}
+      camera={{ fov: 55, near: 0.05, far: 6000, position: [cx, 30, cz + 30] }}
       role="img"
       aria-label={`3D model of ${property.name}`}
       onCreated={onReady}

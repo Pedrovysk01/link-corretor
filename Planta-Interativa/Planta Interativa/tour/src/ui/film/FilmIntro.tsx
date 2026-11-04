@@ -28,7 +28,7 @@ function FinalCall() {
   const villa = getProperty(FEATURED_PROPERTY)
   const facts = [
     `${villa.bedrooms} suítes`,
-    formatArea(interiorArea(villa.rooms)),
+    formatArea(villa.area ?? interiorArea(villa.rooms)),
     villa.priceFrom > 0 ? `A partir de ${formatPrice(villa.priceFrom, villa.currency)}` : 'Consulte valores',
   ]
   return (
