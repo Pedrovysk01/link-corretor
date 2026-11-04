@@ -1,0 +1,240 @@
+/* Cinematic scroll intro. A tall track scrolls past a pinned full-screen stage. */
+
+.film {
+  position: fixed;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #050807;
+  outline: none;
+  scrollbar-width: none;
+}
+
+.film::-webkit-scrollbar {
+  display: none;
+}
+
+.film__track {
+  position: relative;
+  height: calc(var(--chapters) * 150svh);
+}
+
+.film__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.film__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: opacity;
+}
+
+/* Darken the edges where text sits, the way film titles are graded in. */
+.film__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(4, 7, 6, 0.82) 0%, rgba(4, 7, 6, 0.35) 38%, rgba(4, 7, 6, 0) 60%),
+    linear-gradient(to bottom, rgba(4, 7, 6, 0.55) 0%, rgba(4, 7, 6, 0) 18%);
+  pointer-events: none;
+}
+
+.film__header {
+  position: absolute;
+  top: var(--gutter);
+  left: calc(var(--gutter) + 8px);
+  right: calc(var(--gutter) + 8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  z-index: 2;
+}
+
+.film__header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.film__skip-short {
+  display: none;
+}
+
+.film__ghost {
+  color: var(--color-text);
+  border-color: rgba(244, 241, 234, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.film__copy {
+  position: absolute;
+  left: clamp(24px, 6vw, 96px);
+  right: clamp(24px, 6vw, 96px);
+  bottom: clamp(56px, 10svh, 120px);
+  z-index: 1;
+}
+
+/* Every chapter's text shares one spot; the scrub hook fades between them. */
+.film__chapter {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-width: 760px;
+  will-change: opacity, transform;
+}
+
+.film__title {
+  margin: var(--space-3) 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6.4vw, 6.2rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.film__body {
+  max-width: 36ch;
+  margin: 0;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  line-height: 1.6;
+  color: rgba(244, 241, 234, 0.82);
+}
+
+.film__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.film__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.film__cta {
+  min-height: 52px;
+  padding-inline: var(--space-5);
+  font-size: 1rem;
+}
+
+.film__other {
+  margin-top: var(--space-2);
+  padding-left: 0;
+}
+
+.film__credit {
+  margin: var(--space-3) 0 0;
+  font-size: 0.72rem;
+  color: rgba(244, 241, 234, 0.5);
+}
+
+.film__counter {
+  position: absolute;
+  right: clamp(24px, 4vw, 56px);
+  bottom: clamp(56px, 10svh, 120px);
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(244, 241, 234, 0.75);
+}
+
+.film__cue {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-6);
+  margin: 0;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 234, 0.7);
+}
+
+.film__cue::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 36px;
+  margin: var(--space-2) auto 0;
+  background: linear-gradient(rgba(244, 241, 234, 0.8), transparent);
+  animation: cue 1.8s var(--ease) infinite;
+  transform-origin: top;
+}
+
+@keyframes cue {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+.film__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(244, 241, 234, 0.12);
+}
+
+.film__progress-bar {
+  width: 100%;
+  height: 100%;
+  background: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@media (max-width: 767px) {
+  .film__skip-long {
+    display: none;
+  }
+
+  .film__skip-short {
+    display: inline;
+  }
+
+  .film__copy {
+    bottom: 64px;
+  }
+
+  .film__counter {
+    bottom: auto;
+    top: 76px;
+  }
+
+  .film__cta {
+    width: 100%;
+  }
+}
+
+/* Below this width the chapter text reaches the centre, so the scroll cue would collide with it. */
+@media (max-width: 1100px) {
+  .film__cue {
+    display: none;
+  }
+}

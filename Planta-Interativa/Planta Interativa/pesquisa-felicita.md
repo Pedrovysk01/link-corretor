@@ -1,0 +1,159 @@
+# Felicità 402 Home Club: pesquisa para a apresentação
+
+Rua 402, Morretes, Itapema/SC. Pesquisa feita em 02/11/2026.
+
+**Aviso sobre o ponto de partida.** O número do prédio diverge entre as fontes (434 no texto da Vansin, 463 no catálogo). Todas as distâncias abaixo partem do ponto médio da Rua 402 no OpenStreetMap (-27,1164; -48,6136). Elas têm margem de erro de algumas dezenas a poucas centenas de metros. Refinar quando houver o ponto exato do lote.
+
+## 1. Sol
+
+Calculado com fórmulas astronômicas para o ponto acima. O cálculo bateu com a referência pública para junho (Climatempo: nascer 07:04, pôr ~17:30; calculado: 07:04 e 17:28).
+
+| Data | Nasce | Sol ao meio-dia | Se põe | Horas de luz |
+|---|---|---|---|---|
+| 21/dez (verão) | 05:18, ESE (117°) | 86°, ao norte | 19:08, OSO (243°) | 13,8 h |
+| 21/mar e 23/set | 06:20 / 06:04, leste (90°) | 62°, ao norte | 18:24 / 18:10, oeste (270°) | 12,1 h |
+| 21/jun (inverno) | 07:04, ENE (64°) | 39°, ao norte | 17:28, ONO (296°) | 10,4 h |
+
+- Horário de Brasília (UTC-3, sem horário de verão desde 2019).
+- No hemisfério sul o sol passa **ao norte**. A fachada voltada para o norte recebe sol o ano todo, e a do sul só nas primeiras e últimas horas do verão.
+- A praia mais próxima fica a ~534 m em linha reta, na direção de ~61° (nordeste). O mar está a leste. O nascer do sol acontece sobre o mar, e o pôr do sol atrás do continente, a oeste.
+- **Orientação adotada (dedução, sem a prancha do projeto):** o lado direito da planta dá para a rua, a frente para a mata (noroeste) e a lateral inferior para o mar (nordeste). Então o topo da planta aponta para ~235° (sudoeste), a direita para ~325°, a base para ~55° e a esquerda para ~145°. Sol direto por dia: tipo 01 13,3 h no verão e 9,9 h no inverno; tipos 03 e 05 ~6,8 h (manhã); tipo 02 ~6,9 h (tarde); tipo 04 6,4 h no verão e 1,9 h no inverno; tipo 06 12,6 h no verão e 1,9 h no inverno. Sem sombra de prédios vizinhos. **Confirmar com a Vansin.**
+
+## 2. Distância da praia (a partir do ponto médio da Rua 402)
+
+- Linha reta: **~534 m** (OpenStreetMap, linha de costa).
+- A pé: **1,1 km, ~14,5 min** (~1.500 passos de 0,75 m). Rota pelo roteador a pé do OpenStreetMap.
+- De carro: 1,2 km, ~2 min.
+- O catálogo da Vansin diz "600 metros da praia", compatível com o cálculo.
+
+## 3. Rotas e distâncias (ponto médio da Rua 402)
+
+| Destino | Reta | A pé | De carro |
+|---|---|---|---|
+| Praia Central de Itapema | 1,7 km | 2,2 km (30 min) | 2,7 km (4 min) |
+| Rodoviária de Itapema | 1,3 km | 1,9 km (26 min) | 2,0 km (4 min) |
+| Hospital Municipal Santo Antônio | 2,6 km | 3,2 km (43 min) | 5,5 km (8 min) |
+| Mirante do Encanto | 3,3 km | 4,9 km | 5,9 km (9 min) |
+| Balneário Camboriú (Av. Atlântica) | 12,4 km | n/d | 18,3 km (20 min) |
+| Aeroporto de Navegantes (NVT) | 26,7 km | n/d | 37,8 km (43 min) |
+| Aeroporto de Florianópolis (FLN) | 61,9 km | n/d | 79,8 km (71 min) |
+
+Tempos de carro sem trânsito. Em alta temporada podem dobrar. Não achei no mapa livre o letreiro "Eu Amo Itapema" nem a roda-gigante.
+
+## 4. Comércio e serviços num raio de 3 km (OpenStreetMap)
+
+24 restaurantes, 10 farmácias, 9 supermercados, 6 postos, 6 cafés, 5 padarias, 5 bancos, 5 escolas, 3 clínicas, 1 hospital.
+
+- Supermercados mais perto: Supermercado Sandi (390 m), Supermercado Central (610 m), Comper (1,2 km), Koch (1,3 km).
+- Padarias: Chumbinho (120 m), Padaria Graciela (430 m).
+- Bancos: Sicredi (620 m), Bradesco (950 m).
+- Saúde: Unidade de Saúde Morretes (1,1 km), Hospital Municipal Santo Antônio (2,6 km). As farmácias mais perto ficam a ~1,8 km.
+- Os dados do OpenStreetMap são colaborativos e podem estar incompletos. Conferir no local antes de publicar nomes.
+
+## 5. Mercado e valorização
+
+- Itapema tem o m² residencial mais caro do Brasil: ~R$ 15,3 mil (FipeZAP, jun/2026), alta de ~5,4% em 12 meses. No 1º semestre de 2026 a alta foi de ~3,2%, abaixo da inflação. Em 2025 foi de ~10%. Os números variam entre reportagens: confirmar no relatório oficial do FipeZAP.
+- Os dados do FipeZAP são de preço de anúncio, não de venda fechada, e não separam por bairro.
+- Um guia do Zap cita ~R$ 17,1 mil/m² na Meia Praia e aluguel de ~R$ 51/m²/mês, sem data. Tratar como aproximação.
+- Ranking MySide 2025: Itapema em 1º lugar em valorização de imóveis na planta (~22% ao ano em 2019-2024) e ~17% ao ano em short stay. É um estudo de portal imobiliário. Rentabilidade passada não garante a futura.
+- Obras que investidores citam: alargamento da Meia Praia (R$ 60 milhões, autorizado) e roda-gigante de 60 m em Itapema (R$ 60 milhões, 30 cabines instaladas, inauguração prevista para o fim do 2º semestre de 2026). O efeito sobre preços é expectativa, sem dado consolidado.
+- Não achei yield líquido (após condomínio, IPTU, vacância e plataforma). Isso precisa ser modelado à parte e não deve ser prometido na apresentação.
+
+### 5b. Mercado do Morretes (pesquisa aprofundada, detalhes em `pesquisa/c-mercado-morretes.md`)
+
+- FipeZAP set/2026: Itapema R$ 15.340/m² (+4,49% em 12 meses), no mesmo nível de Balneário Camboriú (R$ 15.295 em jul). São preços pedidos, não fechados.
+- Mediana por bairro, out/2026: **Morretes R$ 12.756/m², Meia Praia R$ 17.176/m², Centro R$ 19.684/m²**. O Felicità, a R$ 13.579/m², fica ~6,5% acima da mediana do Morretes e ~21% abaixo da Meia Praia.
+- Concorrentes no Morretes com preço divulgado: R$ 12,7 a 15,7 mil/m², entregas de 2028 a 2030 (13 casos listados no arquivo c). O Felicità fica no meio da faixa.
+- Aluguel de longo prazo no Morretes: ~R$ 52,9/m²/mês, o que dá cerca de 4,7% ao ano bruto para este apartamento (cálculo meu). Temporada: 50% de ocupação e diária de R$ 577 (Airbtics, cidade toda), contra 21% em outra fonte. **Baixa confiança: não usar rendimento de temporada.**
+- STJ suspendeu em 17/09/2026 os processos sobre Airbnb em condomínio (Tema 1.443): não há proibição nem liberação, depende da convenção do condomínio.
+- CUB/SC out/2026: R$ 3.171,96 (+5,75% em 12 meses). O contrato é corrigido por ele.
+- O MySide lista o Felicità como pré-lançamento, a ~900 m da Meia Praia e com entrega em dez/2029. **Confirmar prazo e distância com a Vansin antes de publicar** (o briefing e meu cálculo dizem ~530 m até a praia mais próxima).
+- Não achei: valorização na planta auditada (só casos de incorporadora), perfil de comprador estrangeiro, preço de Porto Belo e Bombinhas.
+
+## 6. Pontos turísticos de Itapema e da região
+
+Distâncias a partir do ponto médio da Rua 402. **A pé só aparece até 30 min; de bicicleta até ~30 min; de carro sempre.** Tempos de carro sem trânsito (em alta temporada podem dobrar).
+
+**Itapema**
+
+| Ponto | Reta | A pé | Bicicleta | Carro |
+|---|---|---|---|---|
+| Rodoviária de Itapema | 1,3 km | 26 min | 9 min | 4 min (2,0 km) |
+| Meia Praia, calçadão (ponto aproximado) | 1,7 km | 28 min | 9 min | 3 min (2,0 km) |
+| Praia Central / Praça dos Pescadores | 1,7 km | 30 min | 9 min | 4 min (2,7 km) |
+| Hospital Municipal Santo Antônio | 2,6 km | n/d (43 min) | 16 min | 8 min (5,5 km) |
+| Mirante do Encanto | 3,3 km | n/d (65 min) | 21 min | 9 min (5,9 km) |
+| **Píer Oporto + Hard Rock Café** | 4,1 km | n/d (63 min) | 19 min | 9 min (5,2 km) |
+
+- **Píer Oporto + Hard Rock Café Itapema:** na foz do Rio Perequê, na divisa com Porto Belo. É o único Hard Rock sobre o mar, com o restaurante na ponta de um píer de ~300 m e visão de 360°. Passou de 1 milhão de visitantes nos 2 primeiros meses. Não achei o horário atual com fonte confiável.
+- **Roda-gigante It! Wheel (60 m), junto ao píer:** 30 cabines instaladas. Datas conflitantes entre as fontes (abril/2026, 2º semestre de 2026, dezembro de 2026). **Confirmar a data de abertura com o Píer Oporto antes de citar.**
+- Outros pontos de Itapema nas fontes: Mirante do Encanto, Ponte dos Suspiros, Molhe da Praia Central, Molhe do Morretes, Passarela da Praia do Morretes, Parque do Calçadão, Canto da Praia, Parque das Capivaras, Praça dos Pescadores, letreiro "Eu Amo Itapema" (Rua 227, Meia Praia, sem coordenada achada), Igreja Bom Jesus dos Aflitos.
+- Garden Open Mall (shopping aberto na Meia Praia): ver seção 8. Coordenada exata não achada; usei o ponto do calçadão.
+
+**Região (a pé não se aplica; só carro)**
+
+| Ponto | Reta | Carro |
+|---|---|---|
+| Porto Belo (centro/orla) | 8,0 km | 16 min (9,8 km) |
+| Balneário Camboriú, Av. Atlântica | 12,4 km | 20 min (18,3 km) |
+| Parque Unipraias | 12,4 km | 20 min (18,4 km) |
+| Cristo Luz | 14,9 km | 21 min (19,5 km) |
+| FG Big Wheel | 16,2 km | 22 min (20,7 km) |
+| Bombinhas (centro) | 13,1 km | 29 min (17,8 km) |
+| Praia de Quatro Ilhas, Bombinhas | 13,5 km | 30 min (18,6 km) |
+| Beto Carrero World, Penha | 34,7 km | 47 min (52,7 km) |
+
+Atrações citadas nos guias por cidade: Balneário Camboriú (Parque Unipraias, Cristo Luz, FG Big Wheel, Aventura Pirata, Molhe da Barra Sul, Praia do Estaleiro), Porto Belo (Ilha de Porto Belo, passeio de barco, Praia do Estaleiro, Caixa d'Aço), Bombinhas (praias, mergulho, mirantes).
+
+**Aeroportos**
+
+| Aeroporto | Reta | Carro |
+|---|---|---|
+| Navegantes (NVT) | 26,7 km | 43 min (37,8 km) |
+| Florianópolis (FLN) | 61,9 km | 71 min (79,8 km) |
+| Aeródromo Costa Esmeralda (SDEN), Porto Belo | 5,6 km | 9 min (8,3 km) |
+
+- **Costa Esmeralda** é um aeródromo **privado** de condomínio aeronáutico, com pista de 1.195 m e heliportos. Não tem voos comerciais. Em 2025 houve disputa judicial e a Anac proibiu pousos e decolagens a partir de 5/jun/2025. **Não achei o status atual: confirmar antes de citar na apresentação.** Se estiver fechado, a menção "aeroclube de Porto Belo" não deve entrar.
+- Navegantes é o aeroporto comercial mais próximo e está sobrecarregado segundo reportagem de 2025.
+
+## 8. Planos e obras que agregam valor a Itapema
+
+Pesquisa de 02/11/2026. Onde as fontes divergem ou não confirmam, está escrito.
+
+- **Alargamento da Meia Praia (R$ 60 milhões, divididos entre prefeitura e Governo de SC).** 416 mil a 498 mil m³ de areia ao longo de 4,75 km, acrescentando 20 a 60 m de largura. Licença ambiental de instalação entregue em maio/2026. Início previsto para agosto/2026 e ~4 meses de obra, para entregar antes do verão. **Riscos:** o Ministério Público de SC entrou com ação civil pública e questionou os estudos ambientais; a prefeitura diz que o cronograma não mudou. **Não achei confirmação de que a obra começou nem a situação da licitação.** Dizer "em andamento" seria afirmar mais do que as fontes mostram.
+- **Garden Open Mall (shopping aberto na Meia Praia).** Cerca de 50 operações, R$ 80 milhões (uma fonte antiga fala em R$ 100 milhões), 2 salas de cinema, do Grupo J.A. Russi. Inauguração prevista para junho/2026, **sem confirmação de abertura nem de adiamento**.
+- **Píer Oporto + Hard Rock + roda-gigante de 60 m.** Principal novo cartão-postal (ver seção 6).
+- **Avenida beira-mar (parte do projeto da Meia Praia).** Reportagens descrevem o alargamento como a 1ª etapa de uma transformação da orla, com revitalização do balneário e uma nova avenida à beira-mar entre as ruas 165 e 321, ligando a Meia Praia ao Centro. Fonte: matérias do NSC Total e Portas. Prazo e traçado oficial não confirmados.
+- **Mobilidade.** Alça de acesso à BR-101 no km 146 em fase final (obra municipal, "Avança Itapema"). **Dois itens que apareceram em uma busca e NÃO consegui confirmar em outra: financiamento de R$ 250 milhões com 11 frentes e uma "Quarta Avenida". Não usar na apresentação** até haver documento da prefeitura ou da Câmara (o "11" pode ter vindo de outro programa, o PROMOBIS, que trata do túnel Itajaí-Navegantes).
+- **Aeroportos.** Florianópolis passou de 1 milhão de passageiros internacionais em ago/2026 e tem obras de R$ 19 milhões na área internacional. Navegantes tem pacote de investimento da CCR de ~R$ 300 milhões, sem data de conclusão confirmada.
+- **BR-101.** Terceira faixa no trecho norte consta da lista prioritária da ANTT, sem data.
+- **Cinema.** Matéria diz que a cidade volta a ter cinema em 2026, sem rede nem data.
+- **Não achei:** plano diretor atualizado, cronograma consolidado das obras de mobilidade e a execução do financiamento.
+
+## 8b. A cidade, em números (história de venda: do macro ao micro)
+
+- **População:** 75.940 habitantes no Censo 2022 do IBGE, alta de ~66% sobre 2010. Estimativas de imprensa: ~86 mil em 2025. A prefeitura estima que ~70% dos moradores são migrantes (estimativa municipal, não do IBGE).
+- **Renda e economia:** PIB per capita de R$ 50.036 (IBGE, 2023). IDHM 0,796 (2010, alto, acima da média de SC de 0,774). 2º município mais empreendedor de SC (Sebrae/SC).
+- **Turismo:** 3º município que mais recebe turistas em SC (segundo a prefeitura). Alta temporada de dezembro a março. Um dado de imprensa cita ~800 mil visitantes em dez-jan, sem ano.
+- **Segurança:** SC é 1º do país em segurança pública no Ranking de Competitividade dos Estados 2025. **Não achei dado municipal de Itapema** (Atlas da Violência, Anuário de Segurança Pública).
+- **Preço:** m² de Itapema ultrapassou Balneário Camboriú em 2026 (R$ 15.226 contra R$ 15.215 em maio, FipeZAP). Em 12 meses: Itapema +6,35% e BC +2,94% (Forbes). Em 2024, BC liderava com R$ 13.911 contra R$ 13.721. **Não achei a série de 10 anos**; está no painel do FipeZAP.
+- **Hospitalidade e short stay:** projeção de 82% de ocupação hoteleira média (CasaTemporada), mas a base bnbcalc mostra **21% de ocupação para Airbnb** e queda de 18% em 12 meses. Os números conflitam e usam metodologias diferentes. **Não prometer rentabilidade de aluguel** sem um estudo próprio.
+- **A empresa:** a única fonte sobre a Vansin é o anúncio do Joe Residence (Meia Praia, entrega em dez/2026): mais de 10 anos de mercado, mais de 5 projetos concluídos, 11 lançamentos, 200+ clientes. **São números da própria empresa.** Pedir à Vansin o histórico de entregas no prazo para a apresentação.
+- **Faltam:** IDEB, saúde (DATASUS), custo de vida comparado e histórico de entregas da construtora. Todos achados só em fonte oficial ou com a própria Vansin.
+
+## 9. Para a animação estilo "rota"
+
+- **MapLibre GL JS** (livre, sem custo de licença): `flyTo` com controle de velocidade e curva, relevo 3D, camadas de rota. A biblioteca mais adequada para a rota animada entre o prédio, a praia, o mercado e o aeroporto.
+- O Google Maps 3D tem câmera cinematográfica (voar e orbitar), mas é pago em escala.
+- O mapa do prédio em si seria Three.js, como o Bossa. Os dois podem se alternar na mesma página.
+
+## Fontes
+
+- FipeZAP / preço do m²: https://myside.com.br/guia-itapema/valor-metro-quadrado-itapema-sc, https://portas.com.br/dados-inteligencia/preco-imoveis-sobe-primeiro-semestre-2026-abaixo-inflacao/
+- Rentabilidade e short stay: https://myside.com.br/guia-itapema/investir-em-itapema, https://www.nsctotal.com.br/noticias/regiao-de-itapema-atrai-interesse-para-investidores-imobiliarios-do-brasil
+- Alargamento da Meia Praia: https://portas.com.br/noticias/em-itapema-alargamento-de-praia-deve-valorizar-imoveis-em-30/
+- Roda-gigante: https://www.nsctotal.com.br/?p=7949625
+- Pontos turísticos: https://myside.com.br/guia-itapema/o-que-fazer-meia-praia-sc, https://www.viagensecaminhos.com/itapema-sc/
+- Referência de nascer e pôr do sol: https://www.climatempo.com.br/previsao-do-tempo/litoral/860/itapema-sc
+- MapLibre flyTo: https://maplibre.org/maplibre-gl-js/docs/examples/flyto/
+- Geocodificação, rotas, comércio e linha de costa: OpenStreetMap (Nominatim, Overpass, roteador openstreetmap.de).

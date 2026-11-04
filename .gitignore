@@ -55,3 +55,12 @@ mobile/android/.gradle/
 
 # auditoria de design system (saídas locais)
 .ds-audit/
+
+# banco local do painel (contas, links, leads) e arquivos de teste
+dados/
+
+# ---- material bruto de cliente e pacotes (grandes; ficam só no disco) ----
+Planta-Interativa.zip
+Planta-Interativa/Montemerano/
+Planta-Interativa/Planta Interativa/tour/public/film/old/
+.ds-audit/

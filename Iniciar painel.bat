@@ -1,8 +1,7 @@
 @echo off
-rem Abre o painel Seu Cliente Fiel (porta 8080, so neste computador) com a busca do Google Maps ligada.
-rem Antes, gera o site de marketing em dist\ (http://localhost:8080/).
+rem Abre o painel Link Corretor (porta 8090, so neste computador).
+rem Painel: http://localhost:8090/painel/   (a IA usa o Claude Code ja instalado, sem chave de API)
 cd /d "%~dp0"
-node tools\build-site.mjs
-start "" http://localhost:8080/app/
-python tools\dev-server.py 8080
+start "" http://localhost:8090/painel/
+python tools\link-server.py 8090
 pause

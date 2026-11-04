@@ -1,0 +1,80 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          # Served from https://muhsin48ahmed.github.io/real-estate-virtual-tour/
+          PAGES_BASE: /real-estate-virtual-tour/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  e2e:
+    # Headless Chrome gets no GPU on hosted runners, so WebGL runs on SwiftShader (CPU) and the app drops to
+    # its "minimal" rendering tier. The Apple Silicon macOS runners get through the suite reliably.
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - name: Show the WebGL renderer in use
+        run: |
+          node --input-type=module -e '
+            import { chromium } from "@playwright/test"
+            const browser = await chromium.launch()
+            const page = await browser.newPage()
+            console.log(await page.evaluate(() => {
+              const gl = document.createElement("canvas").getContext("webgl2")
+              const info = gl && gl.getExtension("WEBGL_debug_renderer_info")
+              return info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "no WebGL"
+            }))
+            await browser.close()
+          '
+      # Builds and serves the site itself (see playwright.config.ts), then runs the film and tour flows on desktop and mobile.
+      - run: npx playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+  deploy:
+    needs: [build, e2e]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

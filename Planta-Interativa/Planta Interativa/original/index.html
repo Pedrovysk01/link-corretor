@@ -1,0 +1,1143 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta charset="utf-8">
+<title>Mapa de Vendas Bossa</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: render aéreo em tela cheia (no celular em pé, girado com o mar no topo); controles no topo (desktop) ou barra inferior (celular); ficha lateral ou em tela cheia */
+:root{
+  --ink:#16302e; --ink-soft:#4d6460; --linen:#f3efe6; --linen-2:#e7e1d3; --line:rgba(22,48,46,.14);
+  --brass:#c9944a; --brass-deep:#a87a3c; --brass-soft:rgba(168,122,60,.14); --sold:#8f8a80; --reserved:#5c7f9a;
+  --night:#0b1412; --paper:#f3efe6;
+  --display:"Instrument Serif","Cormorant Garamond",Georgia,serif;
+  --body:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --dock:0px;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font-family:var(--body)}
+button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* ---------- mapa ---------- */
+#view{position:fixed;inset:0;overflow:hidden;cursor:grab;touch-action:none;background:#26331f}
+#view.drag{cursor:grabbing}
+#world{position:absolute;left:0;top:0;width:1685px;height:948px;transform-origin:0 0}
+#hi{position:absolute;left:0;top:0;width:1685px;height:948px;pointer-events:none;transition:filter .8s ease}
+#hi img{position:absolute;display:block;max-width:none;opacity:0;transition:opacity .4s}
+#hi img.on{opacity:1}
+#world>img{display:block;width:1685px;height:948px;max-width:none;user-select:none;-webkit-user-drag:none}
+#world svg{position:absolute;inset:0;width:1685px;height:948px;overflow:visible}
+.h{cursor:pointer}
+.h .hit{fill:transparent}
+.h:focus{outline:none}.h:focus-visible .shape{stroke:#fff;stroke-width:2.6}
+.h .shape{fill:transparent;stroke:transparent;stroke-width:1.6;vector-effect:non-scaling-stroke;transition:fill .2s,stroke .2s}
+.h:hover .shape{stroke:rgba(255,255,255,.95);fill:rgba(255,255,255,.12)}
+.h.av .shape{stroke:var(--brass);stroke-width:2.4;fill:rgba(226,173,98,.22);animation:pulse 2.4s ease-in-out infinite}
+.h.av:hover .shape,.h.sel .shape{fill:rgba(226,173,98,.42);stroke:#f0c27f;stroke-width:3;animation:none}
+.h.club .shape{stroke:transparent;fill:transparent}
+.h.club:hover .shape,.h.club.sel .shape{stroke:#fff;stroke-width:2.6;stroke-dasharray:none;fill:rgba(243,239,230,.24)}
+.pin.club{background:var(--paper);color:var(--ink);border-color:rgba(0,0,0,.12);font-family:var(--display);font-size:13px;letter-spacing:.01em}
+.pin.club::before{background:var(--ink);box-shadow:0 0 0 3px rgba(23,38,30,.18)}
+.pin.club::after{background:var(--paper)}
+.pin.club[data-active="true"]{background:var(--ink);color:var(--paper)}
+.pin.club[data-active="true"]::before{background:var(--brass)}
+.kquote{font-family:var(--display);font-size:19px;line-height:1.35;margin:14px 0 4px;color:var(--ink)}
+.kquote+small{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.klist{margin:16px 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:9px 16px;list-style:none}
+.klist li{font-size:12.5px;line-height:1.35;padding-left:14px;position:relative}
+.klist li::before{content:"";position:absolute;left:0;top:.5em;width:6px;height:1px;background:var(--brass)}
+.ksec{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.ksec>span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.kdist{display:grid;gap:2px;margin-top:8px}
+.kdist button{display:flex;justify-content:space-between;gap:10px;font:500 12.5px var(--body);color:var(--ink);background:none;border:0;border-bottom:1px dashed var(--line);padding:8px 0;cursor:pointer;text-align:left}
+.kdist button:hover b{color:var(--brass-deep)}
+.kdist b{font-family:var(--mono);font-weight:500}
+.kdist small{font-size:11px;color:var(--ink-soft);margin-top:6px;display:block}
+.flora{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.flora i{font-style:normal;font-size:12px;padding:5px 10px;border-radius:999px;background:rgba(79,99,64,.10);color:var(--ink)}
+.achips{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:8px}
+.achips button{display:grid;gap:5px;padding:0;border:0;background:none;cursor:pointer;text-align:left;font:500 12px var(--body);color:var(--ink)}
+.achips img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:3px;display:block}
+.achips button:hover span{color:var(--brass-deep)}
+.sign{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:16px;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;cursor:pointer;text-align:left;font:400 12px/1.45 var(--body);color:var(--ink-soft)}
+.sign b{font-weight:500;color:var(--ink)}.sign i{font-style:normal;font-size:16px;color:var(--ink)}
+.authlink{display:inline-flex;gap:6px;align-items:center;margin-top:8px;padding:0;border:0;background:none;cursor:pointer;font:500 11px var(--body);letter-spacing:.06em;color:var(--brass-deep);text-transform:uppercase}
+.authlink span{font-size:13px}
+.auth{position:fixed;inset:0;z-index:40;background:rgba(10,18,15,.55);display:grid;place-items:center;padding:16px;opacity:0;transition:opacity .25s}
+.auth.on{opacity:1}
+.auth .box{box-sizing:border-box;position:relative;background:var(--paper);color:var(--ink);max-width:560px;width:100%;max-height:calc(100vh - 32px);overflow:auto;border-radius:6px;padding:32px 32px 26px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.auth .x{position:absolute;right:14px;top:14px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;font-size:20px;cursor:pointer;color:var(--ink)}
+.auth h2{font-family:var(--display);font-weight:400;font-size:34px;margin:6px 0 8px;line-height:1.05}
+.auth .lead{font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 6px}
+.auth article{border-top:1px solid var(--line);padding:16px 0 4px;margin-top:12px}
+.auth article small{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.auth h3{font-family:var(--display);font-weight:400;font-size:24px;margin:4px 0 6px}
+.auth .ig{display:inline-block;margin:0 0 8px;font:500 12px var(--body);letter-spacing:.02em;color:var(--brass-deep);text-decoration:none;border-bottom:1px solid rgba(160,110,50,.35)}
+.auth .ig:hover{border-bottom-color:currentColor}
+.auth article p{font-size:13.5px;line-height:1.55;margin:0}
+.auth .src{font-size:11px;color:var(--ink-soft);margin:18px 0 0}
+@media (max-width:720px){.auth{align-items:end;padding:0}.auth .box{border-radius:14px 14px 0 0;padding:26px 20px calc(env(safe-area-inset-bottom,0px) + 22px);max-height:88vh}.auth h2{font-size:28px}.authlink{display:none}}
+.kolink{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:12px;padding:11px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;font:500 12.5px var(--body);color:var(--ink);cursor:pointer;text-align:left}
+.kolink:hover{border-color:var(--ink)}
+.kolink b{font-family:var(--mono);font-weight:500}
+.h.re .shape{stroke:#9dc1dc;stroke-width:2;fill:rgba(92,127,154,.25)}
+.h.sel:not(.av) .shape{stroke:#fff;stroke-width:2.6;fill:rgba(255,255,255,.18)}
+@keyframes pulse{50%{fill:rgba(226,173,98,.06)}}
+#veil{pointer-events:none;transition:opacity .35s}
+
+.pin{position:fixed;left:0;top:0;z-index:3;cursor:pointer;white-space:nowrap;font:500 11.5px/1 var(--body);color:var(--paper);background:var(--ink);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px 6px 8px;display:flex;gap:6px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.pin::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brass);box-shadow:0 0 0 3px rgba(201,148,74,.35)}
+.pin::after{content:"";position:absolute;left:50%;bottom:calc(-6px - var(--lift,0px));width:1px;height:calc(6px + var(--lift,0px));background:var(--ink)}
+.pin[data-active="true"]{background:var(--brass-deep)}
+.pin[data-active="true"]::before{background:var(--paper)}
+.tip{position:fixed;z-index:3;pointer-events:none;transform:translate(12px,12px);background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:6px 9px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+
+/* ---------- topo ---------- */
+.bar{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 14px);display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between;pointer-events:none;z-index:5}
+.bar>*{pointer-events:auto}
+.brand{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:12px 16px;display:grid;gap:4px;min-width:0;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.eyebrow{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+.brand h1{margin:0;font-family:var(--display);font-weight:400;font-size:26px;line-height:1.05;text-wrap:balance}
+.brand h1 i{color:var(--brass-deep)}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--ink-soft)}
+.stats b{font-family:var(--mono);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+.controls{display:flex;flex-wrap:wrap;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.2);max-width:100%}
+.seg{display:flex;flex-wrap:wrap;border-right:1px solid var(--line);padding-right:6px;gap:2px}
+.seg:last-child{border-right:0;padding-right:0}
+.chip{font:500 12px/1 var(--body);letter-spacing:.02em;color:var(--ink);background:transparent;border:0;border-radius:3px;padding:8px 10px;cursor:pointer;white-space:nowrap}
+.chip:hover{background:var(--linen-2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+.zoom{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:4;display:grid;background:var(--paper);border:1px solid var(--line);border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.zoom button{width:38px;height:38px;border:0;background:transparent;font:500 18px var(--body);color:var(--ink);cursor:pointer}
+.zoom button+button{border-top:1px solid var(--line)}
+.legend{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:4;display:grid;gap:8px;background:rgba(243,239,230,.93);border:1px solid var(--line);border-radius:4px;padding:10px 14px;font-size:12px;max-width:min(380px,calc(100% - 90px))}
+.legend .row{display:flex;gap:14px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend small{color:var(--ink-soft);line-height:1.4}
+
+/* ---------- celular: dock + carrossel ---------- */
+.dock{display:none}
+.carousel{display:none}
+
+/* ---------- ficha ---------- */
+.card{position:fixed;z-index:8;right:16px;top:calc(env(safe-area-inset-top,0px) + 112px);width:min(370px,calc(100% - 32px));max-height:calc(100% - 140px);overflow:auto;overscroll-behavior:contain;background:var(--paper);border:1px solid var(--line);border-radius:4px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.card .film{position:relative;aspect-ratio:16/9;background:#1b2a22;overflow:hidden}
+.card .film video{width:100%;height:100%;object-fit:cover;display:block}
+.card .film span{position:absolute;left:14px;bottom:10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.card .close{position:absolute;top:10px;right:10px;z-index:2;background:rgba(243,239,230,.92);border:0;border-radius:50%;width:34px;height:34px;font-size:18px;line-height:1;color:var(--ink);cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.card .in{padding:16px 20px 18px}
+.card h2{margin:4px 0 2px;font-family:var(--display);font-weight:400;font-size:40px;line-height:1}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;margin-top:10px}
+.st.av{background:var(--brass-soft);color:var(--brass-deep)}
+.st.so{background:rgba(143,138,128,.18);color:#6d685f}
+.st.re{background:rgba(92,127,154,.16);color:var(--reserved)}
+.specs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 4px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.specs div{display:grid;gap:3px;min-width:0}
+.specs dt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.specs dd{margin:0;font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums}
+.feat{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:10px 0 0}
+.price{margin-top:12px}
+.price .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.price .val{font-family:var(--display);font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
+.price .m2{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+.flow{margin:12px 0 0;display:grid}
+.flow div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.flow span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{font-size:11px;color:var(--ink-soft);line-height:1.45;margin:10px 0 0}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.nav button{font:500 12px var(--body);padding:11px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:3px;cursor:pointer}
+.nav button:hover{background:var(--linen-2)}
+.soldmsg{margin-top:14px;font-size:13px;line-height:1.5;color:var(--ink-soft)}
+
+/* ---------- voo em tela cheia ---------- */
+.cine{position:fixed;inset:0;z-index:20;background:#000;opacity:0;transition:opacity .45s}
+.cine.on{opacity:1}
+.cine video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cine .cap{position:absolute;left:max(16px,4vw);bottom:calc(env(safe-area-inset-bottom,0px) + max(28px,7vh));color:var(--paper);display:grid;gap:6px;max-width:min(560px,calc(100% - 32px));text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.cine .cap small{font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.85}
+.cine .cap b{font-family:var(--display);font-weight:400;font-size:clamp(36px,6vw,64px);line-height:1}
+.cine .cap p{margin:0;font-size:14px;line-height:1.5;opacity:.92}
+.cine .skip{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);font:500 12px var(--body);color:var(--ink);background:var(--paper);border:0;border-radius:999px;padding:11px 16px;cursor:pointer}
+.prog{position:absolute;left:0;top:env(safe-area-inset-top,0px);height:2px;background:var(--brass);width:0}
+
+/* ---------- experiências ---------- */
+.exp{position:fixed;inset:0;z-index:15;background:var(--night);overflow:auto;overscroll-behavior:contain;color:var(--paper)}
+.exp-in{max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:calc(env(safe-area-inset-top,0px) + 28px) calc(env(safe-area-inset-bottom,0px) + 40px);display:grid;gap:22px}
+.exp-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.exp-head h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,56px);line-height:1}
+.exp-head h2 i{color:var(--brass)}
+.exp-head p{margin:8px 0 0;max-width:52ch;font-size:14px;line-height:1.5;color:rgba(243,239,230,.75)}
+.exp-head button{font:500 12px var(--body);background:var(--paper);color:var(--ink);border:0;border-radius:999px;padding:11px 16px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.tile{position:relative;border:0;padding:0;margin:0;border-radius:4px;overflow:hidden;background:#1b2a22;cursor:pointer;color:var(--paper);text-align:left;aspect-ratio:16/10;grid-column:span 2}
+.tile:nth-child(1),.tile:nth-child(2),.tile:nth-child(6),.tile:nth-child(7){grid-column:span 3}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.tile:hover video{transform:scale(1.05)}
+.tile .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.7));display:flex;flex-direction:column;justify-content:flex-end;padding:16px 18px;gap:4px}
+.tile .n{font-family:var(--mono);font-size:11px;letter-spacing:.1em;opacity:.8}
+.tile b{font-family:var(--display);font-weight:400;font-size:clamp(24px,2.6vw,32px);line-height:1.05}
+.tile span{font-size:12.5px;opacity:.88;line-height:1.4;max-width:42ch}
+.tile .play{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(243,239,230,.18);backdrop-filter:blur(6px);display:grid;place-items:center;font-size:13px;border:1px solid rgba(243,239,230,.4)}
+
+.lb{position:fixed;inset:0;z-index:25;background:#050908;display:grid;grid-template-rows:auto 1fr auto;opacity:0;transition:opacity .35s;color:var(--paper)}
+.lb.on{opacity:1}
+.lb .top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 10px}
+.lb .top small{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+.lb .x{width:40px;height:40px;border-radius:50%;border:0;background:var(--paper);color:var(--ink);font-size:20px;cursor:pointer}
+.lb .stage{position:relative;display:grid;place-items:center;min-height:0;padding-inline:16px}
+.lb .frame{position:relative;width:min(100%,calc((100vh - 220px)*16/9));aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#000;transform-origin:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.lb video{width:100%;height:100%;object-fit:cover;display:block}
+.lb .prog{top:auto;bottom:0}
+.lb .arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid rgba(243,239,230,.35);background:rgba(243,239,230,.1);color:var(--paper);font-size:20px;cursor:pointer;backdrop-filter:blur(6px)}
+.lb .arrow.l{left:max(8px,2vw)} .lb .arrow.r{right:max(8px,2vw)}
+.lb .info{padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 22px);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;max-width:1240px;margin:0 auto;width:100%}
+.lb .info>div:first-child{flex:1 1 280px;min-width:0}
+.lb .info b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(30px,4vw,46px);line-height:1}
+.lb .info p{margin:6px 0 0;font-size:14px;line-height:1.5;opacity:.82;max-width:60ch}
+.lb .dots{display:flex;gap:6px}
+.lb .dots button{width:8px;height:8px;border-radius:50%;border:0;padding:0;background:rgba(243,239,230,.3);cursor:pointer}
+.lb .dots button[aria-current="true"]{background:var(--brass);width:22px;border-radius:4px}
+
+/* ---------- luz e sol ---------- */
+#img{transition:filter .8s ease}
+#shadows{transition:opacity .6s}
+#nightLights{transition:opacity .8s}
+.sun{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:center;padding-top:8px;border-top:1px solid var(--line)}
+.sun svg{width:76px;height:76px;display:block}
+.sun b{display:block;font-family:var(--display);font-weight:400;font-size:20px;line-height:1.1}
+.sun span{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.4;margin-top:2px}
+.sunchip{display:none}
+.sunline{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin:12px 0 0;padding:10px 12px;background:rgba(201,148,74,.10);border-radius:4px;font-size:12.5px;line-height:1.45}
+.sunline i{font-style:normal;font-size:16px;line-height:1.2}
+
+[hidden]{display:none!important}
+#v3d{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 38%,var(--s0,#f6f2ea) 0%,var(--s1,#e9e2d4) 55%,var(--s2,#d6ccb9) 100%);transition:background 1s}
+#v3d[data-l="manha"]{--s0:#f4f3ee;--s1:#e3e6e2;--s2:#c9cfcb}
+#v3d[data-l="tarde"]{--s0:#f7efe2;--s1:#ecdfc9;--s2:#d9c6a6}
+#v3d[data-l="por"]{--s0:#f6dfc6;--s1:#e8bf98;--s2:#b98a6a}
+#v3d[data-l="noite"]{--s0:#1c2a38;--s1:#101b26;--s2:#070d14}
+#v3d canvas{display:block;width:100%;height:100%;touch-action:none;transition:filter .8s ease;cursor:grab}
+#v3msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--paper);color:var(--ink);border-radius:999px;padding:12px 18px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;max-width:calc(100% - 32px)}
+.chip.c3d{font-weight:600}
+.chip.c3d[aria-pressed="false"]{color:var(--brass-deep)}
+.is3d .zoom{display:none}
+/* ---------- avisos ---------- */
+.ilus{position:absolute;left:10px;bottom:9px;z-index:2;pointer-events:none;font:500 9.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.pv .canvas .ilus{left:16px;bottom:12px}
+@media (max-width:1500px) and (min-width:721px){body.cardopen .legend{opacity:0;pointer-events:none}}
+.legend{transition:opacity .25s}
+.legal{margin-top:8px;font-size:10.5px;line-height:1.5;color:var(--ink-soft)}
+/* ---------- galeria da ficha ---------- */
+.card .film{position:relative;aspect-ratio:16/9;background:#1b2a22;overflow:hidden}
+.slides{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.slides::-webkit-scrollbar{display:none}
+.slides>*{flex:none;width:100%;height:100%;scroll-snap-align:start;object-fit:cover;display:block;border:0;padding:0;background:#1b2a22}
+.slides button{cursor:zoom-in}
+.slides img{width:100%;height:100%;object-fit:cover;display:block}
+.cnav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:0;background:rgba(243,239,230,.88);color:var(--ink);font-size:18px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.cnav.p{left:10px}.cnav.n{right:10px}
+.ccount{position:absolute;right:12px;bottom:10px;font:500 11px var(--mono);color:var(--paper);background:rgba(0,0,0,.45);border-radius:999px;padding:4px 8px}
+.cstrip{display:flex;gap:6px;overflow-x:auto;padding:8px 20px 0;scrollbar-width:none}
+.cstrip::-webkit-scrollbar{display:none}
+.cstrip button{flex:none;width:58px;height:36px;border-radius:3px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:#ddd;opacity:.7}
+.cstrip button[aria-current="true"]{border-color:var(--brass);opacity:1}
+.cstrip img{width:100%;height:100%;object-fit:cover;display:block}
+.cstrip .v{display:grid;place-items:center;font-size:12px;color:var(--paper);background:var(--ink)}
+/* ---------- plantas ---------- */
+.plans{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.plans .ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.plans .ph span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.ptabs{display:flex;gap:4px;margin:10px 0 8px;flex-wrap:wrap}
+.ptabs button{font:500 12px var(--body);border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:7px 12px;cursor:pointer}
+.ptabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pthumb{display:block;width:100%;border:1px solid var(--line);border-radius:4px;background:#e9e7df;padding:0;cursor:zoom-in;position:relative;overflow:hidden}
+.pthumb img{display:block;width:100%;height:auto}
+.pthumb i{position:absolute;right:8px;bottom:8px;font-style:normal;font:500 11px var(--body);background:var(--ink);color:var(--paper);border-radius:999px;padding:5px 9px}
+.parea{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.6}
+.parea b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+/* ---------- visualizador de imagem ---------- */
+.pv{position:fixed;inset:0;z-index:30;background:#0d1412;display:grid;grid-template-rows:auto 1fr auto;color:var(--paper)}
+.pv .top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 10px}
+.pv .top b{font-family:var(--display);font-weight:400;font-size:24px}
+.pv .top small{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.pv .x{width:40px;height:40px;border-radius:50%;border:0;background:var(--paper);color:var(--ink);font-size:20px;cursor:pointer}
+.pv .canvas{overflow:hidden;position:relative;touch-action:none;cursor:grab}
+.pv .canvas img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none}
+.pv .bot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.pv .bot .ptabs{margin:0;max-width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+.pv .bot .ptabs button{flex:none;color:var(--paper);border-color:rgba(243,239,230,.3)}
+.pv .bot .ptabs button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
+.pv .zb{display:flex;gap:6px}
+.pva{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:48px;height:48px;border-radius:50%;border:1px solid rgba(243,239,230,.35);background:rgba(13,20,18,.55);color:var(--paper);font-size:24px;cursor:pointer;backdrop-filter:blur(6px)}
+.pva.l{left:12px}.pva.r{right:12px}
+.pvn{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:2;font:500 11px var(--mono);background:rgba(0,0,0,.5);color:var(--paper);border-radius:999px;padding:4px 9px}
+.pv .zb button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(243,239,230,.3);background:transparent;font-size:18px;cursor:pointer;color:var(--paper)}
+/* ---------- experiências: fotos ---------- */
+.lb .frame img{width:100%;height:100%;object-fit:cover;display:block}
+.lb .frame img.board{object-fit:contain;background:#fff}
+.lb .frame img.board.kb{animation:none}
+.lb .frame img.kb{animation:kb 6.5s ease-out both}
+@keyframes kb{from{transform:scale(1.0)}to{transform:scale(1.08)}}
+.lb .thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.lb .thumbs::-webkit-scrollbar{display:none}
+.lb .thumbs button{flex:none;width:64px;height:40px;border-radius:3px;border:2px solid transparent;padding:0;overflow:hidden;opacity:.55;cursor:pointer;background:#222}
+.lb .thumbs button[aria-current="true"]{border-color:var(--brass);opacity:1}
+.lb .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.tile img.still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kb 9s ease-in-out infinite alternate}
+.lb .meta{display:grid;gap:10px;justify-items:end;min-width:0;max-width:100%}
+@media (prefers-reduced-motion:reduce){.lb .frame img.kb,.tile img.still{animation:none}}
+
+/* ---------- celular ---------- */
+@media (max-width:720px){
+  :root{--dock:132px}
+  .bar{left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px)}
+  .brand{padding:9px 12px;gap:2px;flex:1}
+  .brand .eyebrow{font-size:9.5px}
+  .brand h1{font-size:21px}
+  .stats{margin-top:2px;gap:10px;font-size:11px}
+  .stats .vgv{display:none}
+  .controls,.legend,.zoom{display:none}
+  .sunchip{display:flex;position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:5;align-items:center;gap:8px;background:rgba(243,239,230,.95);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 4px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:11.5px;color:var(--ink)}
+  .sunchip svg{width:38px;height:38px}
+  .sunchip b{font-weight:600}
+  .dock{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:6;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);background:rgba(243,239,230,.97);border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(0,0,0,.2)}
+  .dock::-webkit-scrollbar{display:none}
+  .dock .chip{padding:10px 13px;font-size:13px;border:1px solid var(--line);border-radius:999px;flex:none}
+  .dock .sep{flex:none;width:1px;background:var(--line);margin:4px 2px}
+  .carousel{display:flex;position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);z-index:5;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 12px 10px;scrollbar-width:none}
+  .carousel::-webkit-scrollbar{display:none}
+  .uc{flex:none;scroll-snap-align:start;width:min(260px,72vw);display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px;text-align:left;color:var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer}
+  .uc img{width:64px;height:48px;object-fit:cover;border-radius:3px;display:block}
+  .uc b{display:block;font-family:var(--display);font-weight:400;font-size:20px;line-height:1}
+  .uc span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+  .uc[data-active="true"]{border-color:var(--brass-deep);box-shadow:0 0 0 2px var(--brass) inset,0 8px 24px rgba(0,0,0,.28)}
+  .pin{font-size:11px;padding:5px 8px 5px 7px}
+  .card{left:0;right:0;top:auto;bottom:0;width:auto;max-height:calc(100% - env(safe-area-inset-top,0px) - 96px);border-radius:14px 14px 0 0;border:0;transform:translateY(0);transition:transform .35s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .card.enter{transform:translateY(100%)}
+  .card .grab{position:absolute;top:8px;left:50%;width:40px;height:4px;border-radius:2px;background:rgba(243,239,230,.8);transform:translateX(-50%);z-index:2}
+  .card h2{font-size:36px}
+  .cine.port video{object-fit:contain}
+  .cine.port .cap{bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
+  .grid{grid-template-columns:1fr;gap:10px}
+  .tile,.tile:nth-child(1),.tile:nth-child(2),.tile:nth-child(6),.tile:nth-child(7){grid-column:auto}
+  .lb .frame{width:100%;aspect-ratio:4/5;max-height:calc(100vh - 230px)}
+  .lb .stage{padding-inline:12px}
+  .lb .arrow{display:none}
+  .lb .meta{justify-items:start;width:100%}
+  .cnav{display:none}
+}
+@media (prefers-reduced-motion:reduce){.h.av .shape{animation:none}.tile video{transition:none}.card{transition:none}}
+</style>
+
+<div id="view">
+  <div id="world">
+    <img id="img" alt="Vista aérea do Bossa Eco Luxury Villas, Praia do Toque" src="media/render.jpg"><div id="hi" aria-hidden="true"></div>
+    <svg id="svg" viewBox="0 0 1685 948" aria-label="Casas do condomínio">
+      <defs><mask id="m"><rect x="-2000" y="-2000" width="6000" height="5000" fill="#fff"/><g id="holes"></g></mask></defs>
+      <rect id="veil" x="-2000" y="-2000" width="6000" height="5000" fill="#0c1513" opacity="0" mask="url(#m)"/>
+      <defs><filter id="sblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+        <radialGradient id="glowW"><stop offset="0" stop-color="#ffd59a" stop-opacity=".95"/><stop offset=".45" stop-color="#ffb35c" stop-opacity=".45"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+        <radialGradient id="glowA"><stop offset="0" stop-color="#fff1cf" stop-opacity="1"/><stop offset=".4" stop-color="#ffc372" stop-opacity=".7"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+        <linearGradient id="sunGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1685" y2="0"><stop offset="0" stop-color="#ffb060" stop-opacity="0"/><stop offset="1" stop-color="#ffb060" stop-opacity=".0"/></linearGradient></defs>
+      <rect id="sunTint" x="0" y="0" width="1685" height="948" fill="url(#sunGrad)" style="mix-blend-mode:soft-light;pointer-events:none"/>
+      <g id="shadows" filter="url(#sblur)" style="pointer-events:none"></g>
+      <g id="nightLights" style="mix-blend-mode:screen;pointer-events:none" opacity="0"></g>
+      <g id="hs"></g>
+    </svg>
+  </div>
+</div>
+
+<div class="auth" id="auth" hidden role="dialog" aria-modal="true" aria-label="Quem assina o Bossa"><div class="box">
+  <button class="x" aria-label="Fechar">×</button>
+  <div class="eyebrow">Assinatura</div><h2>Quem assina o Bossa</h2>
+  <p class="lead">Arquitetura, paisagismo e cultura local reunidos pela Taipa Inc na Rota Ecológica dos Milagres.</p>
+  <article><small>Arquitetura e urbanismo</small><h3>Padovani Arquitetos</h3><a class="ig" href="https://www.instagram.com/padovaniarquitetos/" target="_blank" rel="noopener">@padovaniarquitetos ↗</a>
+    <p>Fundado por Lucas Padovani, o escritório é reconhecido por residências premiadas que combinam design contemporâneo e integração com a natureza. Em 2024, somou mais de 20 prêmios, entre eles o iF Design Award, o International Property Awards e o Architecture Masterprize.</p></article>
+  <article><small>Arquitetura e urbanismo</small><h3>Agra Lemos Arquitetos</h3><a class="ig" href="https://www.instagram.com/agralemosarquitetos/" target="_blank" rel="noopener">@agralemosarquitetos ↗</a>
+    <p>Daniel Lemos e Waleska Agra unem funcionalidade, estética e cultura regional. Na Rota Ecológica dos Milagres, assinam algumas das pousadas de luxo mais conhecidas da região, como ZAI e Haya, além do hotel Mahré, eleito um dos cinco melhores do Brasil pela Exame Casual em 2024, e do Serena, condomínio da Taipa Inc.</p></article>
+  <article><small>Paisagismo</small><h3>Luiz Carlos Orsini</h3><a class="ig" href="https://www.instagram.com/luizcarlosorsini/" target="_blank" rel="noopener">@luizcarlosorsini ↗</a>
+    <p>Responsável pelo paisagismo de 25 hectares do Instituto Inhotim, onde criou os lagos que inspiraram o projeto do Bossa. Premiado no Brasil e no exterior, é referência em integrar natureza e arquitetura.</p></article>
+  <p class="src">Fonte: Book Bossa Eco Luxury Villas · Taipa Inc</p>
+</div></div>
+<div id="v3d" hidden><div id="v3msg" hidden></div></div>
+<header class="bar">
+  <div class="brand">
+    <div class="eyebrow">Taipa Inc · Praia do Toque</div>
+    <h1>Bossa <i>Eco Luxury</i> Villas</h1>
+    <div class="stats" id="stats"></div>
+    <button class="authlink" id="authlink">Padovani · Agra Lemos · Orsini <span>›</span></button>
+  </div>
+  <nav class="controls" aria-label="Controles do mapa">
+    <div class="seg" role="group" aria-label="Enquadramentos" data-views></div>
+    <div class="seg" role="group" aria-label="Conteúdo">
+      <button class="chip c3d" data-act="3d" aria-pressed="false">Relevo 3D</button>
+      <button class="chip" data-act="film">▶ Filme</button>
+      <button class="chip" data-act="exp">Experiências</button>
+    </div>
+    <div class="seg" role="group" aria-label="Luz do dia" data-lights></div>
+    <div class="seg" role="group" aria-label="Filtros">
+      <button class="chip" data-act="only" aria-pressed="false">Só disponíveis</button>
+    </div>
+  </nav>
+</header>
+
+<div class="carousel" id="carousel" aria-label="Casas disponíveis"></div>
+<nav class="dock" aria-label="Controles do mapa">
+  <span data-views style="display:contents"></span>
+  <span class="sep"></span>
+  <button class="chip c3d" data-act="3d" aria-pressed="false">Relevo 3D</button>
+  <button class="chip" data-act="film">▶ Filme</button>
+  <button class="chip" data-act="exp">Experiências</button>
+  <button class="chip" data-act="only" aria-pressed="false">Só disponíveis</button>
+  <span class="sep"></span>
+  <span data-lights style="display:contents"></span>
+</nav>
+<div class="sunchip" id="sunchip" aria-live="polite"></div>
+
+<div class="zoom"><button id="zin" aria-label="Aproximar">+</button><button id="zout" aria-label="Afastar">−</button></div>
+<aside class="legend">
+  <div class="row">
+    <span><i class="dot" style="background:var(--brass)"></i>Disponível</span>
+    <span data-res><i class="dot" style="background:var(--reserved)"></i>Reservada</span>
+    <span><i class="dot" style="background:var(--sold)"></i>Vendida</span>
+  </div>
+  <div class="sun" id="sunbox" aria-live="polite"></div>
+  <small>Toque em uma casa para ver a ficha. Arraste e use a pinça ou a roda do mouse para aproximar. No Relevo 3D, arraste para girar e inclinar. Imagens, vídeos, plantas e o relevo 3D são meramente ilustrativos; luz, noite e sombras são simulações. Preços da tabela vigente em 07/10/2026, sujeitos a alteração sem aviso prévio. Incorporação registrada sob o R-4 da Matrícula nº 5.401 do Registro de Imóveis de Porto de Pedras/AL, em 18/07/2025. Incorporadora: Taipa Incorporações Bossa SPE Ltda., CNPJ 58.131.029/0001-92.</small>
+</aside>
+<div class="tip" id="tip" hidden></div>
+<div id="pins"></div>
+<aside class="card" id="card" hidden aria-live="polite"></aside>
+
+<div class="cine" id="cine" hidden><video id="cv" muted playsinline preload="auto"></video><div class="prog" id="cbar"></div>
+  <div class="cap"><small id="ck"></small><b id="ct"></b><p id="cp"></p></div><button class="skip" id="cskip">Ir para o mapa ›</button></div>
+
+<section class="exp" id="exp" hidden aria-label="Experiências do condomínio"><div class="exp-in">
+  <div class="exp-head"><div><div class="eyebrow" style="color:rgba(243,239,230,.6)">Bossa Eco Luxury Villas</div><h2>A vida no <i>Bossa</i></h2>
+    <p>Oito ambientes pensados para o tempo livre de quem vive aqui. Toque em qualquer um para assistir.</p></div>
+    <button id="expClose">Voltar ao mapa</button></div>
+  <div class="grid" id="grid"></div></div></section>
+
+<div class="pv" id="pv" hidden role="dialog" aria-modal="true" aria-label="Imagem ampliada">
+  <div class="top"><div><small id="pvk"></small><b id="pvt"></b></div><button class="x" id="pvx" aria-label="Fechar">×</button></div>
+  <div class="canvas" id="pvc"><img id="pvi" alt=""><span class="ilus">Imagem ilustrativa</span><button class="pva l" id="pvl" aria-label="Imagem anterior">‹</button><button class="pva r" id="pvr" aria-label="Próxima imagem">›</button><span class="pvn" id="pvnum"></span></div>
+  <div class="bot"><div class="ptabs" id="pvtabs"></div>
+    <div class="zb"><button id="pvo" aria-label="Afastar">−</button><button id="pvf" aria-label="Ajustar">⤢</button><button id="pvn" aria-label="Aproximar">+</button></div></div>
+</div>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Vídeo da experiência">
+  <div class="top"><small id="lbk"></small><button class="x" id="lbx" aria-label="Fechar">×</button></div>
+  <div class="stage"><div class="frame" id="lbf"><video id="lbv" muted playsinline></video><img id="lbimg" alt="" hidden><span class="ilus" style="bottom:14px">Imagens ilustrativas</span><div class="prog" id="lbp"></div></div>
+    <button class="arrow l" id="lbl" aria-label="Anterior">‹</button><button class="arrow r" id="lbr" aria-label="Próxima">›</button></div>
+  <div class="info"><div><b id="lbt"></b><p id="lbd"></p></div><div class="meta"><div class="thumbs" id="lbthumbs"></div><div class="dots" id="lbdots"></div></div></div>
+</div>
+
+<script>
+/* ---------- dados ---------- */
+const TYPES={
+  "Brisa":{name:"Casa Brisa",suites:4,constr:294.85,feat:"4 suítes · jardim central · piscina e varanda gourmet. Pavimento superior envolto em brises de varinhas de biriba na cor natural."},
+  "Lago A":{name:"Casa Lago A",suites:4,constr:319.00,feat:"4 suítes · rooftop com espaço gourmet · varanda gourmet em textura natural de terra. Contorna o lago central."},
+  "Lago B":{name:"Casa Lago B",suites:4,constr:322.00,feat:"4 suítes · rooftop com espaço gourmet · varanda gourmet em textura natural de terra."},
+  "Lago C":{name:"Casa Lago C",suites:4,constr:312.75,feat:"4 suítes · rooftop com espaço gourmet e SPA · fundos para o lago."},
+  "Vista":{name:"Casa Vista Mar",suites:5,constr:386.00,feat:"5 suítes · rooftop vista mar com SPA · contorna o lago central."},
+  "Mar":{name:"Casa Mar",suites:6,constr:475.82,feat:"6 suítes · deck gourmet · frente direta para a Praia do Toque."}
+};
+const PRIV={"Brisa":[419.70,431.76,440.02,443.83,440.03,431.84,475.03,457.10,412.37],"Lago A":[452.00,453.24,453.25,453.25,453.25,453.25,453.25],
+  "Lago B":[475.24,497.15,495.67,495.67,495.67,496.58,503.29],"Lago C":[459.30,458.57,467.39,456.20,455.02,453.84],
+  "Vista":[595.00,566.66,566.66,566.66,566.66,566.66,569.11],"Mar":[998.51,985.80,994.31,1008.07,1030.32,1024.85,1144.12]};
+const AVAIL={"Brisa-6":3861225.28,"Brisa-8":3924093.58,"Lago B-2":4630417.54};
+const RESERVED={};
+
+/* ---------- posição de cada casa no render (px da imagem 1685×948) ---------- */
+// [cx, cy, largura, altura, rotação°]
+const GEO={
+  "Brisa":[[215.5,439.5],[255.2,444.5],[295.2,449.8],[356.2,453.2],[396,446.5],[436.2,440.8],[497,444.2],[536.8,437.5],[576.8,416.2]].map(p=>[...p,37,82,0]),
+  "Lago A":[[700,362],[698,400],[705,440],[710,478],[724,518],[725,555],[737,595]].map(p=>[...p,82,38,0]),
+  "Lago B":[[738,728],[778,715],[820,705],[864,688],[908,675],[950,653],[993,630]].map(p=>[...p,36,86,4]),
+  "Lago C":[[856,384],[896,384],[936,384],[976,384],[1016,384],[1056,384]].map(p=>[...p,36,88,0]),
+  "Vista":[[1138,350],[1139,396],[1138,444],[1130,535],[1140,581],[1131,628],[1138,679]].map(p=>[...p,76,40,0]),
+  "Mar":[[1301.5,315],[1305.5,363.2],[1313.2,411.5],[1323,459.8],[1331.2,559],[1318.2,607],[1308.8,655.2]].map(p=>[...p,97,49,0])
+};
+
+const UNITS=[];
+for(const t in GEO)GEO[t].forEach(([x,y,w,h,r],i)=>{
+  const n=i+1,key=`${t}-${n}`,price=AVAIL[key]??null;
+  UNITS.push({key,type:t,n,label:`${t==="Vista"?"Vista Mar":t} ${String(n).padStart(2,"0")}`,priv:PRIV[t][i],constr:TYPES[t].constr,
+    status:price?"d":RESERVED[key]?"r":"v",price,x,y,w,h,r});
+});
+const brl=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const mi=v=>"R$ "+(v/1e6).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+" mi";
+const num=v=>v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const avail=UNITS.filter(u=>u.status==="d");
+document.querySelectorAll("[data-res]").forEach(e=>e.hidden=!UNITS.some(u=>u.status==="r"));
+
+document.getElementById("authlink").onclick=()=>openAuth();
+document.getElementById("stats").innerHTML=`<span><b>${UNITS.length}</b> casas</span><span><b>${UNITS.filter(u=>u.status==="v").length}</b> vendidas</span><span><b>${avail.length}</b> disponíveis</span>`;
+const TFILM={"Brisa":"t-brisa","Lago A":"t-lagoa","Lago B":"t-lagob","Lago C":"t-lagoc","Vista":"t-vista","Mar":"t-mar"};
+const isMobile=()=>matchMedia("(max-width:720px)").matches;
+
+/* ---------- casas em SVG ---------- */
+const NS="http://www.w3.org/2000/svg",hs=document.getElementById("hs"),holes=document.getElementById("holes");
+const cls={d:"av",r:"re",v:"so"};
+for(const u of UNITS){
+  const g=document.createElementNS(NS,"g");g.setAttribute("class",`h ${cls[u.status]}`);g.setAttribute("transform",`translate(${u.x} ${u.y}) rotate(${u.r})`);
+  g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",`${u.label}, ${u.status==="d"?"disponível":"vendida"}`);
+  const mk=(c,pad)=>{const r=document.createElementNS(NS,"rect");r.setAttribute("class",c);r.setAttribute("x",-u.w/2-pad);r.setAttribute("y",-u.h/2-pad);r.setAttribute("width",u.w+2*pad);r.setAttribute("height",u.h+2*pad);r.setAttribute("rx",2);return r};
+  g.append(mk("hit",4),mk("shape",0));hs.append(g);u.el=g;
+  if(u.status==="d"){const c=mk("",6);c.removeAttribute("class");c.setAttribute("fill","#000");c.setAttribute("transform",g.getAttribute("transform"));holes.append(c)}
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(u)}});
+  g.addEventListener("pointerenter",()=>{tipU=u});g.addEventListener("pointerleave",()=>{tipU=null;tip.hidden=true});
+}
+
+/* ---------- áreas comuns clicáveis ---------- */
+const RC=(cx,cy,w,h)=>[[cx-w/2,cy-h/2],[cx+w/2,cy-h/2],[cx+w/2,cy+h/2],[cx-w/2,cy+h/2]];
+const AREAS=[
+  {key:"Koko",label:"Beach Club Koko",short:"Beach Club Koko",mshort:"Clube Koko",x:1369,y:507,py:27,pw:244,polys:[RC(1369,507,244,54)],film:"e-clube",thumb:"cl-piscina",sub:"Clube de praia · frente mar",
+   eyebrow:"Área comum · frente mar",badge:"Hospitalidade padrão hoteleiro",sun:true,
+   quote:"Um clube de praia equipado para acomodar a melodia do bem-estar e experiências com o pé na areia. Toda infraestrutura necessária para prosperar a arte do encontro.",
+   items:["Piscina de borda de frente para o mar","Deck com espreguiçadeiras","Espaço gourmet beira-mar","Salão e lounges abertos para o mar","Pátio interno com jardim","Academia com vista para o mar","Spa e sala de massagem","Sauna","Deck zen para yoga e meditação","Rooftop com jardim de bromélias"],
+   flora:["Embaúbas","Aroeira-salsa","Estrelítzia-augusta","Areca-bambu","Palmeira-macarthur","Coco-da-baía","Helicônia","Alpínia-purpurata","Filodendros","Bromélias"],
+   g:[["cl-piscina","Piscina do clube"],["cl-restaurante","Salão de frente para o mar"],["cl-gourmet","Espaço gourmet"],["cl-patio","Pátio interno"],["cl-fachada","Fachada do Clube Koko"],["bm-academia","Academia vista mar"],["bm-massagem","Spa · sala de massagem"],["bm-sauna","Sauna"],["or-6","Paisagismo · entrada do clube"],["or-12","Paisagismo · piscina"],["or-19","Paisagismo · rooftop"]]},
+  {key:"Lago",label:"Lago Bossa",short:"Lago Bossa",mshort:"Lago",x:915,y:505,py:0,pw:0,
+   polys:[[[800,448],[832,446],[920,456],[1032,478],[1070,478],[1070,540],[1032,540],[984,552],[948,544],[912,540],[892,560],[888,588],[868,608],[840,628],[800,648],[784,648],[784,600],[804,572],[800,520],[796,472]]],
+   film:"e-lago",thumb:"ac-lago-espelho",sub:"1.846 m² de espelho d'água",eyebrow:"Área comum · paisagismo Luiz Carlos Orsini",badge:"1.846 m² de espelho d'água",orsini:true,
+   quote:"Para alimentar a alma.",note:"O paisagismo é de Luiz Carlos Orsini, que criou os lagos do Instituto Inhotim. Foram esses lagos que inspiraram o projeto do Bossa.",
+   items:["Espelho d'água de 1.846 m² no centro do condomínio","Passarela sobre o lago","Lounge coberto sobre a água","Paisagismo protagonista","Bromélias e coqueiros nas margens","Passeio de pedestres entre as casas"],
+   flora:["Coco-da-baía","Amor-agarradinho no deck","Justícia-vermelha","Guaimbê","Alpínia","Caminhos em lajão de pedra"],
+   g:[["ac-lago-espelho","O espelho d'água"],["ac-lago-alto","O lago visto do alto"],["ac-deck","Lounge sobre o lago"],["ac-deck2","Passarela e lounge"],["ac-lago-casas","Casas à beira do lago"],["ac-passeio","Passeio entre as casas"],[28,"Lounges"],["or-4","Paisagismo · deck do lago"],["or-3","Paisagismo · caminhos"]]},
+  {key:"Quadras",label:"Quadras",short:"Quadras",mshort:"Quadras",x:388,y:316,py:28,pw:139,polys:[RC(388,316,139,56),RC(218,320,84,84),RC(146,442,41,84)],
+   film:"e-quadras",thumb:"ac-tenis",sub:"Tênis, padel, pickleball e areia",eyebrow:"Área comum · esporte",badge:"Bem-estar & endorfina",
+   quote:"Para manter o equilíbrio: bem-estar & endorfina.",
+   items:["Quadra de tênis e pickleball","Quadra de padel","Esportes de areia","Acesso pela trilha, entre a mata e os coqueiros"],
+   g:[["ac-tenis","Quadra de tênis"],["ac-quadras-alto","Quadras vistas do alto"],["ac-quadras-acesso","Acesso às quadras"],["ac-trilha","Trilha pela mata"],[26,"Área de lazer vista do alto"]]},
+  {key:"Portaria",label:"Portaria",short:"Portaria",mshort:"Portaria",x:76,y:393,py:16,pw:79,polys:[RC(76,393,79,33)],
+   film:null,thumb:"ac-portaria",sub:"A chegada ao Bossa",eyebrow:"Área comum · chegada",badge:"Hospitalidade padrão hoteleiro",
+   quote:"Criamos caminhos que preservam as raízes históricas sem abrir mão da sofisticação, simplicidade e inovação.",
+   items:["Portaria com pergolado ajardinado","Assinatura Bossa na chegada","Paisagismo de bromélias e coqueiros","Alameda de acesso às casas"],
+   g:[["ac-portaria","Portaria"],["ac-portaria2","A chegada"]]}
+];
+const CLUB=AREAS[0];
+for(const a of AREAS){Object.assign(a,{type:a.key,area:true,status:"c"});
+  const xs=a.polys.flat().map(p=>p[0]),ys=a.polys.flat().map(p=>p[1]);a.bx=[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];a.w=a.bx[2]-a.bx[0];a.h=a.bx[3]-a.bx[1];
+  TYPES[a.key]={name:a.label};TFILM[a.key]=a.film;
+  const g=document.createElementNS(NS,"g");g.setAttribute("class","h club");g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",`${a.label}: ver detalhes`);
+  const d=a.polys.map(p=>"M"+p.map(q=>q.join(",")).join("L")+"Z").join("");
+  const mk=c=>{const p=document.createElementNS(NS,"path");p.setAttribute("class",c);p.setAttribute("d",d);return p};
+  const hit=mk("hit");hit.setAttribute("stroke","transparent");hit.setAttribute("stroke-width","10");g.append(hit,mk("shape"));hs.prepend(g);a.el=g;
+  const hole=mk("");hole.removeAttribute("class");hole.setAttribute("fill","#000");hole.setAttribute("stroke","#000");hole.setAttribute("stroke-width","12");holes.append(hole);
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(a)}});
+  g.addEventListener("pointerenter",()=>{tipU=a});g.addEventListener("pointerleave",()=>{tipU=null;tip.hidden=true})}
+const pip=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const[xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c};
+const areaAt=(x,y,pad=0)=>AREAS.find(a=>a.polys.some(P=>pip(x,y,P))||(pad&&a.polys.some(P=>P.some((q,i)=>segD(x,y,q,P[(i+1)%P.length])<pad))));
+function segD(x,y,[ax,ay],[bx,by]){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let k=l?((x-ax)*dx+(y-ay)*dy)/l:0;k=Math.max(0,Math.min(1,k));return Math.hypot(x-ax-k*dx,y-ay-k*dy)}
+const areaDist=(a,u)=>{let m=1e9;for(const P of a.polys){if(pip(u.x,u.y,P))return 0;P.forEach((q,i)=>{m=Math.min(m,segD(u.x,u.y,q,P[(i+1)%P.length]))})}return Math.max(10,Math.round(m*0.2463/10)*10)};
+const kokoDist=u=>areaDist(CLUB,u);
+
+/* ---------- câmera: imagem → tela (no celular em pé, girada: mar no topo) ---------- */
+const view=document.getElementById("view"),world=document.getElementById("world");
+const IW=1685,IH=948;let ROT=false,S=1,TX=0,TY=0,anim=null;
+const CW=()=>ROT?IH:IW, CH=()=>ROT?IW:IH;
+const rot=(u,v)=>ROT?[v,IW-u]:[u,v];                // imagem → espaço girado
+const toScreen=(u,v)=>{const[a,b]=rot(u,v);return[TX+a*S,TY+b*S]};
+const safe=()=>{const m=isMobile();return{t:m?84:110,b:m?(avail.length?190:70):20,l:12,r:m?12:20}};
+const minS=()=>{const s=safe();return Math.min((innerWidth)/CW(),(innerHeight-s.t*.4-s.b*.5)/CH())*.98};
+function clamp(){const w=CW()*S,h=CH()*S;
+  TX=w<=innerWidth?(innerWidth-w)/2:Math.min(0,Math.max(innerWidth-w,TX));
+  const s=safe();TY=h<=innerHeight?(innerHeight-h)/2+(s.t-s.b)*.25:Math.min(s.t*.5,Math.max(innerHeight-h-s.b*.6,TY))}
+/* imagem base em camadas: 1x → 2x → 4x (blocos) conforme o zoom */
+const HI={lvl:1,busy:false};
+function hiRes(){const need=S*(devicePixelRatio||1);
+  if(HI.lvl<2&&!HI.busy){HI.busy=true;const im=new Image();im.onload=()=>{document.getElementById("img").src=im.src;HI.lvl=2;HI.busy=false;hiRes()};im.onerror=()=>{HI.busy=false};im.src="media/render-2x.jpg";return}
+  if(HI.lvl===2&&need>2.1&&!HI.busy){HI.lvl=4;const box=document.getElementById("hi");
+    [["00",0,0,844,476],["10",842,0,843,476],["01",0,474,844,474],["11",842,474,843,474]].forEach(([k,x,y,w,h])=>{const im=new Image();im.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px`;im.decoding="async";im.onload=()=>im.classList.add("on");im.src=`media/render-4x-${k}.jpg`;box.append(im)})}}
+function apply(){clamp();world.style.transform=`translate(${TX}px,${TY}px) scale(${S})`+(ROT?` translate(0px,${IW}px) rotate(-90deg)`:"");placePins();hiRes()}
+function zoomAt(f,cx,cy){const ns=Math.min(7,Math.max(minS(),S*f));const k=ns/S;TX=cx-(cx-TX)*k;TY=cy-(cy-TY)*k;S=ns;apply()}
+function frameRot(ax,ay,s,ms=900){ // centro no espaço girado
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)ms=1;
+  const sf=safe();s=Math.max(minS(),s);const cx=sf.l+(innerWidth-sf.l-sf.r)/2,cy=sf.t+(innerHeight-sf.t-sf.b)/2;
+  const a={s0:S,x0:TX,y0:TY,s1:s,x1:cx-ax*s,y1:cy-ay*s,t0:performance.now(),ms};anim=a;
+  (function step(now){if(anim!==a)return;const k=Math.min(1,(now-a.t0)/a.ms),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    S=a.s0+(a.s1-a.s0)*e;TX=a.x0+(a.x1-a.x0)*e;TY=a.y0+(a.y1-a.y0)*e;apply();if(k<1)requestAnimationFrame(step)})(performance.now());
+}
+function homeView(ms){if(ROT){_homeBox(ms);return}if(typeof R3!=="undefined"&&R3.on&&R3.ready){setCam3D(defaultCam3D());return}
+  const s=Math.max(minS(),Math.min(innerWidth/1880,innerHeight/970));
+  const x1=innerWidth/2-IW/2*s,y1=innerHeight/2+12*s-IH/2*s;
+  if(ms===1||matchMedia("(prefers-reduced-motion: reduce)").matches){anim=null;S=s;TX=x1;TY=y1;apply();return}
+  const A={s0:S,x0:TX,y0:TY,s1:s,x1,y1,t0:performance.now(),ms:ms||900};anim=A;
+  (function step(now){if(anim!==A)return;const k=Math.min(1,(now-A.t0)/A.ms),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    S=A.s0+(A.s1-A.s0)*e;TX=A.x0+(A.x1-A.x0)*e;TY=A.y0+(A.y1-A.y0)*e;apply();if(k<1)requestAnimationFrame(step)})(performance.now())}
+function _homeBox(ms){fitBox(VIEWS[0][2],ms)}
+function fitBox([u0,v0,u1,v1],ms){const p=[rot(u0,v0),rot(u1,v1)];const ax=Math.min(p[0][0],p[1][0]),bx=Math.max(p[0][0],p[1][0]),ay=Math.min(p[0][1],p[1][1]),by=Math.max(p[0][1],p[1][1]);
+  const sf=safe();const s=Math.min((innerWidth-sf.l-sf.r)/(bx-ax),(innerHeight-sf.t-sf.b)/(by-ay));frameRot((ax+bx)/2,(ay+by)/2,s,ms)}
+function focusUnit(u){const[a,b]=rot(u.x,u.y);const m=isMobile();const s=Math.max(minS(),m?1.7:Math.min(2.1,innerHeight/330));
+  if(m){const sh=innerHeight*.42;const cx=innerWidth/2,cy=(innerHeight-sh)/2+30;if(matchMedia("(prefers-reduced-motion: reduce)").matches){S=s;TX=cx-a*s;TY=cy-b*s;apply();return}
+    const A={s0:S,x0:TX,y0:TY,s1:s,x1:cx-a*s,y1:cy-b*s,t0:performance.now(),ms:800};anim=A;
+    (function step(now){if(anim!==A)return;const k=Math.min(1,(now-A.t0)/A.ms),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;S=A.s0+(A.s1-A.s0)*e;TX=A.x0+(A.x1-A.x0)*e;
+      TY=A.y0+(A.y1-A.y0)*e;world.style.transform=`translate(${TX}px,${TY}px) scale(${S})`+(ROT?` translate(0px,${IW}px) rotate(-90deg)`:"");placePins();hiRes();if(k<1)requestAnimationFrame(step)})(performance.now());return}
+  frameRot(a+180/s,b,s,800)}
+
+/* ---------- enquadramentos + voos ---------- */
+const VIEWS=[
+  ["geral","Geral",[150,250,1520,800],null],
+  ["mar","Frente mar",[1250,280,1470,700],["media/voo-mar","Casas Mar · 6 suítes","Frente mar","Sete residências com o pé na areia da Praia do Toque."]],
+  ["lago","Lago",[640,300,1200,760],["media/voo-lago","Casas Lago A, B e C","O lago","1.846 m² de espelho d'água no centro do condomínio, com passarela sobre a água."]],
+  ["vista","Vista Mar",[1080,320,1200,710],["media/voo-vista","Casas Vista Mar · 5 suítes","Vista Mar","Rooftop com SPA voltado para o mar, entre o lago e a orla."]],
+  ["brisa","Brisa",[180,380,610,490],["media/voo-brisa","Casas Brisa · 4 suítes","Brisa","Telhados verdes, brises de biriba e piscina privativa em cada casa."]]
+];
+const FILM_GERAL=["media/voo-geral","Praia do Toque · Rota Ecológica dos Milagres","Bossa","43 residências entre o mangue, o lago e o mar."];
+document.querySelectorAll("[data-views]").forEach(c=>c.innerHTML=VIEWS.map(([k,l],i)=>`<button class="chip" data-view="${k}" aria-pressed="${i===0}">${l}</button>`).join(""));
+const cine=document.getElementById("cine"),cv=document.getElementById("cv"),cbar=document.getElementById("cbar");let afterCine=null;
+function playFilm(f,then){
+  const[src,k,t,p]=f;document.getElementById("ck").textContent=k;document.getElementById("ct").textContent=t;document.getElementById("cp").textContent=p;
+  cine.classList.toggle("port",innerHeight>innerWidth);cv.poster=src+".jpg";cv.src=src+".mp4";afterCine=then;cine.hidden=false;requestAnimationFrame(()=>cine.classList.add("on"));
+  cv.currentTime=0;cv.play().catch(()=>{});
+}
+function endFilm(){if(cine.hidden)return;cine.classList.remove("on");cv.pause();setTimeout(()=>{cine.hidden=true;cv.removeAttribute("src");cv.load()},450);const f=afterCine;afterCine=null;if(f)f()}
+cv.addEventListener("timeupdate",()=>{if(cv.duration)cbar.style.width=(cv.currentTime/cv.duration*100)+"%"});
+cv.addEventListener("ended",endFilm);document.getElementById("cskip").onclick=endFilm;
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-view]");if(b){const v=VIEWS.find(x=>x[0]===b.dataset.view);
+    document.querySelectorAll("[data-view]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.view===v[0]));closeCard(false);
+    const go=()=>v===VIEWS[0]?homeView():fitBox(v[2]);if(v[3])playFilm(v[3],go);else go();return}
+  const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act;
+  if(act==="film")playFilm(FILM_GERAL,()=>homeView());
+  if(act==="exp")openExp(true);
+  if(act==="only"){const v=a.getAttribute("aria-pressed")!=="true";document.querySelectorAll('[data-act="only"]').forEach(x=>x.setAttribute("aria-pressed",v));veil.setAttribute("opacity",v?.62:0);ONLY=v;only3D()}
+});
+const veil=document.getElementById("veil");
+
+/* ---------- gestos ---------- */
+document.getElementById("zin").onclick=()=>zoomAt(1.5,innerWidth/2,innerHeight/2);
+document.getElementById("zout").onclick=()=>zoomAt(1/1.5,innerWidth/2,innerHeight/2);
+view.addEventListener("wheel",e=>{e.preventDefault();anim=null;zoomAt(Math.exp(-e.deltaY*.0015),e.clientX,e.clientY)},{passive:false});
+const pts=new Map();let moved=false,last=null,pinch=null,downT=0;
+view.addEventListener("pointerdown",e=>{pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===1){moved=false;downT=performance.now()}anim=null;view.classList.add("drag");
+  if(pts.size===2){const[a,b]=[...pts.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1])};moved=true}last=[e.clientX,e.clientY]});
+view.addEventListener("pointermove",e=>{
+  if(tipU&&e.pointerType==="mouse"&&!pts.size){tip.hidden=false;tip.style.left=e.clientX+"px";tip.style.top=e.clientY+"px";
+    tip.innerHTML=tipU.area?`<b>${tipU.label}</b> · toque para conhecer`:`<b>${tipU.label}</b> · ${tipU.status==="d"?"Disponível · "+mi(tipU.price):tipU.status==="r"?"Reservada":"Vendida"}`}
+  if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
+  if(pts.size===2&&pinch){const[a,b]=[...pts.values()];const d=Math.hypot(a[0]-b[0],a[1]-b[1]);zoomAt(d/pinch.d,(a[0]+b[0])/2,(a[1]+b[1])/2);pinch.d=d;return}
+  const dx=e.clientX-last[0],dy=e.clientY-last[1];if(Math.abs(dx)+Math.abs(dy)>4)moved=true;TX+=dx;TY+=dy;last=[e.clientX,e.clientY];apply()});
+const up=e=>{const wasTap=pts.size===1&&!moved&&performance.now()-downT<500;pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!pts.size)view.classList.remove("drag");if(pts.size===1)last=[...pts.values()][0];
+  if(wasTap&&e.type==="pointerup")tapAt(e.clientX,e.clientY,e.pointerType)};
+view.addEventListener("pointerup",up);view.addEventListener("pointercancel",up);
+function tapAt(x,y,type){ // casa mais próxima do toque (alvo generoso no celular)
+  let best=null,bd=1e9;for(const u of UNITS){const[sx,sy]=toScreen(u.x,u.y);const d=Math.hypot(sx-x,sy-y);if(d<bd){bd=d;best=u}}
+  {const[a,b]=[(x-TX)/S,(y-TY)/S];const[iu,iv]=ROT?[IW-b,a]:[a,b];
+   const inRect=u=>{const c=Math.cos(-u.r*Math.PI/180),s=Math.sin(-u.r*Math.PI/180),dx=iu-u.x,dy=iv-u.y;return Math.abs(dx*c-dy*s)<u.w/2+4/S&&Math.abs(dx*s+dy*c)<u.h/2+4/S};
+   const hit=UNITS.find(inRect);if(hit){select(hit);return}const ar=areaAt(iu,iv,(type==="mouse"?6:16)/S);if(ar){select(ar);return}}
+  const radius=Math.max(type==="mouse"?14:30,Math.max(best.w,best.h)*S*.55);
+  if(best&&bd<radius)select(best);else if(!card.hidden&&isMobile())closeCard();
+}
+
+/* ---------- pins + carrossel ---------- */
+const tip=document.getElementById("tip");let tipU=null;
+const pinsEl=document.getElementById("pins");
+const pins=avail.map(u=>{const el=document.createElement("button");el.className="pin";el.type="button";el.onclick=()=>select(u);pinsEl.append(el);return{u,el}});
+for(const a of []){const el=document.createElement("button");el.className="pin club";el.type="button";el.onclick=()=>select(a);pinsEl.append(el);pins.push({u:a,el})}
+function pinText(){pins.forEach(p=>p.el.textContent=p.u.area?(isMobile()?p.u.mshort:p.u.short):p.u.label)}
+function placePins(){for(const p of pins){const u=p.u;const[x,y0]=toScreen(u.x,u.y);const below=ROT&&u.area&&u.key!=="Lago";const y=below?y0+u.pw*.5*S:u.area?y0-(ROT?u.pw/2:u.py)*S:y0-Math.max(u.w,u.h)*.5*S;
+  p.el.hidden=x<-40||x>innerWidth+40||y<0||y>innerHeight-(isMobile()?safe().b:0);p._a=[x,y,below]}
+  declutter(8)}
+const carousel=document.getElementById("carousel");
+carousel.innerHTML=avail.map((u,i)=>`<button class="uc" data-i="${i}"><img src="media/${TFILM[u.type]}.jpg" alt=""><div><b>${u.label}</b><span>${mi(u.price)} · ${TYPES[u.type].suites} suítes</span></div></button>`).join("");
+carousel.insertAdjacentHTML("beforeend",AREAS.map((a,i)=>`<button class="uc" data-area="${i}"><img src="media/hi/t-${a.thumb}.jpg" alt=""><div><b>${a.label}</b><span>${a.sub}</span></div></button>`).join(""));
+carousel.addEventListener("click",e=>{const b=e.target.closest(".uc");if(!b)return;if(b.dataset.area!==undefined){select(AREAS[+b.dataset.area]);return}select(avail[+b.dataset.i])});
+
+/* ---------- ficha ---------- */
+const card=document.getElementById("card");let selected=null;
+const FLOW=[["Entrada · 17%",.17,1],["Mensais · 18% (25x)",.18,25],["Semestrais · 20% (3x)",.20,3],["Chaves · 25%",.25,1],["Mensais pós-obra · 20% (24x)",.20,24]];
+function select(u,focus=true){
+  if(selected)selected.el.classList.remove("sel");selected=u;u.el.classList.add("sel");
+  pins.forEach(p=>p.el.dataset.active=p.u===u);carousel.querySelectorAll(".uc").forEach((b,i)=>b.dataset.active=b.dataset.area!==undefined?u===AREAS[+b.dataset.area]:avail[i]===u);
+  if(u.area){areaCard(u,focus);return}
+  const T=TYPES[u.type],film=TFILM[u.type];
+  const st=u.status==="d"?'<span class="st av">Disponível</span>':u.status==="r"?'<span class="st re">Reservada</span>':'<span class="st so">Vendida</span>';
+  const body=u.status==="d"?`<div class="price"><div class="lbl">Valor de tabela</div><div class="val">${brl(u.price)}</div>
+      <div class="m2">R$ ${num(u.price/u.priv)}/m² privativo · R$ ${num(u.price/u.constr)}/m² construído</div></div>
+      <div class="flow">${FLOW.map(([l,p,n])=>`<div><span>${l}</span><span>${n>1?n+"× ":""}${brl(u.price*p/n)}</span></div>`).join("")}</div>
+      <p class="note"><b>Preços e condições sujeitos a alteração sem aviso prévio.</b> Corrigido pelo INCC durante a obra e IPCA + 1% após a entrega das chaves. Entrega prevista: agosto de 2028.</p><p class="legal">Imagens meramente ilustrativas. Incorporação registrada sob o R-4 da Matrícula nº 5.401 do Registro de Imóveis de Porto de Pedras/AL, em 18/07/2025. Incorporadora: Taipa Incorporações Bossa SPE Ltda., CNPJ 58.131.029/0001-92.</p>`
+    :`<p class="soldmsg">Esta residência já tem proprietário. ${avail.length} casas seguem disponíveis no condomínio.</p>`;
+  const navH=u.status==="d"?`<div class="nav"><button data-step="-1">‹ Disponível anterior</button><button data-step="1">Próxima disponível ›</button></div>`
+    :`<div class="nav"><button data-step="1" style="grid-column:1/-1">Ver casas disponíveis ›</button></div>`;
+  card.innerHTML=`<div class="grab"></div><button class="close" aria-label="Fechar ficha">×</button>
+    ${galleryHTML(u)}
+    <div class="in"><div class="eyebrow">${T.name}</div><h2>${u.label}</h2>${st}
+    <dl class="specs"><div><dt>Privativa</dt><dd>${num(u.priv)} m²</dd></div><div><dt>Construída</dt><dd>${num(u.constr)} m²</dd></div><div><dt>Suítes</dt><dd>${T.suites}</dd></div></dl>
+    ${body}<p class="feat">${T.feat}</p><div class="ksec"><span>Perto desta casa</span><div class="kdist">${[...AREAS].sort((a,b)=>areaDist(a,u)-areaDist(b,u)).map(a=>`<button data-area="${a.key}"><span>${a.label}</span><b>~${areaDist(a,u)} m ›</b></button>`).join("")}</div><p style="font-size:11px;color:var(--ink-soft);margin:8px 0 0;line-height:1.45">Distâncias aproximadas, em linha reta, estimadas pela implantação.</p></div>${plansHTML(u)}${signHTML()}${navH}</div>`;
+  const fresh=card.hidden;card.hidden=false;cardTop();card.scrollTop=0;
+  if(fresh&&isMobile()){card.classList.add("enter");requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.remove("enter")))}
+  card.querySelector(".close").onclick=closeCard;
+  bindGallery(u);bindPlans(u);bindSign();card.querySelectorAll("[data-area]").forEach(b=>b.onclick=()=>select(AREAS.find(a=>a.key===b.dataset.area)));
+  card.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>{const d=+b.dataset.step,i=avail.indexOf(u);select(avail[i<0?(d>0?0:avail.length-1):(i+d+avail.length)%avail.length])});
+  if(focus)focusUnit(u);
+}
+function areaCard(u,focus){
+  const near=[...avail].sort((a,b)=>areaDist(u,a)-areaDist(u,b));
+  card.innerHTML=`<div class="grab"></div><button class="close" aria-label="Fechar ficha">×</button>
+    ${galleryHTML(u)}
+    <div class="in"><div class="eyebrow">${u.eyebrow}</div><h2>${u.label}</h2><span class="st" style="background:rgba(23,38,30,.08);color:var(--ink)">${u.badge}</span>
+    <p class="kquote">${u.quote}</p><small>Book Bossa · Taipa Inc</small>${u.note?`<p class="feat" style="margin-top:12px">${u.note}</p>`:""}
+    <ul class="klist">${u.items.map(x=>`<li>${x}</li>`).join("")}</ul>${u.flora?`<div class="ksec"><span>Paisagismo · Luiz Carlos Orsini</span><div class="flora">${u.flora.map(x=>`<i>${x}</i>`).join("")}</div><p style="font-size:11px;color:var(--ink-soft);margin:8px 0 0;line-height:1.45">Espécies previstas no estudo preliminar de paisagismo (mai/2025), sujeitas a alteração.</p></div>`:""}
+    <div class="ksec"><span>Das casas disponíveis até aqui</span><div class="kdist">${near.map(h=>`<button data-u="${h.key}"><span>${h.label} · ${mi(h.price)}</span><b>~${areaDist(u,h)} m</b></button>`).join("")}</div>
+      <p style="font-size:11px;color:var(--ink-soft);margin:8px 0 0;line-height:1.45">Distância em linha reta até o limite da área, estimada pela implantação. O percurso a pé pelas alamedas é um pouco maior.</p></div>
+    <div class="ksec"><span>Outras áreas comuns</span><div class="achips">${AREAS.filter(a=>a!==u).map(a=>`<button data-area="${a.key}"><img src="media/hi/t-${a.thumb}.jpg" alt=""><span>${a.label}</span></button>`).join("")}</div></div>
+    ${signHTML(u.orsini)}
+    <div class="nav"><button data-step="1" style="grid-column:1/-1">Ver casas disponíveis ›</button></div></div>`;
+  const fresh=card.hidden;card.hidden=false;cardTop();card.scrollTop=0;
+  if(fresh&&isMobile()){card.classList.add("enter");requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.remove("enter")))}
+  card.querySelector(".close").onclick=closeCard;bindGallery(u);bindSign();
+  card.querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>select(UNITS.find(x=>x.key===b.dataset.u)));
+  card.querySelectorAll("[data-area]").forEach(b=>b.onclick=()=>select(AREAS.find(a=>a.key===b.dataset.area)));
+  card.querySelector("[data-step]").onclick=()=>select(avail[0]);
+  if(focus)focusArea(u)}
+function focusArea(u){if(R3.on&&R3.ready){fly3DUnit(u);return}const[a,b]=rot(u.x,u.y);const big=Math.max(u.w,u.h);
+  if(isMobile()){const s=Math.max(minS(),Math.min(2.4,innerHeight*.5/(big*1.25)));frameRot(a,b+((innerHeight-innerHeight*.42)/2+30-innerHeight/2)/s*-1,s,800);return}
+  const[cu,cv]=rot((u.bx[0]+u.bx[2])/2,(u.bx[1]+u.bx[3])/2);const s=Math.max(minS(),Math.min(3.2,(innerWidth-460)/(big*1.9),(innerHeight-200)/(Math.min(u.w,u.h)*2.4)));frameRot(cu+180/s,cv,s,800)}
+/* ---------- assinatura do projeto ---------- */
+function signHTML(ors){return `<button class="sign" data-sign><span>${ors?"Paisagismo <b>Luiz Carlos Orsini</b> · Arquitetura Padovani e Agra Lemos":"Arquitetura <b>Padovani</b> e <b>Agra Lemos</b> · Paisagismo <b>Luiz Carlos Orsini</b>"}</span><i>›</i></button>`}
+function bindSign(){card.querySelectorAll("[data-sign]").forEach(b=>b.onclick=openAuth)}
+const auth=document.getElementById("auth");
+function openAuth(){auth.hidden=false;auth.querySelector(".box").scrollTop=0;requestAnimationFrame(()=>auth.classList.add("on"))}
+function closeAuth(){auth.classList.remove("on");setTimeout(()=>auth.hidden=true,250)}
+auth.addEventListener("click",e=>{if(e.target===auth||e.target.closest(".x"))closeAuth()});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!auth.hidden)closeAuth()});
+function cardTop(){document.body.classList.add("cardopen");if(isMobile()){card.style.top="";card.style.maxHeight="";return}
+  const b=document.querySelector(".controls").getBoundingClientRect();const top=Math.max(112,b.bottom+12);card.style.top=top+"px";card.style.maxHeight=`calc(100% - ${top+16}px)`}
+addEventListener("resize",()=>{if(!card.hidden)cardTop()});
+function closeCard(home){if(card.hidden)return;card.querySelector("video")?.pause();
+  const done=()=>{card.hidden=true;card.classList.remove("enter");document.body.classList.remove("cardopen")};
+  if(isMobile()&&!matchMedia("(prefers-reduced-motion: reduce)").matches){card.classList.add("enter");setTimeout(done,330)}else done();
+  if(selected)selected.el.classList.remove("sel");selected=null;pins.forEach(p=>p.el.dataset.active=false);carousel.querySelectorAll(".uc").forEach(b=>b.dataset.active=false);
+  if(home!==false)homeView()}
+// arrastar a ficha para baixo fecha (celular)
+let sy=null;card.addEventListener("touchstart",e=>{if(card.scrollTop<=0)sy=e.touches[0].clientY},{passive:true});
+card.addEventListener("touchmove",e=>{if(sy==null)return;const d=e.touches[0].clientY-sy;if(d>0)card.style.transform=`translateY(${d}px)`},{passive:true});
+card.addEventListener("touchend",e=>{if(sy==null)return;const d=e.changedTouches[0].clientY-sy;sy=null;card.style.transform="";if(d>110)closeCard()});
+
+/* ---------- imagens ---------- */
+const IMG=k=>typeof k==="number"?`media/book/p${k}.jpg`:`media/hi/${k}.jpg`,IMGM=k=>typeof k==="number"?`media/book/p${k}.jpg`:`media/hi/m-${k}.jpg`,TH=k=>typeof k==="number"?`media/book/t${k}.jpg`:`media/hi/t-${k}.jpg`;
+const BOOK={
+  "Koko":{g:[["cl-piscina","Piscina do clube"],["cl-restaurante","Salão de frente para o mar"],["cl-gourmet","Espaço gourmet"],["cl-patio","Pátio interno"],["cl-fachada","Fachada do Clube Koko"],["bm-academia","Academia vista mar"],["bm-massagem","Spa · sala de massagem"],["bm-sauna","Sauna"]],p:[],x:""},
+  "Brisa":{g:[["br-casa","Casa Brisa"],["br-jardim","Jardim e piscina"],["br-rua","Fachada"],["br-estar","Estar"],["br-cozinha","Cozinha e jantar"],["br-suite","Suíte"],["br-suite2","Suíte aberta para o jardim"]],
+           p:[["pl-br-t","Térreo",[["Térreo",145.85]]],["pl-br-s","Superior",[["Superior",107.30]]]],x:"Área de lazer 41,70 m²"},
+  "Lago A":{g:[["la-casa","Casa Lago A"],["la-lago","Fachada para o lago"],["la-piscina","Piscina e varanda"],["la-rua","Fachada"],["la-estar","Estar e jantar"],["la-sala","Sala aberta para o jardim"],["la-varanda","Varanda gourmet"],["la-suite","Suíte"]],
+           p:[["pl-la-t","Térreo",[["Térreo",135]]],["pl-la-s","Superior",[["Superior",101]]],["pl-la-r","Rooftop",[["Rooftop",43]]]],x:"Área de lazer 40,00 m²"},
+  "Lago B":{g:[["lb-casa","Casa Lago B"],["lb-piscina","Piscina e varanda"],["lb-rua","Fachada"],["lb-estar","Estar"],["lb-cozinha","Cozinha e jantar"],["lb-sala","Sala"],["lb-varanda","Varanda gourmet"],["lb-suite","Suíte com vista para o lago"]],
+           p:[["pl-lb-t","Térreo",[["Térreo",138]]],["pl-lb-s","Superior",[["Superior",94]]],["pl-lb-r","Rooftop",[["Rooftop",50]]]],x:"Área de lazer 40,00 m²"},
+  "Lago C":{g:[["lc-casa","Casa Lago C"],["lc-piscina","Piscina e varanda"],["lc-fachada","Fachada"],["lc-rua","Fachada"],[76,"Casas beira lago"],["lc-estar","Estar"],["lc-cozinha","Cozinha e jantar"],["lc-suite","Suíte"]],
+           p:[["pl-lc-t","Térreo",[["Térreo",141]]],["pl-lc-s","Superior",[["Superior",111.30]]],["pl-lc-r","Rooftop",[["Rooftop",29.95]]]],x:"Área de lazer 30,50 m²"},
+  "Vista":{g:[["vm-casa","Casa Vista Mar"],["vm-piscina","Piscina e varanda"],["vm-fachada","Fachada"],["vm-alto","Casas Vista vistas do alto"],["vm-rooftop","Rooftop vista mar"],["vm-estar","Estar e jantar"],["vm-sala","Sala"],["vm-varanda","Varanda"],["vm-suite","Suíte"]],
+           p:[["pl-vm-t","Térreo",[["Térreo",142]]],["pl-vm-s","Superior",[["Superior",134]]],["pl-vm-r","Rooftop",[["Rooftop",63]]]],x:"Área de lazer 47,00 m²"},
+  "Mar":{g:[["mr-casa","Casa Mar"],["mr-piscina","Piscina e deck"],["mr-alto","Casas Mar vistas do alto"],["mr-varanda","Varanda e piscina com vista para o mar"],["mr-estar","Estar com vista para o mar"],["mr-sala","Sala"],["mr-cozinha","Estar e cozinha"],["mr-suite-mar","Suíte com vista para o mar"],["mr-master","Suíte master"],["mr-suite","Suíte"],["mr-rua","Fachada"]],
+           p:[["pl-mr-t","Térreo",[["Térreo",184.84]]],["pl-mr-s","Superior",[["Superior",183.81]]]],x:"Deck 62,05 m² · piscina 45,12 m²"}
+};
+const reduceM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+function galleryHTML(u){const T=TYPES[u.type],film=TFILM[u.type],G=u.area?u.g:BOOK[u.type].g,o=film?1:0;
+  return `<div class="film" data-gal><div class="slides">${film?`<video src="media/${film}.mp4" poster="media/${film}.jpg" muted loop playsinline autoplay></video>`:""}
+    ${G.map(([p,l],i)=>`<button data-zoom="${i}" aria-label="Ampliar: ${l}"><img loading="lazy" src="${IMGM(p)}" alt="${T.name}: ${l}"></button>`).join("")}</div>
+    <span class="ilus">Imagens ilustrativas</span><button class="cnav p" aria-label="Imagem anterior">‹</button><button class="cnav n" aria-label="Próxima imagem">›</button><span class="ccount">1 / ${G.length+o}</span></div>
+    <div class="cstrip">${film?`<button class="v" data-go="0" aria-current="true" aria-label="Filme">▶</button>`:""}${G.map(([p,l],i)=>`<button data-go="${i+o}" aria-label="${l}"${!film&&!i?' aria-current="true"':""}><img src="${TH(p)}" alt=""></button>`).join("")}</div>`}
+function bindGallery(u){const box=card.querySelector("[data-gal]");if(!box)return;const sl=box.querySelector(".slides"),n=sl.children.length,cnt=box.querySelector(".ccount"),strip=card.querySelector(".cstrip");
+  const vid=sl.querySelector("video");const idx=()=>Math.round(sl.scrollLeft/sl.clientWidth);
+  const go=i=>{i=(i+n)%n;sl.scrollTo({left:i*sl.clientWidth,behavior:reduceM()?"auto":"smooth"})};
+  box.querySelector(".p").onclick=()=>go(idx()-1);box.querySelector(".n").onclick=()=>go(idx()+1);
+  let tm=null;sl.addEventListener("scroll",()=>{clearTimeout(tm);tm=setTimeout(()=>{const i=idx();cnt.textContent=`${i+1} / ${n}`;
+    strip.querySelectorAll("[data-go]").forEach(b=>b.setAttribute("aria-current",+b.dataset.go===i));
+    const cur=strip.querySelector(`[data-go="${i}"]`);if(cur)strip.scrollTo({left:cur.offsetLeft-strip.clientWidth/2+cur.clientWidth/2,behavior:"smooth"});
+    if(vid){if(i===0)vid.play().catch(()=>{});else vid.pause()}},80)},{passive:true});
+  strip.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(+b.dataset.go)});
+  sl.addEventListener("click",e=>{const b=e.target.closest("[data-zoom]");if(!b)return;const G=u.area?u.g:BOOK[u.type].g;
+    openViewer(G.map(([p,l])=>({src:IMG(p),label:l})),+b.dataset.zoom,u.label,TYPES[u.type].name)})}
+const areaTxt=a=>a.map(([l,v])=>`${l} <b>${num(v)} m²</b>`).join(" · ");
+function plansHTML(u){const B=BOOK[u.type];
+  return `<div class="plans"><div class="ph"><span>Plantas</span><span>${B.x}</span></div>
+  ${B.p.length>1?`<div class="ptabs">${B.p.map((f,i)=>`<button data-pf="${i}" aria-pressed="${i===0}">${f[1]}</button>`).join("")}</div>`:`<div style="height:10px"></div>`}
+  <button class="pthumb" data-popen aria-label="Ampliar planta"><img loading="lazy" src="${IMGM(B.p[0][0])}" alt="Planta ${B.p[0][1]}, ${TYPES[u.type].name}"><i>Ampliar ⤢</i></button>
+  <div class="parea" data-parea>${areaTxt(B.p[0][2])}</div></div>`}
+function bindPlans(u){const B=BOOK[u.type];const box=card.querySelector(".plans");if(!box)return;let k=0;
+  box.querySelectorAll("[data-pf]").forEach(b=>b.onclick=()=>{k=+b.dataset.pf;box.querySelectorAll("[data-pf]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    const im=box.querySelector(".pthumb img");im.src=IMGM(B.p[k][0]);im.alt=`Planta ${B.p[k][1]}`;box.querySelector("[data-parea]").innerHTML=areaTxt(B.p[k][2])});
+  box.querySelector("[data-popen]").onclick=()=>openViewer(B.p.map(([p,l])=>({src:IMG(p),label:l})),k,u.label,`Plantas · ${TYPES[u.type].name}`)}
+
+const pv=document.getElementById("pv"),pvc=document.getElementById("pvc"),pvi=document.getElementById("pvi"),pvtabs=document.getElementById("pvtabs");
+let PS=1,PX=0,PY=0,PV=null;
+function pvApply(){const cw=pvc.clientWidth,ch=pvc.clientHeight,w=pvi.naturalWidth*PS,h=pvi.naturalHeight*PS;
+  PX=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,PX));PY=h<=ch?(ch-h)/2:Math.min(0,Math.max(ch-h,PY));pvi.style.transform=`translate(${PX}px,${PY}px) scale(${PS})`}
+const pvMin=()=>Math.min(pvc.clientWidth/pvi.naturalWidth,pvc.clientHeight/pvi.naturalHeight)*.98;
+function pvFit(){PS=pvMin();PX=0;PY=0;pvApply()}
+function pvZoom(f,cx=pvc.clientWidth/2,cy=pvc.clientHeight/2){const ns=Math.min(pvMin()*6,Math.max(pvMin(),PS*f));const k=ns/PS;PX=cx-(cx-PX)*k;PY=cy-(cy-PY)*k;PS=ns;pvApply()}
+function pvSet(i){PV.i=(i+PV.list.length)%PV.list.length;const it=PV.list[PV.i];
+  document.getElementById("pvk").textContent=`${PV.kicker} · ${it.label}`;document.getElementById("pvt").textContent=PV.title;
+  pvtabs.innerHTML=PV.list.length>1?PV.list.map((x,k)=>`<button data-vf="${k}" aria-pressed="${k===PV.i}">${x.label}</button>`).join(""):"";
+  const many=PV.list.length>1;document.getElementById("pvl").hidden=!many;document.getElementById("pvr").hidden=!many;
+  document.getElementById("pvnum").textContent=many?`${PV.i+1} / ${PV.list.length}`:"";document.getElementById("pvnum").hidden=!many;
+  pvi.onload=pvFit;pvi.src=it.src;pvi.alt=it.label;if(pvi.complete&&pvi.naturalWidth)pvFit()}
+function openViewer(list,i,title,kicker){PV={list,i,title,kicker};pv.hidden=false;pvSet(i);document.getElementById("pvx").focus({preventScroll:true})}
+function closeViewer(){pv.hidden=true;if(!lb.hidden&&!lbimg.hidden){imgT0=performance.now();imgTimer=setTimeout(()=>setItem(lbj+1),IMG_MS)}}
+document.getElementById("pvx").onclick=closeViewer;
+document.getElementById("pvl").onclick=e=>{e.stopPropagation();pvSet(PV.i-1)};document.getElementById("pvr").onclick=e=>{e.stopPropagation();pvSet(PV.i+1)};
+["pvl","pvr"].forEach(id=>document.getElementById(id).addEventListener("pointerdown",e=>e.stopPropagation()));
+pvtabs.addEventListener("click",e=>{const b=e.target.closest("[data-vf]");if(b)pvSet(+b.dataset.vf)});
+document.getElementById("pvn").onclick=()=>pvZoom(1.5);document.getElementById("pvo").onclick=()=>pvZoom(1/1.5);document.getElementById("pvf").onclick=pvFit;
+pvc.addEventListener("wheel",e=>{e.preventDefault();const r=pvc.getBoundingClientRect();pvZoom(Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+{const pp=new Map();let pl=null,pd=null,sx=null,st=0;
+ pvc.addEventListener("pointerdown",e=>{pp.set(e.pointerId,[e.clientX,e.clientY]);pl=[e.clientX,e.clientY];if(pp.size===1){sx=e.clientX;st=performance.now()}if(pp.size===2){const[a,b]=[...pp.values()];pd=Math.hypot(a[0]-b[0],a[1]-b[1]);sx=null}});
+ pvc.addEventListener("pointermove",e=>{if(!pp.has(e.pointerId))return;pp.set(e.pointerId,[e.clientX,e.clientY]);
+   if(pp.size===2&&pd){const[a,b]=[...pp.values()];const d=Math.hypot(a[0]-b[0],a[1]-b[1]);const r=pvc.getBoundingClientRect();pvZoom(d/pd,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top);pd=d;return}
+   PX+=e.clientX-pl[0];PY+=e.clientY-pl[1];pl=[e.clientX,e.clientY];pvApply()});
+ const end=e=>{if(pp.size===1&&sx!=null&&PS<=pvMin()*1.01&&performance.now()-st<700){const d=e.clientX-sx;if(Math.abs(d)>60&&PV.list.length>1)pvSet(PV.i+(d<0?1:-1))}
+   pp.delete(e.pointerId);if(pp.size<2)pd=null;if(pp.size===1)pl=[...pp.values()][0]};pvc.addEventListener("pointerup",end);pvc.addEventListener("pointercancel",end);
+ pvc.addEventListener("dblclick",e=>{const r=pvc.getBoundingClientRect();pvZoom(2,e.clientX-r.left,e.clientY-r.top)})}
+addEventListener("resize",()=>{if(!pv.hidden)pvFit()});
+
+/* ---------- experiências ---------- */
+const EXP=[
+  ["clube","Beach Club Koko","Piscina de borda com o pé na areia, espaço gourmet aberto para o mar, pátio interno e lounges sob o volume de madeira.",
+    ["v:e-clube",["cl-piscina","Piscina do clube"],["cl-restaurante","Salão de frente para o mar"],["cl-gourmet","Deck gourmet"],["cl-patio","Pátio interno"],["cl-fachada","Fachada do Clube Koko"]],"x-clube"],
+  ["bem","Spa, sauna e academia","Sauna em madeira, sala de massagem em pedra natural e academia com vista para o mar.",
+    [["bm-sauna","Sauna"],["bm-massagem","Sala de massagem"],["bm-academia","Academia vista mar"]],null,"bm-sauna"],
+  ["praia","Praia do Toque","Areia clara e mar manso, na Rota Ecológica dos Milagres.",
+    ["v:e-praia",["ac-geral","Do bosque ao mar"],[14,"Milagres tem Bossa"]],"x-praia"],
+  ["lago","O lago","1.846 m² de espelho d'água, bromélias e coqueiros. O voo final sobe para mostrar o lago inteiro.",
+    ["v:e-lago",["ac-lago-espelho","O espelho d'água"],["ac-lago-alto","O lago visto do alto"],["ac-lago-casas","Casas à beira do lago"]],"x-lago"],
+  ["orsini","O jardim de Orsini","O autor dos lagos do Inhotim desenhou o Bossa espécie a espécie: coqueiros, embaúbas, estrelítzias, helicônias e bromélias.",
+    [["or-2","Masterplan paisagístico"],["or-3","Caminhos entre as casas"],["or-4","Deck do lago"],["or-5","Clube · implantação"],["or-6","Clube · entrada"],["or-12","Clube · piscina"],["or-14","Clube · piscina"],["or-19","Clube · rooftop"]],null,"or-cover"],
+  ["deck","Deck, lounges e passeios","Lounge coberto sobre a água, passarela e passeios de pedestres entre as casas.",
+    ["v:e-deck",["ac-deck","Lounge sobre o lago"],["ac-deck2","Ponte e lounge"],["ac-passeio","Passeio entre as casas"]],"x-deck"],
+  ["kids","Bosque Kids","Casa na árvore e brinquedos em madeira natural, redário e bicicletário.",
+    ["v:e-kids",["ac-kids","Casa na árvore"],["ac-redario","Redário e área de convivência"],["ac-bike","Bicicletário"]],"x-kids"],
+  ["quadras","Quadras","Tênis, padel, pickleball e esportes de areia, cercados pela mata.",
+    ["v:e-quadras",["ac-tenis","Quadra de tênis"],["ac-quadras-alto","Quadras vistas do alto"],["ac-quadras-acesso","Acesso às quadras"],["ac-trilha","Trilha pela mata"]],"x-quadras"]
+];
+const grid=document.getElementById("grid"),expEl=document.getElementById("exp");
+grid.innerHTML=EXP.map(([s,t,d,items,prev,still],i)=>`<button class="tile" data-i="${i}" aria-label="Ver: ${t}">${prev?`<video muted loop playsinline preload="none" poster="media/${prev}.jpg" data-src="media/${prev}.mp4"></video>`:`<img class="still" src="${IMGM(still)}" alt="">`}
+  <div class="ov"><span class="n">0${i+1} · ${items.length} ${items.length>1?"cenas":"cena"}</span><b>${t}</b><span>${d}</span></div><i class="play" aria-hidden="true">${prev?"▶":"⤢"}</i></button>`).join("");
+const tileIO=new IntersectionObserver(es=>es.forEach(en=>{const v=en.target;if(en.isIntersecting&&!expEl.hidden){if(!v.src)v.src=v.dataset.src;v.play().catch(()=>{})}else v.pause()}),{threshold:.35});
+grid.querySelectorAll("video").forEach(v=>tileIO.observe(v));
+function openExp(v){expEl.hidden=!v;document.querySelectorAll('[data-act="exp"]').forEach(x=>x.setAttribute("aria-pressed",v));
+  if(v){closeCard(false);expEl.scrollTop=0;grid.querySelectorAll("video").forEach(el=>{tileIO.unobserve(el);tileIO.observe(el)})}else grid.querySelectorAll("video").forEach(el=>el.pause())}
+document.getElementById("expClose").onclick=()=>openExp(false);
+grid.addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)openLB(+t.dataset.i,t)});
+
+const lb=document.getElementById("lb"),lbv=document.getElementById("lbv"),lbimg=document.getElementById("lbimg"),lbf=document.getElementById("lbf"),lbp=document.getElementById("lbp"),dots=document.getElementById("lbdots"),thumbs=document.getElementById("lbthumbs");
+dots.innerHTML=EXP.map((x,i)=>`<button data-i="${i}" aria-label="${x[1]}"></button>`).join("");
+let lbi=0,lbj=0,imgTimer=null,imgT0=0,rafP=null;const IMG_MS=6500;
+const thumbOf=it=>typeof it==="string"?`media/${it.slice(2)}.jpg`:TH(it[0]);
+function setLB(i,j=0){clearTimeout(imgTimer);cancelAnimationFrame(rafP);lbi=(i+EXP.length)%EXP.length;const[s,t,d,items]=EXP[lbi];
+  document.getElementById("lbk").textContent=`Experiência ${lbi+1} de ${EXP.length}`;document.getElementById("lbt").textContent=t;document.getElementById("lbd").textContent=d;
+  dots.querySelectorAll("button").forEach((b,k)=>b.setAttribute("aria-current",k===lbi));
+  thumbs.innerHTML=items.length>1?items.map((it,k)=>`<button data-j="${k}" aria-label="Cena ${k+1}"><img src="${thumbOf(it)}" alt=""></button>`).join(""):"";
+  setItem(j)}
+function setItem(j){clearTimeout(imgTimer);cancelAnimationFrame(rafP);const items=EXP[lbi][3];
+  if(j>=items.length){setLB(lbi+1);return}if(j<0){const p=(lbi-1+EXP.length)%EXP.length;setLB(p,EXP[p][3].length-1);return}
+  lbj=j;const it=items[j];thumbs.querySelectorAll("button").forEach((b,k)=>b.setAttribute("aria-current",k===j));
+  const cur=thumbs.querySelector(`[data-j="${j}"]`);if(cur)thumbs.scrollTo({left:cur.offsetLeft-thumbs.clientWidth/2+cur.clientWidth/2,behavior:"smooth"});lbp.style.width="0%";
+  if(typeof it==="string"){lbimg.hidden=true;lbv.hidden=false;const s=it.slice(2);lbv.poster=`media/${s}.jpg`;lbv.src=`media/${s}.mp4`;lbv.play().catch(()=>{})}
+  else{lbv.pause();lbv.hidden=true;lbimg.hidden=false;lbimg.classList.remove("kb");void lbimg.offsetWidth;lbimg.src=IMG(it[0]);lbimg.classList.toggle("board",String(it[0]).startsWith("or-"));lbimg.alt=it[1];if(!reduceM())lbimg.classList.add("kb");
+    imgT0=performance.now();const tick=()=>{const k=Math.min(1,(performance.now()-imgT0)/IMG_MS);lbp.style.width=(k*100)+"%";if(k<1)rafP=requestAnimationFrame(tick)};tick();
+    imgTimer=setTimeout(()=>setItem(lbj+1),IMG_MS)}}
+thumbs.addEventListener("click",e=>{const b=e.target.closest("[data-j]");if(b)setItem(+b.dataset.j)});
+lbimg.style.cursor="zoom-in";
+lbimg.addEventListener("click",()=>{const[s,t,d,items]=EXP[lbi];const photos=items.filter(x=>typeof x!=="string");const cur=items[lbj];
+  clearTimeout(imgTimer);cancelAnimationFrame(rafP);
+  openViewer(photos.map(([p,l])=>({src:IMG(p),label:l})),Math.max(0,photos.indexOf(cur)),t,"Experiências")});
+lbv.addEventListener("ended",()=>setItem(lbj+1));
+function openLB(i,from){grid.querySelectorAll("video").forEach(v=>v.pause());lb.hidden=false;setLB(i);
+  if(from&&!reduceM()){const a=from.getBoundingClientRect(),b=lbf.getBoundingClientRect();
+    lbf.style.transition="none";lbf.style.transform=`translate(${a.left+a.width/2-(b.left+b.width/2)}px,${a.top+a.height/2-(b.top+b.height/2)}px) scale(${a.width/b.width})`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{lbf.style.transition="transform .55s cubic-bezier(.2,.8,.2,1)";lbf.style.transform="";lb.classList.add("on")}))}
+  else lb.classList.add("on");
+  document.getElementById("lbx").focus({preventScroll:true})}
+function closeLB(){clearTimeout(imgTimer);cancelAnimationFrame(rafP);lb.classList.remove("on");lbv.pause();setTimeout(()=>{lb.hidden=true;lbv.removeAttribute("src");lbv.load();
+  grid.querySelectorAll("video").forEach(el=>{tileIO.unobserve(el);tileIO.observe(el)})},350)}
+document.getElementById("lbx").onclick=closeLB;
+document.getElementById("lbl").onclick=()=>setItem(lbj-1);document.getElementById("lbr").onclick=()=>setItem(lbj+1);
+dots.addEventListener("click",e=>{const b=e.target.closest("button");if(b)setLB(+b.dataset.i)});
+lbv.addEventListener("timeupdate",()=>{if(lbv.duration)lbp.style.width=(lbv.currentTime/lbv.duration*100)+"%"});
+let lx=null;lb.addEventListener("touchstart",e=>{lx=e.touches[0].clientX},{passive:true});
+lb.addEventListener("touchend",e=>{if(lx==null)return;const d=e.changedTouches[0].clientX-lx;lx=null;if(Math.abs(d)>50)setItem(lbj+(d<0?1:-1))});
+lb.addEventListener("click",e=>{if(e.target.classList.contains("stage"))closeLB()});
+
+addEventListener("keydown",e=>{
+  if(!pv.hidden){if(e.key==="Escape")closeViewer();if(e.key==="ArrowRight")pvSet(PV.i+1);if(e.key==="ArrowLeft")pvSet(PV.i-1);return}
+  if(!lb.hidden){if(e.key==="Escape")closeLB();if(e.key==="ArrowRight")setItem(lbj+1);if(e.key==="ArrowLeft")setItem(lbj-1);return}
+  if(e.key!=="Escape")return;if(!cine.hidden)endFilm();else if(!expEl.hidden)openExp(false);else closeCard()});
+
+/* ---------- sol: posição real em 7 de outubro, Praia do Toque (−9,27°, −35,38°) ---------- */
+const LAT=-9.27*Math.PI/180, DECL=23.44*Math.sin(2*Math.PI*(284+280)/365)*Math.PI/180, UP_AZ=23; // topo da imagem aponta para 23° (norte da prancha 01/38)
+const PX_PER_M=1/0.2463;
+function sunAt(h){const H=(15*(h+(-35.38+45)/15-12))*Math.PI/180;
+  const el=Math.asin(Math.sin(LAT)*Math.sin(DECL)+Math.cos(LAT)*Math.cos(DECL)*Math.cos(H));
+  let az=Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(LAT)-Math.tan(DECL)*Math.cos(LAT))*180/Math.PI+180;
+  return{el:el*180/Math.PI,az:(az+360)%360}}
+const H0=Math.acos(-Math.tan(LAT)*Math.tan(DECL))*180/Math.PI/15, NOON=12-(-35.38+45)/15;
+const RISE=NOON-H0, SET=NOON+H0;
+const hm=h=>{const m=Math.round(h*60);return`${Math.floor(m/60)}h${String(m%60).padStart(2,"0")}`};
+const dirName=a=>["norte","nordeste","leste","sudeste","sul","sudoeste","oeste","noroeste"][Math.round(((a%360)+360)%360/45)%8];
+const scr=az=>{const t=(az-UP_AZ)*Math.PI/180;return[Math.sin(t),-Math.cos(t)]}; // direção na tela (imagem) para um azimute
+const LIGHTS=[["manha","Manhã",7.25],["dia","Meio-dia",11.6],["tarde","Tarde",15.25],["por","Pôr do sol",17.1],["noite","Noite",20]];
+document.querySelectorAll("[data-lights]").forEach(c=>c.innerHTML=LIGHTS.map(([k,l])=>`<button class="chip" data-light="${k}" aria-pressed="false">${l}</button>`).join(""));
+const img=document.getElementById("img"),shadowsG=document.getElementById("shadows"),nightG=document.getElementById("nightLights"),sunGrad=document.getElementById("sunGrad");
+// luzes noturnas: cada casa acende; disponíveis mais fortes
+nightG.innerHTML=AREAS.map(a=>{const r=Math.max(a.w,a.h)*(a===CLUB?.6:.42);return `<ellipse cx="${(a.bx[0]+a.bx[2])/2}" cy="${(a.bx[1]+a.bx[3])/2}" rx="${r}" ry="${Math.max(r*.55,Math.min(a.w,a.h)*.9)}" fill="url(#${a===CLUB?"glowA":"glowW"})" opacity="${a.key==="Lago"?.55:1}"/>`}).join("")+UNITS.map(u=>{const k=u.status==="d"?1.25:.85;return `<ellipse cx="${u.x}" cy="${u.y}" rx="${Math.max(u.w,u.h)*.55*k}" ry="${Math.max(u.w,u.h)*.55*k}" fill="url(#${u.status==="d"?"glowA":"glowW"})"/>`}).join("");
+const HEIGHT={"Brisa":7.3,"Lago A":9.3,"Lago B":9.3,"Lago C":9.3,"Vista":9.3,"Mar":7.3};
+function hull(P){P=P.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const L=[],U=[];
+  for(const p of P){while(L.length>=2&&cr(L[L.length-2],L[L.length-1],p)<=0)L.pop();L.push(p)}
+  for(const p of P.reverse()){while(U.length>=2&&cr(U[U.length-2],U[U.length-1],p)<=0)U.pop();U.push(p)}return L.slice(0,-1).concat(U.slice(0,-1))}
+function drawShadows(s){
+  if(s.el<=2){shadowsG.innerHTML="";return}
+  const[dx,dy]=scr(s.az);const tanE=Math.tan(s.el*Math.PI/180);
+  shadowsG.innerHTML=UNITS.map(u=>{const L=Math.min(75,HEIGHT[u.type]/tanE*PX_PER_M);const sx=-dx*L,sy=-dy*L;
+    const r=u.r*Math.PI/180,c=Math.cos(r),sn=Math.sin(r);
+    const pts=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>[u.x+(a*u.w/2)*c-(b*u.h/2)*sn,u.y+(a*u.w/2)*sn+(b*u.h/2)*c]);
+    const h=hull(pts.concat(pts.map(p=>[p[0]+sx,p[1]+sy])));
+    return `<polygon points="${h.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="#0d1a24" opacity=".27"/>`}).join("");
+}
+function compassSVG(s,size){const c=size/2,R=size/2-6;const t=(UP_AZ*-1)*Math.PI/180; // norte gira para a esquerda
+  const nx=c+Math.sin(-UP_AZ*Math.PI/180)*(R-2),ny=c-Math.cos(-UP_AZ*Math.PI/180)*(R-2);
+  const up=s.el>0;const[dx,dy]=scr(s.az);const rr=R*(1-Math.max(0,s.el)/90)*.92;
+  return `<svg viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${R}" fill="${up?"#f7efe0":"#1d2a3a"}" stroke="rgba(22,48,46,.25)"/>
+   <line x1="${c}" y1="${c}" x2="${nx}" y2="${ny}" stroke="#16302e" stroke-width="1.4"/><text x="${c+(nx-c)*1.0}" y="${c+(ny-c)*1.0-3}" font-size="9" font-family="Figtree,sans-serif" font-weight="600" text-anchor="middle" fill="${up?"#16302e":"#e7e1d3"}">N</text>
+   <path d="M${c+R*.98} ${c-R*.55} A ${R} ${R} 0 0 1 ${c+R*.98} ${c+R*.55}" stroke="#2f8f97" stroke-width="4" fill="none" opacity=".75"/>
+   ${up?`<circle cx="${c+dx*rr}" cy="${c+dy*rr}" r="6" fill="#e7a23f" stroke="#fff" stroke-width="1.5"/>`:`<circle cx="${c+R*.35}" cy="${c-R*.35}" r="5" fill="#e7e1d3"/><circle cx="${c+R*.35+3}" cy="${c-R*.35-2}" r="4.4" fill="#1d2a3a"/>`}</svg>`}
+const GRADES={manha:"brightness(1.02) saturate(1.06) sepia(.14) contrast(1.03)",dia:"none",tarde:"saturate(1.08) sepia(.1)",
+  por:"brightness(.86) saturate(1.35) sepia(.4) contrast(1.06) hue-rotate(-10deg)",noite:"brightness(.34) saturate(.7) sepia(.5) hue-rotate(175deg) contrast(1.15)"};
+let LIGHT="dia";
+function setLight(k){LIGHT=k;const[,,h]=LIGHTS.find(x=>x[0]===k);const s=sunAt(h);const night=k==="noite";
+  document.querySelectorAll("[data-light]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.light===k));
+  img.style.filter=GRADES[k];document.getElementById("hi").style.filter=GRADES[k];nightG.setAttribute("opacity",night?1:0);drawShadows(night?{el:0,az:0}:s);
+  // luz quente vinda do lado do sol
+  const[dx,dy]=scr(s.az);const warm=night?0:Math.max(0,.55-s.el/120);
+  sunGrad.setAttribute("x1",842-dx*900);sunGrad.setAttribute("y1",474-dy*900);sunGrad.setAttribute("x2",842+dx*900);sunGrad.setAttribute("y2",474+dy*900);
+  sunGrad.children[1].setAttribute("stop-opacity",warm.toFixed(2));
+  const txt=night?{b:"Noite · 20h",s:`Sol se pôs às ${hm(SET)}, a oeste, atrás da mata. Casas acesas; disponíveis em destaque.`}
+    :{b:`${LIGHTS.find(x=>x[0]===k)[1]} · ${hm(h)}`,s:`Sol a ${Math.round(s.el)}° de altura, vindo de ${dirName(s.az)}. Nasce às ${hm(RISE)} sobre o mar e se põe às ${hm(SET)}.`};
+  document.getElementById("sunbox").innerHTML=compassSVG(s,76)+`<div><b>${txt.b}</b><span>${txt.s}</span></div>`;
+  document.getElementById("sunchip").innerHTML=compassSVG(s,38)+`<span><b>${night?"Noite":hm(h)}</b> ${night?"":"· sol de "+dirName(s.az)}</span>`;
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-light]");if(b)setLight(b.dataset.light)});
+// orientação da piscina por tipologia (lado do lago/mar/fundos), em azimute
+const POOL_AZ={"Brisa":UP_AZ,"Lago A":UP_AZ+90,"Lago B":UP_AZ+5,"Lago C":UP_AZ+180,"Vista":UP_AZ+270,"Mar":UP_AZ+90};
+function sunNote(u){const a=(POOL_AZ[u.type]+360)%360;const d=dirName(a);
+  const m={norte:"recebe sol praticamente o dia todo",nordeste:"sol da manhã até o meio da tarde",leste:"sol da manhã, sombra à tarde",sudeste:"sol da manhã, sombra à tarde",
+    sul:"luz mais suave, com sombra na maior parte do dia",sudoeste:"sol da tarde",oeste:"sol da tarde e vista do pôr do sol",noroeste:"sol do fim da manhã ao pôr do sol"}[d];
+  return `<p class="sunline"><i>☀</i><span>Área de piscina voltada para <b>${d}</b>: ${m}. Estimativa pela implantação; confirme com a arquitetura.</span></p>`}
+
+/* ---------- relevo 3D (render + mapa de alturas) ---------- */
+const R3={on:false,ready:false,loading:false};
+const MPX=0.2463, WM=1685*MPX, HM=948*MPX; // metros
+const u2w=(x,y)=>[(x/1685-.5)*WM,(y/948-.5)*HM];
+const v3d=document.getElementById("v3d"),v3msg=document.getElementById("v3msg");
+async function build3D(){
+  R3.loading=true;v3msg.hidden=false;v3msg.textContent="Montando o relevo…";
+  const THREE=await import("three");const {OrbitControls}=await import("three/addons/controls/OrbitControls.js");
+  R3.T=THREE;
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:"high-performance"});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile()?1.75:2));renderer.setSize(innerWidth,innerHeight);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NoToneMapping;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  v3d.prepend(renderer.domElement);
+  const scene=new THREE.Scene();renderer.setClearColor(0x000000,0);
+  const camera=new THREE.PerspectiveCamera(34,innerWidth/innerHeight,1,4000);
+  const controls=new OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;controls.dampingFactor=.08;controls.minDistance=55;controls.maxDistance=520;
+  controls.maxPolarAngle=1.0;controls.minPolarAngle=0;controls.screenSpacePanning=false;
+  // alturas
+  const himg=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src="media/relief/height.png"});
+  const cv=document.createElement("canvas");cv.width=himg.width;cv.height=himg.height;const cx=cv.getContext("2d");cx.drawImage(himg,0,0);
+  const hd=cx.getImageData(0,0,cv.width,cv.height).data;const GW=cv.width,GH=cv.height;
+  const geo=new THREE.PlaneGeometry(WM,HM,GW-1,GH-1);geo.rotateX(-Math.PI/2);
+  const pos=geo.attributes.position;for(let i=0;i<pos.count;i++){pos.setY(i,hd[i*4]/255*12-1)}
+  geo.computeVertexNormals();R3.hd=hd;R3.GW=GW;R3.GH=GH;
+  const tex=await new THREE.TextureLoader().loadAsync(renderer.capabilities.maxTextureSize>=8192&&!isMobile()?"media/render-full.jpg":"media/render-tex.jpg");tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  // terreno: cores exatas do render (sem iluminação) + leve sombreamento nas encostas
+  const nrm=geo.attributes.normal,colA=new Float32Array(nrm.count*3);
+  for(let i=0;i<nrm.count;i++){const ny=nrm.getY(i);const k=.78+.22*Math.pow(Math.max(0,ny),3);colA[i*3]=colA[i*3+1]=colA[i*3+2]=k}
+  geo.setAttribute("color",new THREE.BufferAttribute(colA,3));
+  const mat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true});
+  const mesh=new THREE.Mesh(geo,mat);mesh.castShadow=true;scene.add(mesh);
+  const shadowMat=new THREE.ShadowMaterial({opacity:.32});
+  const shade=new THREE.Mesh(geo,shadowMat);shade.receiveShadow=true;shade.position.y=.05;scene.add(shade);
+  // volumes das casas: telhado = recorte do render; fachadas = material da tipologia
+  const slat=(base,line,dark)=>{const c=document.createElement("canvas");c.width=128;c.height=128;const g=c.getContext("2d");g.fillStyle=base;g.fillRect(0,0,128,128);
+    if(line){g.fillStyle=line;for(let x=0;x<128;x+=6)g.fillRect(x,0,3,128)}
+    g.fillStyle=dark;g.fillRect(0,0,128,10);g.fillStyle="rgba(30,40,45,.55)";g.fillRect(14,70,100,36);g.fillStyle="rgba(255,255,255,.08)";g.fillRect(14,70,100,4);
+    const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;tx.wrapS=tx.wrapT=THREE.RepeatWrapping;return tx};
+  const FAC={"Brisa":slat("#cbb08a","#a98a63","#e9e3d7"),"Lago A":slat("#b9805a","#9a6646","#ece7dd"),"Lago B":slat("#b9805a","#9a6646","#ece7dd"),
+    "Lago C":slat("#ebe6dc","#cfc8bb","#f3efe8"),"Vista":slat("#d9cfbf","#b7a586","#efeae0"),"Mar":slat("#6f5038","#563b28","#e7ddc8"),"Clube":slat("#c9b28e","#8f6b48","#efe9dd")};
+  // fachadas reais, recortadas dos renders de cada tipologia
+  const TL=new THREE.TextureLoader(),FIMG={"Brisa":"Brisa","Lago A":"LagoA","Lago B":"LagoB","Lago C":"LagoC","Vista":"Vista","Mar":"Mar"};
+  await Promise.all(Object.entries(FIMG).map(async([k,f])=>{try{const tx=await TL.loadAsync(`media/fac/${f}.jpg`);tx.colorSpace=THREE.SRGBColorSpace;tx.wrapS=THREE.RepeatWrapping;tx.wrapT=THREE.ClampToEdgeWrapping;tx.anisotropy=8;FAC[k]=tx;FAC[k].real=true}catch(e){}}));
+  const facMat={};for(const k in FAC)facMat[k]=new THREE.MeshLambertMaterial({map:FAC[k],emissive:0xffffff,emissiveMap:FAC[k],emissiveIntensity:FAC[k].real?.42:.25});
+  const roofMat=new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide});
+  const houseGroup=new THREE.Group();scene.add(houseGroup);
+  function volume(cx,cy,w,h,rotDeg,y0,y1,type){ // cx,cy,w,h em px da imagem
+    const a=rotDeg*Math.PI/180,c=Math.cos(a),s=Math.sin(a);
+    const P=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([i,j])=>[cx+(i*w/2)*c-(j*h/2)*s,cy+(i*w/2)*s+(j*h/2)*c]);
+    const Wp=P.map(([x,y])=>u2w(x,y));const pos=[],uv=[],idx=[];let v=0;const g=new THREE.BufferGeometry();
+    // topo
+    for(const k of [0,1,2,3]){pos.push(Wp[k][0],y1,Wp[k][1]);uv.push(P[k][0]/1685,1-P[k][1]/948)}
+    idx.push(0,3,1,1,3,2);g.addGroup(0,6,0);v=4;
+    // laterais
+    const start=idx.length;
+    const real=FAC[type]&&FAC[type].real;const lens=[0,1,2,3].map(e=>Math.hypot(Wp[(e+1)%4][0]-Wp[e][0],Wp[(e+1)%4][1]-Wp[e][1]));const sh=Math.min(...lens);
+    for(let e=0;e<4;e++){const A=Wp[e],B=Wp[(e+1)%4];const len=lens[e];
+      let rep,va,vb;if(real){rep=Math.max(1,Math.round(len/sh));va=y0>0?.62:0;vb=1}else{rep=Math.max(1,Math.round(len/4));va=0;vb=(y1-y0)/7}
+      pos.push(A[0],y0,A[1], B[0],y0,B[1], B[0],y1,B[1], A[0],y1,A[1]);uv.push(0,va, rep,va, rep,vb, 0,vb);
+      idx.push(v,v+1,v+2, v,v+2,v+3);v+=4}
+    g.addGroup(start,idx.length-start,1);
+    g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
+    const m=new THREE.Mesh(g,[roofMat,facMat[type]]);m.material[1].side=THREE.DoubleSide;m.castShadow=true;m.receiveShadow=true;houseGroup.add(m);return m}
+  const HT2={"Brisa":0,"Lago A":1,"Lago B":1,"Lago C":1,"Vista":1,"Mar":0};
+  for(const u of UNITS){const ms=[volume(u.x,u.y,u.w*.94,u.h*.94,u.r,0,7,u.type)];if(HT2[u.type])ms.push(volume(u.x,u.y,u.w*.5,u.h*.42,u.r,7,9.3,u.type));
+    if(u.status==="d"){const own=[roofMat.clone(),facMat[u.type].clone()];own[1].side=THREE.DoubleSide;ms.forEach(m=>m.material=own)}u.m3=ms}
+  R3.dimMats=[mat,roofMat,...Object.values(facMat)];
+  volume(1310,457,62,26,0,0,7,"Clube");
+  // entorno: mata, praia e mar além do render
+  // ---- maquete: corte de terreno nas bordas + base + sombra de contato ----
+  const BASE_TOP=-1.6,BASE_H=7,M=3;
+  {const sp=[],sc=[],si=[];let n=0;const earth=[[.36,.29,.21],[.27,.21,.15]];
+   const edge=(i,j)=>{const k=j*GW+i;return[pos.getX(k),pos.getY(k),pos.getZ(k)]};
+   const runs=[[...Array(GW).keys()].map(i=>[i,0]),[...Array(GH).keys()].map(j=>[GW-1,j]),[...Array(GW).keys()].reverse().map(i=>[i,GH-1]),[...Array(GH).keys()].reverse().map(j=>[0,j])];
+   for(const r of runs){for(let q=0;q<r.length-1;q++){const a=edge(...r[q]),b=edge(...r[q+1]);
+     sp.push(a[0],a[1],a[2], b[0],b[1],b[2], b[0],BASE_TOP,b[2], a[0],BASE_TOP,a[2]);
+     sc.push(...earth[0],...earth[0],...earth[1],...earth[1]);si.push(n,n+2,n+1, n,n+3,n+2);n+=4}}
+   const sg=new THREE.BufferGeometry();sg.setAttribute("position",new THREE.Float32BufferAttribute(sp,3));sg.setAttribute("color",new THREE.Float32BufferAttribute(sc,3));sg.setIndex(si);
+   scene.add(new THREE.Mesh(sg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide})))}
+  const baseMat=[0,1,2,3,4,5].map(i=>new THREE.MeshLambertMaterial({color:i===2?0xefe9dd:0xe4dccb}));
+  const base=new THREE.Mesh(new THREE.BoxGeometry(WM+2*M,BASE_H,HM+2*M),baseMat);base.position.set(0,BASE_TOP-BASE_H/2-.01,0);base.receiveShadow=true;scene.add(base);
+  const lip=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(WM+2*M,BASE_H,HM+2*M)),new THREE.LineBasicMaterial({color:0xb9ae98,transparent:true,opacity:.6}));lip.position.copy(base.position);scene.add(lip);
+  const shTex=(()=>{const c=document.createElement("canvas");c.width=c.height=256;const g=c.getContext("2d");const r=g.createRadialGradient(128,128,40,128,128,128);
+    r.addColorStop(0,"rgba(40,30,20,.55)");r.addColorStop(1,"rgba(40,30,20,0)");g.fillStyle=r;g.fillRect(0,0,256,256);return new THREE.CanvasTexture(c)})();
+  const ring=new THREE.Mesh(new THREE.PlaneGeometry(WM*1.5,HM*1.9),new THREE.MeshBasicMaterial({map:shTex,transparent:true,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(6,BASE_TOP-BASE_H-.2,8);scene.add(ring);
+  // brilho do mar: reflexo suave e animado sobre a faixa de mar do render
+  const seaTex=(()=>{const c=document.createElement("canvas");c.width=256;c.height=512;const g=c.getContext("2d");g.clearRect(0,0,256,512);
+    for(let i=0;i<220;i++){const y=Math.random()*512,x=Math.random()*256,w=10+Math.random()*50;g.strokeStyle=`rgba(255,255,255,${.08+Math.random()*.22})`;g.lineWidth=1+Math.random()*1.5;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+w/2,y-2,x+w,y);g.stroke()}
+    const tx=new THREE.CanvasTexture(c);tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(1,4);return tx})();
+  const SEA_U0=1645,sw=(IW-SEA_U0)*MPX;
+  const sea=new THREE.Mesh(new THREE.PlaneGeometry(sw,HM),new THREE.MeshBasicMaterial({map:seaTex,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending}));
+  sea.rotation.x=-Math.PI/2;sea.position.set(WM/2-sw/2,.05,0);scene.add(sea);const sand=null;
+  // luz
+  const amb=new THREE.HemisphereLight(0xffffff,0x8a8070,.75);scene.add(amb);
+  const sun=new THREE.DirectionalLight(0xffffff,.75);sun.castShadow=true;sun.shadow.mapSize.set(isMobile()?2048:4096,isMobile()?2048:4096);
+  Object.assign(sun.shadow.camera,{left:-240,right:240,top:150,bottom:-150,near:1,far:1100});sun.shadow.bias=-.0004;sun.shadow.normalBias=.4;
+  scene.add(sun,sun.target);
+  // contornos das disponíveis + luzes noturnas
+  const outlines=[],glows=[];for(const a of AREAS)a.w3=u2w(a.x,a.y);
+  const gtex=(()=>{const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d");const r=g.createRadialGradient(64,64,0,64,64,64);
+    r.addColorStop(0,"rgba(255,230,180,1)");r.addColorStop(.35,"rgba(255,180,90,.55)");r.addColorStop(1,"rgba(255,150,60,0)");g.fillStyle=r;g.fillRect(0,0,128,128);return new THREE.CanvasTexture(c)})();
+  for(const u of UNITS){const[x,z]=u2w(u.x,u.y);u.w3=[x,z];
+    const w=u.w*MPX*.98,h=u.h*MPX*.98,a=-u.r*Math.PI/180;
+    if(u.status==="d"){const g=new THREE.EdgesGeometry(new THREE.BoxGeometry(w,7.4,h));const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xf0c27f,transparent:true,opacity:.9}));
+      l.position.set(x,3.55,z);l.rotation.y=a;scene.add(l);outlines.push({u,l});
+      const cap=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:0xe2ad62,transparent:true,opacity:.25,depthWrite:false}));cap.rotation.x=-Math.PI/2;cap.rotation.z=a;cap.position.set(x,(["Brisa","Mar"].includes(u.type)?7.08:9.38),z);scene.add(cap);outlines.push({u,l:cap,cap:true})}
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:0}));
+    const k=u.status==="d"?1.3:.85;s.scale.set(Math.max(w,h)*1.6*k,Math.max(w,h)*1.6*k,1);s.position.set(x,6,z);scene.add(s);glows.push({u,s})}
+  for(const a of AREAS){const[x,z]=u2w((a.bx[0]+a.bx[2])/2,(a.bx[1]+a.bx[3])/2);const sz=Math.max(a.w,a.h)*MPX*(a.key==="Lago"?.9:a.key==="Koko"?.45:1.15);
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:0}));s.scale.set(sz,sz,1);s.position.set(x,5,z);scene.add(s);glows.push({u:a,s})}
+  // ---- noite: postes nas alamedas, balizadores na passarela do lago, piscina do clube ----
+  const ROADS=[[[62,150],[62,300],[40,380],[30,440],[60,490],[110,520],[200,532],[300,536],[400,534],[480,528],[560,515],[620,490],[632,430],[628,360],[650,305],[720,292],[820,290],[920,292],[1020,294],[1120,296],[1215,300],[1218,380],[1216,460],[1214,540],[1214,620]],
+    [[652,330],[660,420],[668,520],[676,620],[690,720],[705,815],[790,790],[880,762],[970,725],[1040,690],[1062,640]],[[1225,497],[1300,497],[1380,497]]];
+  const PATH=[[830,470],[845,515],[880,525],[930,512],[985,497],[1040,490]];
+  const along=(pl,step)=>{const out=[];let acc=step;for(let i=0;i<pl.length-1;i++){const[a,b]=[pl[i],pl[i+1]];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let s=0;s<L;s+=1){acc+=1;if(acc>=step){acc=0;out.push([a[0]+(b[0]-a[0])*s/L,a[1]+(b[1]-a[1])*s/L])}}}return out};
+  const lampTex=(()=>{const c=document.createElement("canvas");c.width=c.height=64;const g=c.getContext("2d");const r=g.createRadialGradient(32,32,0,32,32,32);
+    r.addColorStop(0,"rgba(255,244,214,1)");r.addColorStop(.18,"rgba(255,206,130,.9)");r.addColorStop(.5,"rgba(255,170,80,.25)");r.addColorStop(1,"rgba(255,150,60,0)");g.fillStyle=r;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+  const nightFx=[];const addGlow=(x,y,sz,col,h,tex)=>{const[wx,wz]=u2w(x,y);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex||lampTex,color:col||0xffffff,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:0}));s.scale.set(sz,sz,1);s.position.set(wx,h??3.2,wz);scene.add(s);nightFx.push(s)};
+  for(const pl of ROADS)for(const[x,y]of along(pl,54))addGlow(x,y,4.2,0xffd59a);
+  for(const[x,y]of along(PATH,22))addGlow(x,y,2.4,0xffe2b0,1.2);
+  {const[wx,wz]=u2w(1437,507);const pm=new THREE.Mesh(new THREE.PlaneGeometry(84*MPX,26*MPX),new THREE.MeshBasicMaterial({color:0x2a9fc0,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));
+    pm.rotation.x=-Math.PI/2;pm.position.set(wx,.15,wz);scene.add(pm);pm.userData.max=.38;nightFx.push(pm);addGlow(1437,507,14,0x2a8fb0,1.4,gtex);nightFx[nightFx.length-1].userData.max=.35}
+  R3.nightFx=nightFx;R3.baseMat=baseMat;
+  Object.assign(R3,{THREE,renderer,scene,camera,controls,mesh,sun,amb,outlines,glows,mat,ring,sea,sand,shadowMat,houseGroup});
+  // câmera inicial: celular em pé com o mar no topo
+  setCam3D(defaultCam3D(),1);
+  // seleção por toque
+  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let down=null;
+  renderer.domElement.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY,performance.now()]});
+  renderer.domElement.addEventListener("pointerup",e=>{if(!down)return;const moved=Math.hypot(e.clientX-down[0],e.clientY-down[1]);const dt=performance.now()-down[2];down=null;
+    if(moved>6||dt>500)return;const hit=pick3D(e.clientX,e.clientY);if(hit)select(hit);else if(!card.hidden&&isMobile())closeCard()});
+  renderer.domElement.addEventListener("pointermove",e=>{if(e.pointerType!=="mouse"||e.buttons)return;const u=pick3D(e.clientX,e.clientY);
+    renderer.domElement.style.cursor=u?"pointer":"grab";if(u){tip.hidden=false;tip.style.left=e.clientX+"px";tip.style.top=e.clientY+"px";
+      tip.innerHTML=u.area?`<b>${u.label}</b> · toque para conhecer`:`<b>${u.label}</b> · ${u.status==="d"?"Disponível · "+mi(u.price):u.status==="r"?"Reservada":"Vendida"}`}else tip.hidden=true});
+  function pick3D(x,y){ndc.set(x/innerWidth*2-1,-(y/innerHeight)*2+1);ray.setFromCamera(ndc,camera);const h=ray.intersectObjects([...houseGroup.children,mesh],false)[0];if(!h)return null;
+    {const ar=areaAt((h.point.x/WM+.5)*IW,(h.point.z/HM+.5)*IH,6);if(ar){let bd2=1e9;for(const u of UNITS)bd2=Math.min(bd2,Math.hypot(u.w3[0]-h.point.x,u.w3[1]-h.point.z)-Math.max(u.w,u.h)*MPX*.5);if(bd2>0)return ar}}
+    let best=null,bd=1e9;for(const u of UNITS){const d=Math.hypot(u.w3[0]-h.point.x,u.w3[1]-h.point.z);if(d<bd){bd=d;best=u}}
+    return bd<Math.max(best.w,best.h)*MPX*.6?best:null}
+  addEventListener("resize",()=>{if(!R3.renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+  R3.ready=true;R3.loading=false;v3msg.hidden=true;light3D(LIGHT);only3D();loop3D();
+}
+function defaultCam3D(){const port=innerHeight>innerWidth;if(port)return{t:[8,0,0],d:330,pol:.78,az:-Math.PI/2};
+  const tf=2*Math.tan(17*Math.PI/180),asp=innerWidth/innerHeight;const d=Math.min(515,Math.max(WM/.876/(tf*asp),HM*1.03/tf));
+  return{t:[0,0,4],d,pol:.09,az:0}}
+function camFrom(o){const{t,d,pol,az}=o;return[t[0]+d*Math.sin(pol)*Math.sin(az),t[1]+d*Math.cos(pol),t[2]+d*Math.sin(pol)*Math.cos(az)]}
+let tw3=null;
+function setCam3D(o,ms=1300){const{camera,controls,THREE}=R3;const p1=camFrom(o);
+  if(ms<=1||reduceM()){camera.position.set(...p1);controls.target.set(...o.t);controls.update();return}
+  tw3={p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(...p1),t1:new THREE.Vector3(...o.t),s:performance.now(),ms}}
+function curAz(){const{camera,controls}=R3;return Math.atan2(camera.position.x-controls.target.x,camera.position.z-controls.target.z)}
+function fly3DBox([x0,y0,x1,y1]){const[a,b]=u2w((x0+x1)/2,(y0+y1)/2);const span=Math.max((x1-x0)*MPX,(y1-y0)*MPX);
+  setCam3D({t:[a,2,b],d:Math.max(110,span*1.45),pol:.6,az:curAz()})}
+function fly3DUnit(u){const[a,b]=u.w3||u2w(u.x,u.y);const m=isMobile();
+  const o={t:[a,3,b],d:m?185:200,pol:.58,az:curAz()};
+  if(!m){const off=36;o.t=[a+Math.cos(o.az)*off,3,b-Math.sin(o.az)*off]}else{o.t=[a+Math.sin(o.az)*26,3,b+Math.cos(o.az)*26]}
+  setCam3D(o,1000)}
+function light3D(k){if(!R3.ready)return;const{THREE,sun,amb,scene,glows,renderer}=R3;const[,,h]=LIGHTS.find(x=>x[0]===k);const s=sunAt(h);const night=k==="noite";
+  renderer.domElement.style.filter=k==="noite"?"saturate(.9) contrast(1.05)":GRADES[k];
+  const[dx,dy]=scr(s.az);const el=Math.max(s.el,3)*Math.PI/180;
+  sun.position.set(dx*Math.cos(el)*500,Math.sin(el)*500,dy*Math.cos(el)*500);sun.target.position.set(0,0,0);
+  sun.intensity=night?0:.45+.4*Math.min(1,s.el/40);amb.intensity=night?.9:.7;R3.shadowMat&&(R3.shadowMat.opacity=night?0:.18+.18*Math.min(1,s.el/30));
+  sun.color.setHSL(.09,night?0:Math.max(0,.6-s.el/80),.5+.5*Math.min(1,s.el/30));
+  document.getElementById("v3d").dataset.l=k;only3D();if(R3.sea&&!night)R3.sea.material.opacity=(k==="por"?.75:.55)*(ONLY?.38:1);
+  for(const g of glows)g.s.material.opacity=night?(g.u.status==="d"?1:g.u.key==="Koko"?.5:.75):0}
+let raf3=null;
+function loop3D(){if(!R3.on){raf3=null;return}const{renderer,scene,camera,controls,outlines,THREE}=R3;const t=performance.now();
+  if(tw3){const k=Math.min(1,(t-tw3.s)/tw3.ms),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;camera.position.lerpVectors(tw3.p0,tw3.p1,e);controls.target.lerpVectors(tw3.t0,tw3.t1,e);if(k>=1)tw3=null}
+  controls.update();if(R3.sea)R3.sea.material.map.offset.y=(t/24000)%1;
+  const pulse=.55+.4*Math.sin(t/380);for(const o of outlines){const sel=o.u===selected;o.l.material.opacity=o.cap?(sel?.45:.18+.1*Math.sin(t/380)):(sel?1:pulse)}
+  renderer.render(scene,camera);place3DPins();raf3=requestAnimationFrame(loop3D)}
+function place3DPins(){const{camera,THREE}=R3;if(!R3._v)R3._v=new THREE.Vector3();const v=R3._v;
+  for(const p of pins){const[x,z]=p.u.w3;v.set(x,12,z).project(camera);const vis=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05;
+    const sx=(v.x*.5+.5)*innerWidth,sy=(-v.y*.5+.5)*innerHeight;p.el.hidden=!vis||sy>innerHeight-(isMobile()?safe().b:0);
+    if(vis)p._a=[sx,sy,false]}
+  declutter(6)}
+function declutter(gap){const vis=pins.filter(p=>!p.el.hidden&&p._a);const placed=[];
+  vis.sort((a,b)=>a._a[1]-b._a[1]||a._a[0]-b._a[0]);
+  for(const p of vis){const[x,y,below]=p._a;const w=p.el.offsetWidth,h=p.el.offsetHeight;let lift=0;
+    if(!below){for(let k=0;k<12;k++){const r={l:x-w/2-3,r:x+w/2+3,t:y-gap-lift-h-3,b:y-gap-lift+3};
+      const hit=placed.find(q=>r.l<q.r&&r.r>q.l&&r.t<q.b&&r.b>q.t);if(!hit)break;lift=y-gap+4-hit.t;}}
+    const top=below?y+gap:y-gap-lift-h;placed.push({l:x-w/2-3,r:x+w/2+3,t:top-3,b:top+h+3});
+    p.el.style.setProperty("--lift",lift+"px");
+    p.el.style.transform=below?`translate(${x}px,${y}px) translate(-50%,${gap}px)`:`translate(${x}px,${y}px) translate(-50%,calc(-100% - ${gap+lift}px))`}}
+let ONLY=false;
+function only3D(){if(!R3.ready)return;const k=ONLY?.38:1,night=LIGHT==="noite";const T=night?[.10,.13,.21]:[1,1,1];
+  for(const m of R3.dimMats){m.color.setRGB(T[0]*k,T[1]*k,T[2]*k);if(m.emissiveMap){m.userData.e0??=m.emissiveIntensity;
+    if(night){m.emissive.setHex(0xffb468);m.emissiveIntensity=.30*k}else{m.emissive.setHex(0xffffff);m.emissiveIntensity=m.userData.e0*k}}}
+  for(const m of R3.baseMat||[])m.color.setHex(night?0x2a3442:(m===R3.baseMat[2]?0xefe9dd:0xe4dccb));
+  for(const s of R3.nightFx||[])s.material.opacity=night?(s.userData.max??.85)*(ONLY?.4:1):0;
+  if(R3.sea)R3.sea.material.opacity=(night?.12:.55)*k}
+async function set3D(on){R3.on=on;document.querySelectorAll('[data-act="3d"]').forEach(b=>b.setAttribute("aria-pressed",on));
+  view.hidden=on;v3d.hidden=!on;document.body.classList.toggle("is3d",on);tip.hidden=true;
+  if(on){if(!R3.ready&&!R3.loading){try{await build3D()}catch(err){v3msg.textContent="Não foi possível abrir o 3D neste aparelho. Voltando para a vista de cima.";setTimeout(()=>set3D(false),2200);return}}
+    if(R3.ready&&!raf3)loop3D()}
+  else placePins()}
+// integrações com o mapa 2D
+const _fitBox=fitBox;fitBox=function(box,ms){if(R3.on&&R3.ready){fly3DBox(box);return}return _fitBox(box,ms)};
+const _focusUnit=focusUnit;focusUnit=function(u){if(R3.on&&R3.ready){fly3DUnit(u);return}return _focusUnit(u)};
+const _placePins=placePins;placePins=function(){if(R3.on)return;return _placePins()};
+const _setLight=setLight;setLight=function(k){_setLight(k);light3D(k)};
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="3d"]');if(a)set3D(!R3.on)});
+
+/* ---------- início e orientação ---------- */
+function layout(first){const r=innerWidth<=720&&innerHeight>innerWidth;const changed=r!==ROT;ROT=r;pinText();
+  if(first||changed){S=minS();TX=0;TY=0;apply();homeView(1)}else{S=Math.max(S,minS());apply()}}
+addEventListener("resize",()=>layout(false));
+layout(true);setLight("dia");set3D(true); // abre no Relevo 3D (cai para o 2D se o aparelho não suportar)
+</script>
+
+</body></html>
