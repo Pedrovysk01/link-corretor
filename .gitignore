@@ -64,3 +64,9 @@ Planta-Interativa.zip
 Planta-Interativa/Montemerano/
 Planta-Interativa/Planta Interativa/tour/public/film/old/
 .ds-audit/
+
+# ---- exceções à regra "data/": dados das apresentações e do tour 3D (código, não dados de cliente) ----
+!Planta-Interativa/Planta Interativa/tour/src/data/
+!Planta-Interativa/Planta Interativa/tour/src/data/**
+!Planta-Interativa/Planta Interativa/apresentacao/data/
+!Planta-Interativa/Planta Interativa/apresentacao/data/**
