@@ -19,6 +19,7 @@ export const montemeranoLazer: Property = {
   bathrooms: 0,
   wallHeight: 3,
   surroundings: 'skyline',
+  cover: 'img/externa-aerea.webp',
   tour: ['circulacao', 'salao', 'gourmet', 'piscina', 'piscina-inf', 'fireplace', 'jogos', 'academia', 'brinquedoteca', 'playground', 'pet', 'quadra'],
   rooms: [
     {
@@ -48,6 +49,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'piscina-inf',
+      image: 'img/piscina.webp',
       name: 'Piscina infantil',
       kind: 'outdoor',
       rect: { x: 12.9, z: 0.1, w: 4.7, d: 3.6 },
@@ -59,6 +61,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'piscina',
+      image: 'img/piscina.webp',
       name: 'Piscina adulto',
       kind: 'outdoor',
       rect: { x: 18.7, z: 2.4, w: 3.8, d: 14.7 },
@@ -74,6 +77,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'pet',
+      image: 'img/petplace.webp',
       name: 'Pet place',
       kind: 'outdoor',
       rect: { x: 0.3, z: 3.7, w: 3.7, d: 4.3 },
@@ -84,6 +88,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'playground',
+      image: 'img/playground.webp',
       name: 'Playground',
       kind: 'outdoor',
       rect: { x: 0.3, z: 8, w: 3.7, d: 5.2 },
@@ -104,6 +109,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'fireplace',
+      image: 'img/fireplace.webp',
       name: 'Fire place',
       kind: 'outdoor',
       rect: { x: 0.3, z: 18.6, w: 5, d: 6.8 },
@@ -122,6 +128,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'jogos',
+      image: 'img/sala-de-jogos.webp',
       name: 'Sala de jogos & pub',
       kind: 'living',
       rect: { x: 5.4, z: 5, w: 4, d: 11.8 },
@@ -141,6 +148,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'academia',
+      image: 'img/academia.webp',
       name: 'Academia',
       kind: 'living',
       rect: { x: 13.1, z: 5, w: 4.2, d: 7.8 },
@@ -157,6 +165,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'brinquedoteca',
+      image: 'img/brinquedoteca.webp',
       name: 'Brinquedoteca',
       kind: 'living',
       rect: { x: 14.2, z: 12.8, w: 3.1, d: 4.0 },
@@ -178,6 +187,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'salao',
+      image: 'img/salao-de-festas.webp',
       name: 'Salão de festas',
       kind: 'living',
       rect: { x: 5.4, z: 18.6, w: 11.9, d: 6.8 },
@@ -200,6 +210,7 @@ export const montemeranoLazer: Property = {
     },
     {
       id: 'gourmet',
+      image: 'img/gourmet-externo.webp',
       name: 'Área gourmet',
       kind: 'outdoor',
       rect: { x: 17.6, z: 18.6, w: 4.9, d: 6.8 },

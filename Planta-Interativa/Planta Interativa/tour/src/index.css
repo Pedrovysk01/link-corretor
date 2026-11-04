@@ -958,3 +958,35 @@ textarea {
     height: 48px;
   }
 }
+
+/* Render ilustrativo no topo dos painéis (padrão da ficha do Bossa: 16:9, legenda discreta) */
+.media {
+  position: relative;
+  margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-3);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--color-surface-strong);
+}
+.media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media figcaption {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+}
+
+@media (max-width: 640px) {
+  .media {
+    aspect-ratio: 21 / 8;
+  }
+}

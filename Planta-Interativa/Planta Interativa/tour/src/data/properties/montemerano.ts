@@ -20,10 +20,12 @@ export const montemerano01: Property = {
   bathrooms: 4,
   wallHeight: 2.7,
   surroundings: 'skyline',
+  cover: 'img/externa-01.webp',
   tour: ['hall', 'living', 'kitchen', 'sacada', 'master', 'bwc-master', 'suite-2', 'suite-1'],
   rooms: [
     {
       id: 'master',
+      image: 'img/suite.webp',
       name: 'Suíte master',
       kind: 'bedroom',
       rect: { x: 0, z: 0, w: 3.3, d: 4.4 },
@@ -74,6 +76,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'suite-2',
+      image: 'img/suite.webp',
       name: 'Suíte 02',
       kind: 'bedroom',
       rect: { x: 3.3, z: 2.4, w: 3.3, d: 4.0 },
@@ -105,6 +108,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'suite-1',
+      image: 'img/suite.webp',
       name: 'Suíte 01',
       kind: 'bedroom',
       rect: { x: 3.3, z: 7.7, w: 3.3, d: 4.3 },
@@ -167,6 +171,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'kitchen',
+      image: 'img/living-jantar.webp',
       name: 'Cozinha',
       kind: 'kitchen',
       rect: { x: 0, z: 16.9, w: 2.3, d: 4.5 },
@@ -183,6 +188,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'living',
+      image: 'img/living-estar.webp',
       name: 'Living',
       kind: 'living',
       rect: { x: 2.3, z: 12.0, w: 4.3, d: 7.6 },
@@ -206,6 +212,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'sacada',
+      image: 'img/sacada.webp',
       name: 'Sacada gourmet',
       kind: 'living',
       rect: { x: 2.3, z: 19.6, w: 4.3, d: 1.8 },

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Link Corretor · Apresentações</title>
+<style>
+  :root{--ink:#16302e;--ink-soft:#4d6460;--paper:#f3efe6;--linen:#e7e1d3;--brass:#c9944a;--brass-ink:#80592a;--line:rgba(22,48,46,.14);--r-sm:6px;--r-md:9px;--r-lg:14px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--linen);color:var(--ink);font:15px/1.5 "Figtree","Helvetica Neue",Arial,sans-serif}
+  main{max-width:960px;margin:0 auto;padding:48px 16px 64px}
+  .eyebrow{font-size:.6875rem;letter-spacing:.2em;text-transform:uppercase;color:var(--brass-ink)}
+  h1{font:400 clamp(2.25rem,5vw,3.5rem)/1 "Instrument Serif",Georgia,serif;letter-spacing:-.01em;margin:.2em 0 .3em}
+  h1 em{color:var(--brass-ink)}
+  p.lead{max-width:56ch;color:var(--ink-soft);margin:0 0 32px}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  a.card{display:block;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;text-decoration:none;color:inherit;box-shadow:0 4px 14px rgba(0,0,0,.08);transition:translate .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+  a.card:hover{translate:0 -3px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
+  a.card:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .tag{display:inline-block;font-size:.6875rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brass-ink);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+  h2{font:400 1.625rem/1.1 "Instrument Serif",Georgia,serif;margin:12px 0 6px}
+  .card p{margin:0;color:var(--ink-soft);font-size:.84375rem}
+  footer{margin-top:40px;font-size:.75rem;color:var(--ink-soft)}
+  @media (prefers-reduced-motion:reduce){a.card{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Link Corretor</p>
+  <h1>Apresentações <em>3D</em> de empreendimentos</h1>
+  <p class="lead">Escolha um projeto. Tudo abre direto no navegador, no computador ou no celular — nada para instalar.</p>
+  <div class="grid">
+    <a class="card" href="montemerano/"><span class="tag">Tour 3D</span><h2>Villa Montemerano</h2><p>Filme de abertura, apartamento 01 e área de lazer em 3D, com renders de cada ambiente.</p></a>
+    <a class="card" href="felicita/"><span class="tag">Apresentação</span><h2>Felicità · 402 Home Club</h2><p>Cidade em satélite e relevo, torre 3D, plantas e unidades.</p></a>
+    <a class="card" href="bossa/"><span class="tag">Mapa interativo</span><h2>Bossa Eco Luxury Villas</h2><p>Render aéreo com unidades, ficha de venda e incidência solar.</p></a>
+    <a class="card" href="painel/design-system.html"><span class="tag">Design</span><h2>Design system</h2><p>Cores, tipografia e componentes que mantêm o padrão visual.</p></a>
+  </div>
+  <footer>Imagens ilustrativas. Medidas, acabamentos e disponibilidade sujeitos a confirmação.</footer>
+</main>
+</body>
+</html>

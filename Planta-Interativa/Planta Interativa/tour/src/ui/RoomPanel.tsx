@@ -4,6 +4,7 @@ import { formatArea } from '../lib/format'
 import { roomArea } from '../lib/geometry'
 import { tourStep } from '../lib/tour'
 import { tourStore } from '../state/store'
+import { RoomImage } from './RoomImage'
 
 /** Inside a room: what you are looking at, and the guided-tour controls that end at the inquiry form. */
 export function RoomPanel({ property, room }: { readonly property: Property; readonly room: Room }) {
@@ -13,6 +14,7 @@ export function RoomPanel({ property, room }: { readonly property: Property; rea
 
   return (
     <section className="glass panel panel--room" aria-labelledby="room-name">
+      <RoomImage src={room.image} alt={`Render ilustrativo: ${room.name}`} />
       <p className="visually-hidden" aria-live="polite">
         Você está em {room.name}
       </p>

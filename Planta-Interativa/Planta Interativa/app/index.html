@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mapa de Vendas Bossa</title>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
+<link rel="preload" href="vendor/fonts/Figtree-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="vendor/fonts/InstrumentSerif-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="preload" href="data/units.json" as="fetch" crossorigin>
+<link rel="preload" href="data/content.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/ficha.css">
+<link rel="stylesheet" href="css/telas.css">
+<link rel="stylesheet" href="css/componentes.css">
+<link rel="stylesheet" href="css/celular.css">
+<link rel="stylesheet" href="css/vendas.css">
+<link rel="stylesheet" href="css/materiais.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<div id="view">
+  <div id="world">
+    <img id="img" alt="Vista aérea do Bossa Eco Luxury Villas, Praia do Toque" src="media/render.webp" fetchpriority="high" decoding="async"><div id="hi" aria-hidden="true"></div>
+    <svg id="svg" viewBox="0 0 1685 948" aria-label="Casas do condomínio">
+      <defs><mask id="m"><rect x="-2000" y="-2000" width="6000" height="5000" fill="#fff"/><g id="holes"></g></mask></defs>
+      <rect id="veil" x="-2000" y="-2000" width="6000" height="5000" fill="#0c1513" opacity="0" mask="url(#m)"/>
+      <defs><filter id="sblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+        <radialGradient id="glowW"><stop offset="0" stop-color="#ffd59a" stop-opacity=".95"/><stop offset=".45" stop-color="#ffb35c" stop-opacity=".45"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+        <radialGradient id="glowA"><stop offset="0" stop-color="#fff1cf" stop-opacity="1"/><stop offset=".4" stop-color="#ffc372" stop-opacity=".7"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+        <linearGradient id="sunGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1685" y2="0"><stop offset="0" stop-color="#ffb060" stop-opacity="0"/><stop offset="1" stop-color="#ffb060" stop-opacity=".0"/></linearGradient></defs>
+      <rect id="sunTint" x="0" y="0" width="1685" height="948" fill="url(#sunGrad)" style="mix-blend-mode:soft-light;pointer-events:none"/>
+      <g id="shadows" filter="url(#sblur)" style="pointer-events:none"></g>
+      <g id="nightLights" style="mix-blend-mode:screen;pointer-events:none" opacity="0"></g>
+      <g id="hs"></g>
+    </svg>
+  </div>
+</div>
+
+<div class="auth" id="auth" hidden role="dialog" aria-modal="true" aria-label="Quem assina o Bossa"><div class="box">
+  <button class="x" aria-label="Fechar">×</button>
+  <div class="eyebrow">Assinatura</div><h2>Quem assina o Bossa</h2>
+  <p class="lead">Arquitetura, paisagismo e cultura local reunidos pela Taipa Inc na Rota Ecológica dos Milagres.</p>
+  <article><small>Arquitetura e urbanismo</small><h3>Padovani Arquitetos</h3><a class="ig" href="https://www.instagram.com/padovaniarquitetos/" target="_blank" rel="noopener">@padovaniarquitetos <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    <p>Fundado por Lucas Padovani, o escritório é reconhecido por residências premiadas que combinam design contemporâneo e integração com a natureza. Em 2024, somou mais de 20 prêmios, entre eles o iF Design Award, o International Property Awards e o Architecture Masterprize.</p></article>
+  <article><small>Arquitetura e urbanismo</small><h3>Agra Lemos Arquitetos</h3><a class="ig" href="https://www.instagram.com/agralemosarquitetos/" target="_blank" rel="noopener">@agralemosarquitetos <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    <p>Daniel Lemos e Waleska Agra unem funcionalidade, estética e cultura regional. Na Rota Ecológica dos Milagres, assinam algumas das pousadas de luxo mais conhecidas da região, como ZAI e Haya, além do hotel Mahré, eleito um dos cinco melhores do Brasil pela Exame Casual em 2024, e do Serena, condomínio da Taipa Inc.</p></article>
+  <article><small>Paisagismo</small><h3>Luiz Carlos Orsini</h3><a class="ig" href="https://www.instagram.com/luizcarlosorsini/" target="_blank" rel="noopener">@luizcarlosorsini <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    <p>Responsável pelo paisagismo de 25 hectares do Instituto Inhotim, onde criou os lagos que inspiraram o projeto do Bossa. Premiado no Brasil e no exterior, é referência em integrar natureza e arquitetura.</p></article>
+  <p class="src">Fonte: Book Bossa Eco Luxury Villas · Taipa Inc</p>
+</div></div>
+<div class="auth" id="info" hidden role="dialog" aria-modal="true" aria-labelledby="infot"><div class="box">
+  <button class="x" aria-label="Fechar">×</button>
+  <div class="eyebrow">Informações</div><h2 id="infot">Como usar o mapa</h2>
+  <p class="lead">Toque em uma casa para ver a ficha. Arraste e use a pinça ou a roda do mouse para aproximar. No Relevo 3D, arraste para girar e inclinar.</p>
+  <article><small>Luz do dia</small><div class="sun" id="suninfo"></div></article>
+  <article><small>Informações legais</small><p>Imagens, vídeos, plantas e o relevo 3D são meramente ilustrativos; luz, noite e sombras são simulações. Preços da tabela vigente em 07/10/2026, sujeitos a alteração sem aviso prévio. Incorporação registrada sob o R-4 da Matrícula nº 5.401 do Registro de Imóveis de Porto de Pedras/AL, em 18/07/2025. Incorporadora: Taipa Incorporações Bossa SPE Ltda., CNPJ 58.131.029/0001-92.</p></article>
+</div></div>
+<div class="auth mt-sheet" id="matsheet" hidden role="dialog" aria-modal="true" aria-labelledby="matsheett"><div class="box">
+  <button class="x" aria-label="Fechar">×</button><div id="matbody"></div>
+</div></div>
+<div id="v3d" hidden><div id="v3msg" hidden></div></div>
+<header class="bar">
+  <div class="bar-l"><div class="brand">
+    <div class="greet" id="greet"></div>
+    <div class="eyebrow">Taipa Inc · Praia do Toque</div>
+    <h1>Bossa <i>Eco Luxury</i> Villas</h1>
+  </div>
+  <div class="seg view-seg" role="group" aria-label="Tipo de visão"><button class="chip c3d" data-act="3d" data-v="3d" aria-pressed="false">Visão 3D</button><button class="chip" data-act="3d" data-v="2d" aria-pressed="true">Visão de Cima</button></div></div>
+  <div class="bar-r">
+  <nav class="controls" aria-label="Menu principal">
+      <button class="chip" data-view="geral" aria-pressed="true">Visão geral</button>
+      <button class="chip" data-panel="unidades" aria-haspopup="true" aria-expanded="false" aria-controls="p-unidades">Unidades</button>
+      <button class="chip" data-act="exp">Experiências</button>
+      <button class="chip" data-panel="materiais" aria-haspopup="true" aria-expanded="false" aria-controls="p-materiais"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg> Materiais</button>
+      <button class="chip" data-act="film"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg> Apresentação</button>
+      <button class="chip ic-btn" data-panel="ajustes" aria-haspopup="true" aria-expanded="false" aria-controls="p-ajustes" aria-label="Ajustes da cena" title="Ajustes da cena"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg></button>
+    </nav></div>
+</header>
+
+<div class="carousel" id="carousel" aria-label="Casas disponíveis"></div>
+<nav class="dock" aria-label="Menu principal">
+  <button class="chip" data-view="geral" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.1 5.55a2 2 0 0 0 1.8 0l3.65-1.82A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.55 2.28a2 2 0 0 1-1.79 0l-4.21-2.1a2 2 0 0 0-1.79 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.55-2.28a2 2 0 0 1 1.79 0z"/><path d="M15 5.76v15M9 3.24v15"/></svg><span>Visão geral</span></button>
+  <button class="chip" data-panel="unidades" aria-haspopup="true" aria-expanded="false" aria-controls="p-unidades"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .71-1.53l7-6a2 2 0 0 1 2.58 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Unidades</span></button>
+  <button class="chip" data-act="exp"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-1.8 5.41a2 2 0 0 1-1.27 1.27L7.76 16.24l1.8-5.41a2 2 0 0 1 1.27-1.27z"/></svg><span>Experiências</span></button>
+  <button class="chip" data-act="film"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg><span>Apresentação</span></button>
+  <button class="chip" data-panel="ajustes" aria-haspopup="true" aria-expanded="false" aria-controls="p-ajustes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>Mais</span></button>
+</nav>
+<div class="panel" id="p-unidades" role="group" aria-label="Unidades" hidden>
+  <small>Região</small><div class="zones" data-zones></div>
+  <button class="toggle" data-act="only" role="switch" aria-pressed="false"><span>Só disponíveis</span><i class="sw" aria-hidden="true"></i></button>
+</div>
+<div class="panel" id="p-materiais" role="group" aria-label="Materiais" hidden></div>
+<div class="panel" id="p-ajustes" role="group" aria-label="Mais opções" hidden>
+  <div class="mt-mob" id="mt-mob"></div>
+  <small>Como é a incidência solar?</small><div class="zones" data-lights></div>
+  <span class="lsun" id="sunbox" aria-live="polite"></span>
+  <button class="authlink wide" id="authlink">Quem assina o projeto <span>›</span></button>
+</div>
+
+<button class="sunchip" id="sunchip" aria-haspopup="dialog" aria-live="polite"></button>
+
+<div class="zoom"><button id="zin" aria-label="Aproximar">+</button><button id="zout" aria-label="Afastar">−</button></div>
+<aside class="legend" aria-label="Legenda">
+  <button class="lg" data-act="only" aria-pressed="false" title="Mostrar só as disponíveis"><i class="dot" style="background:var(--brass)"></i><b id="nAvail"></b> disponíveis</button>
+  <span data-res><i class="dot" style="background:var(--reserved)"></i><b id="nRes"></b> reservadas</span>
+  <span><i class="dot" style="background:var(--sold)"></i><b id="nSold"></b> vendidas</span>
+  <button class="linfo" id="infobtn" aria-haspopup="dialog" aria-label="Como usar e informações legais">i</button>
+</aside>
+<div class="sunbar" id="sunbar" hidden role="group" aria-label="Sol ao longo do dia">
+  <button class="sb-play" id="sbplay" aria-label="Ver o dia passar"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+  <div class="sb-sky"><svg id="sbsky" viewBox="-12 -6 384 86" aria-hidden="true"><line class="hz" x1="-12" y1="62" x2="372" y2="62"/><path class="arc" d=""/><text class="rise" x="0" y="77">nasce</text><text class="set" x="360" y="77">põe</text><circle class="dot" r="7" cx="0" cy="62"/></svg>
+    <input type="range" id="sbtime" min="5" max="20" step="0.05" value="12" aria-label="Hora do dia"></div>
+  <div class="sb-side"><output id="sbtxt" aria-live="off"></output>
+    <div class="sb-seasons" role="group" aria-label="Época do ano"><button data-season="hoje" aria-pressed="true">Hoje</button><button data-season="verao" aria-pressed="false">Verão</button><button data-season="inverno" aria-pressed="false">Inverno</button></div></div>
+  <button class="x" id="sbx" aria-label="Fechar">×</button>
+</div>
+<div class="auth pp" id="proposta" hidden role="dialog" aria-modal="true" aria-labelledby="propt"><div class="box"></div></div>
+<aside class="ai" id="ai" hidden aria-label="Tirar dúvidas">
+  <header><span class="ai-av" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2c.9 5.6 4.4 9.1 10 10-5.6.9-9.1 4.4-10 10-.9-5.6-4.4-9.1-10-10 5.6-.9 9.1-4.4 10-10z"/></svg></span><div><b id="aititle">Pergunte ao Bossa</b><small id="aictx"></small></div>
+    <div class="ai-lang" role="group" aria-label="Idioma"><button type="button" data-lang="pt" aria-label="Português" title="Português" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" fill="#009c3b"/><path d="M10 3 19 10 10 17 1 10Z" fill="#ffdf00"/><circle cx="10" cy="10" r="4" fill="#002776"/></svg></button><button type="button" data-lang="en" aria-label="English" title="English" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" fill="#012169"/><path d="M0 0 20 20M20 0 0 20" stroke="#fff" stroke-width="3.5"/><path d="M0 0 20 20M20 0 0 20" stroke="#c8102e" stroke-width="1.5"/><path d="M10 0v20M0 10h20" stroke="#fff" stroke-width="6"/><path d="M10 0v20M0 10h20" stroke="#c8102e" stroke-width="3.5"/></svg></button><button type="button" data-lang="es" aria-label="Español" title="Español" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" fill="#aa151b"/><rect y="5" width="20" height="10" fill="#f1bf00"/></svg></button></div>
+    <button class="x" aria-label="Fechar">×</button></header>
+  <div class="ai-body"><div class="ai-log" id="ailog" role="log" aria-live="polite"></div><button type="button" class="ai-jump" id="aijump" hidden aria-label="Ir para a última mensagem"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button></div>
+  <div class="ai-quick" id="aiquick"></div>
+  <form class="ai-form" id="aiform"><input id="aiq" autocomplete="off" aria-label="Sua dúvida"><button aria-label="Enviar" disabled><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg></button></form>
+  <p class="ai-note" id="ainote"></p>
+</aside>
+<button class="ai-pill ai-fab" data-cta="ai" aria-label="Tirar dúvidas com a IA"><i aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2c.9 5.6 4.4 9.1 10 10-5.6.9-9.1 4.4-10 10-.9-5.6-4.4-9.1-10-10 5.6-.9 9.1-4.4 10-10z"/></svg></i><span>Pergunte ao Bossa</span></button>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="tip" id="tip" hidden></div>
+<div id="pins"></div>
+<aside class="card" id="card" hidden aria-live="polite"></aside>
+
+<div class="cine" id="cine" hidden><video id="cv" muted playsinline preload="auto"></video><div class="prog" id="cbar"></div>
+  <div class="cap"><small id="ck"></small><b id="ct"></b><p id="cp"></p></div><button class="skip" id="cskip">Ir para o mapa ›</button><button class="cine-x" id="cx" aria-label="Fechar vídeo">×</button></div>
+
+<section class="exp" id="exp" hidden aria-label="Experiências do condomínio"><button class="cine-x exp-x" id="expX" aria-label="Fechar experiências">×</button><div class="exp-in">
+  <div class="exp-head"><div><div class="eyebrow">Bossa Eco Luxury Villas</div><h2>A vida no <i>Bossa</i></h2>
+    <p>Oito ambientes pensados para o tempo livre de quem vive aqui. Toque em qualquer um para assistir.</p></div>
+    <button id="expClose">Voltar ao mapa</button></div>
+  <div class="grid" id="grid"></div></div></section>
+
+<div class="pv" id="pv" hidden role="dialog" aria-modal="true" aria-label="Imagem ampliada">
+  <div class="top"><div><small id="pvk"></small><b id="pvt"></b></div><button class="x" id="pvx" aria-label="Fechar">×</button></div>
+  <div class="canvas" id="pvc"><img id="pvi" alt=""><span class="ilus">Imagem ilustrativa</span><button class="pva l" id="pvl" aria-label="Imagem anterior">‹</button><button class="pva r" id="pvr" aria-label="Próxima imagem">›</button><span class="pvn" id="pvnum"></span></div>
+  <div class="bot"><div class="ptabs" id="pvtabs"></div>
+    <div class="zb"><button id="pvo" aria-label="Afastar">−</button><button id="pvf" aria-label="Ajustar">⤢</button><button id="pvn" aria-label="Aproximar">+</button></div></div>
+</div>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Vídeo da experiência">
+  <div class="top"><small id="lbk"></small><button class="x" id="lbx" aria-label="Fechar">×</button></div>
+  <div class="stage"><div class="frame" id="lbf"><video id="lbv" muted playsinline></video><img id="lbimg" alt="" hidden><span class="ilus" style="bottom:14px">Imagens ilustrativas</span><div class="prog" id="lbp"></div></div>
+    <button class="arrow l" id="lbl" aria-label="Anterior">‹</button><button class="arrow r" id="lbr" aria-label="Próxima">›</button></div>
+  <div class="info"><div><b id="lbt"></b><p id="lbd"></p></div><div class="meta"><div class="thumbs" id="lbthumbs"></div><div class="dots" id="lbdots"></div></div></div>
+</div>
+</body>
+</html>

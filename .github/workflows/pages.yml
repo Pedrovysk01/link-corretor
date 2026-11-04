@@ -1,0 +1,60 @@
+# Publica as apresentações em https://pedrovysk01.github.io/link-corretor/
+name: Publicar apresentações
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Planta-Interativa/Planta Interativa/tour/package-lock.json
+
+      - name: Compilar o tour 3D do Montemerano
+        working-directory: Planta-Interativa/Planta Interativa/tour
+        run: |
+          npm ci --ignore-scripts
+          npx vite build --base=/link-corretor/montemerano/
+
+      - name: Montar o site
+        run: |
+          P="Planta-Interativa/Planta Interativa"
+          mkdir -p _site
+          cp demo/index.html _site/index.html
+          cp -r "$P/tour/dist" _site/montemerano
+          cp -r "$P/apresentacao" _site/felicita
+          cp -r "$P/app" _site/bossa
+          cp -r painel _site/painel
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

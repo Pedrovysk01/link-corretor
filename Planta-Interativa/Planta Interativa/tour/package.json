@@ -14,7 +14,8 @@
     "e2e": "playwright test",
     "typecheck": "tsc -b",
     "assets": "node scripts/fetch-assets.mjs",
-    "film": "node scripts/build-film.mjs"
+    "film": "node scripts/build-film.mjs",
+    "imagens": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

@@ -3,6 +3,7 @@ import type { Property } from '../data/types'
 import { formatArea, formatPrice } from '../lib/format'
 import { interiorArea } from '../lib/geometry'
 import { tourStore } from '../state/store'
+import { RoomImage } from './RoomImage'
 
 /** Overview panel: the headline facts and a way into the guided tour. */
 export function PropertyCard({ property }: { readonly property: Property }) {
@@ -14,6 +15,7 @@ export function PropertyCard({ property }: { readonly property: Property }) {
   ].filter((f) => f.value !== 0)
   return (
     <section className="glass panel" aria-labelledby="property-name">
+      <RoomImage src={property.cover} alt={`Render ilustrativo: ${property.name}`} />
       <p className="eyebrow">Na planta · {property.location}</p>
       <h1 id="property-name" className="panel__title">
         {property.name}

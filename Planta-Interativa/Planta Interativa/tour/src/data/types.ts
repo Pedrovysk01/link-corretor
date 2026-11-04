@@ -81,6 +81,8 @@ export interface Room {
   readonly kind: RoomKind
   readonly rect: Rect
   readonly floor: FloorFinish
+  /** Render ilustrativo do ambiente, relativo a public/ (ex.: 'img/living-estar.webp'). Opcional. */
+  readonly image?: string
   readonly description: string
   readonly features: readonly string[]
   readonly furniture: readonly FurnitureItem[]
@@ -103,6 +105,8 @@ export interface Property {
   readonly bathrooms: number
   readonly wallHeight: number
   readonly surroundings: Surroundings
+  /** Imagem de capa do empreendimento, relativa a public/. Opcional. */
+  readonly cover?: string
   readonly rooms: readonly Room[]
   readonly walls: readonly Wall[]
   /** Room ids in guided-tour order. The inquiry form follows the last stop. */
