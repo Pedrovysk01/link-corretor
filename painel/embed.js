@@ -197,36 +197,36 @@
     const CK = "lc_corretor_card", SK = "lc_cartao_" + code;
     let cartaoAberto = false, enviarAberto = false;
     const lerCartao = () => { try { return JSON.parse(localStorage.getItem(CK) || "null"); } catch { return null; } };
-    const cartaoOk = () => { try { return sessionStorage.getItem(SK) === "1"; } catch { return false; } };
+    const cartaoOk = () => !!info.cartao;  // vem do servidor: uma vez cadastrado (pela construtora ou pelo corretor), o popup não abre mais
     const publicar = (c) => { window.LC_CORRETOR = c; document.dispatchEvent(new CustomEvent("lc:corretor", { detail: c })); };
-    if (lerCartao() && cartaoOk()) publicar(lerCartao());
-    const abrirCartao = () => { cartaoAberto = true; enviarAberto = false; render(); };
-    const formCorretor = () => { const c = lerCartao() || {}; return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-ct-t"><form class="reg ct" novalidate>
+    const dadosCorretor = () => { const l = lerCartao(); return { nome: info.corretor, telefone: info.whatsapp, email: info.corretor_email || "", ...(l && l.nome === info.corretor ? { assinatura: l.assinatura } : {}) }; };
+    if (info.cartao) publicar(dadosCorretor());
+    const formCorretor = () => { const c = {}; return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-ct-t"><form class="reg ct" novalidate>
       <p class="eyebrow">${esc(info.empresa || info.empreendimento)} · Corretor</p><h2 id="lc-ct-t">Seus dados para a proposta</h2>
-      <p class="lead">Nome, contato e assinatura vão na proposta que você enviar ao cliente e ficam à disposição da construtora no painel dela.</p>
+      <p class="lead">Nome, contato e assinatura vão na proposta que você enviar ao cliente e ficam à disposição da construtora no painel dela. <b>Este cadastro é feito uma única vez</b>: para alterar depois, fale com a construtora.</p>
       <label>Nome<input class="t" name="nome" type="text" autocomplete="name" maxlength="120" value="${esc(c.nome || "")}"></label>
       <div class="two"><label>Telefone / WhatsApp<input class="t" name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(47) 99999-9999" value="${esc(c.telefone || "")}"></label>
       <label>E-mail<input class="t" name="email" type="email" autocomplete="email" value="${esc(c.email || "")}"></label></div>
       <div class="sig-w"><span style="font-weight:600;font-size:13px">Assinatura digital</span><canvas class="sig" width="720" height="240" aria-label="Quadro de assinatura: desenhe com o dedo ou o mouse"></canvas>
       <div class="row"><span>Desenhe com o dedo ou o mouse.</span><button type="button" data-limpar>Limpar</button></div></div>
       <label class="ck"><input name="ok" type="checkbox"><span>Confirmo que sou o corretor responsável por este atendimento e autorizo o uso dos meus dados e da assinatura nas propostas.</span></label>
-      <p class="er" role="alert"></p><button class="btn" type="submit">Salvar e continuar</button><button class="btn alt2" type="button" data-agora>Agora não</button></form></div>`; };
-    const enviarForm = () => { const c = window.LC_CORRETOR || lerCartao() || {}; return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-en-t"><form class="reg ct" novalidate>
+      <p class="er" role="alert"></p><button class="btn" type="submit">Salvar e continuar</button><button class="btn alt2" type="button" data-nao>Não sou o corretor</button></form></div>`; };
+    const enviarForm = () => { const c = window.LC_CORRETOR || dadosCorretor(); return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-en-t"><form class="reg ct" novalidate>
       <p class="eyebrow">${esc(info.empreendimento)}</p><h2 id="lc-en-t">Enviar ao cliente</h2>
       <p class="lead">Mensagem com o link da apresentação e a sua assinatura (${esc(c.nome || "corretor")}).</p>
       <label>Nome do cliente<input class="t" name="cn" type="text" autocomplete="off" maxlength="120"></label>
       <div class="two"><label>WhatsApp do cliente<input class="t" name="ct" type="tel" inputmode="tel" placeholder="(47) 99999-9999"></label><label>E-mail do cliente<input class="t" name="ce" type="email"></label></div>
       <button class="btn" type="button" data-wa>Enviar pelo WhatsApp</button><button class="btn alt2" type="button" data-mail>Enviar por e-mail</button><button class="btn alt2" type="button" data-fechar>Fechar</button></form></div>`; };
     function renderCorretor() {
-      const pp = P[lang] || P["pt-BR"], c = window.LC_CORRETOR || lerCartao();
+      const pp = P[lang] || P["pt-BR"]; if (!info.cartao) { cartaoAberto = true; enviarAberto = false; }
       sh.innerHTML = `<style>${CSS}</style>${cartaoAberto ? formCorretor() : ""}${enviarAberto ? enviarForm() : ""}<div class="modo" role="status"><span>${esc(pp.modo)}</span>
-        <button class="sep" type="button" data-cartao>${c && cartaoOk() ? "Meus dados" : "Cadastrar meus dados"}</button>${c && cartaoOk() ? '<button class="sep" type="button" data-enviar>Enviar ao cliente</button>' : ""}<button class="sep" type="button" data-trocar>${esc(pp.trocar)}</button></div>`;
-      sh.querySelector("[data-trocar]").onclick = trocar; sh.querySelector("[data-cartao]").onclick = abrirCartao;
+        ${info.cartao ? '<button class="sep" type="button" data-enviar>Enviar ao cliente</button>' : ""}<button class="sep" type="button" data-trocar>${esc(pp.trocar)}</button></div>`;
+      sh.querySelector("[data-trocar]").onclick = trocar;
       const be = sh.querySelector("[data-enviar]"); if (be) be.onclick = () => { enviarAberto = true; cartaoAberto = false; render(); };
       const fe = sh.querySelector(".gate form"); if (!fe) return;
       if (fe.querySelector("[data-fechar]")) {
         fe.querySelector("[data-fechar]").onclick = () => { enviarAberto = false; render(); };
-        const msg = () => { const k = window.LC_CORRETOR || lerCartao() || {}, n = fe.elements.cn.value.trim(), url = `${location.origin}/r/${code}`;
+        const msg = () => { const k = window.LC_CORRETOR || dadosCorretor(), n = fe.elements.cn.value.trim(), url = `${location.origin}/r/${code}`;
           return { texto: `Olá${n ? " " + n : ""}! Preparei esta apresentação do ${info.empreendimento} para você: ${url}\n\n${k.nome || ""}${k.telefone ? " · " + k.telefone : ""}${k.email ? " · " + k.email : ""}`, k, n }; };
         fe.querySelector("[data-wa]").onclick = () => { const m = msg(), d = fe.elements.ct.value.replace(/\D/g, ""), num = d.length === 10 || d.length === 11 ? "55" + d : d; window.open(`https://wa.me/${num}?text=${encodeURIComponent(m.texto)}`, "_blank", "noopener"); };
         fe.querySelector("[data-mail]").onclick = () => { const m = msg(); location.href = `mailto:${fe.elements.ce.value.trim()}?subject=${encodeURIComponent("Apresentação · " + info.empreendimento)}&body=${encodeURIComponent(m.texto)}`; };
@@ -239,9 +239,8 @@
       cv.onpointerdown = (e) => { desenhando = true; ult = pt(e); cv.setPointerCapture(e.pointerId); cx.beginPath(); cx.arc(ult[0], ult[1], 1.2, 0, 7); cx.fill(); tracos++; e.preventDefault(); };
       cv.onpointermove = (e) => { if (!desenhando) return; const p = pt(e); cx.beginPath(); cx.moveTo(ult[0], ult[1]); cx.lineTo(p[0], p[1]); cx.stroke(); ult = p; tracos++; };
       cv.onpointerup = cv.onpointercancel = () => { desenhando = false; };
-      const salvo = lerCartao(); if (salvo && salvo.assinatura) { const im = new Image(); im.onload = () => { cx.drawImage(im, 0, 0, cv.width, cv.height); tracos = 20; }; im.src = salvo.assinatura; }
       fe.querySelector("[data-limpar]").onclick = () => { cx.clearRect(0, 0, cv.width, cv.height); tracos = 0; };
-      fe.querySelector("[data-agora]").onclick = () => { cartaoAberto = false; render(); };
+      fe.querySelector("[data-nao]").onclick = () => { cartaoAberto = false; trocar(); };
       setTimeout(() => fe.elements.nome.focus(), 50);
       fe.onsubmit = async (e) => { e.preventDefault(); const er = fe.querySelector(".er"), g = (n) => fe.elements[n].value.trim(); er.textContent = "";
         if (g("nome").length < 2) return (er.textContent = "Informe seu nome.");
@@ -253,8 +252,8 @@
         try { await post("corretor", { nome: g("nome"), telefone: g("telefone"), email: g("email"), assinatura, consentimento: true });
           const cartao = { nome: g("nome"), telefone: g("telefone"), email: g("email"), assinatura };
           try { localStorage.setItem(CK, JSON.stringify(cartao)); sessionStorage.setItem(SK, "1"); } catch { /* sem storage */ }
-          publicar(cartao); cartaoAberto = false; render();
-        } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; } };
+          info.cartao = true; publicar({ ...cartao, email: cartao.email }); cartaoAberto = false; render();
+        } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; if (/já foram cadastrados/.test(x.message)) { info.cartao = true; setTimeout(() => { cartaoAberto = false; render(); }, 1800); } } };
     }
     function render() {
       t = T[lang] || T["pt-BR"];

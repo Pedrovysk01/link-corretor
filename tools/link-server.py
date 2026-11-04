@@ -824,7 +824,9 @@ def r_pub_info(h, u, q_, b, code):
     atendido = dono_nome or {"name": L["corretor"], "phone": L["corretor_fone"]}
     return {"empreendimento": L["name"], "corretor": atendido["name"], "whatsapp": atendido["phone"] or L["whatsapp"], "ia": bool(L["ai_on"]), "form": bool(L["form_on"]),
             "idiomas": json.loads(L["languages"] or "[]"), "recursos": recursos_de(L), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
-            "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"]}
+            "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"],
+            "cartao": bool(q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True)),  # só diz SE já cadastrou; a assinatura nunca vai para o cliente
+            "corretor_email": (q("SELECT email FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (L["broker_id"],), one=True) or q("SELECT email FROM users WHERE id=?", (L["broker_id"],), one=True) or {}).get("email", "")}
 
 
 def r_pub_register(h, u, q_, b, code):
@@ -858,6 +860,7 @@ def r_pub_corretor(h, u, q_, b, code):
     """Corretor (perfil 'Corretor' da apresentação) deixa nome, telefone, e-mail e assinatura para propostas: ficam no painel da construtora."""
     L = link_publico(code); need(L, "Link indisponível.", 404)
     need(rate_ok(f"card:{h.client_address[0]}", 8, 600), "Muitos envios em pouco tempo. Aguarde alguns minutos.", 429)
+    need(not q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True), "Os dados deste corretor já foram cadastrados. Para alterar, fale com a construtora.", 409)
     nome = txt(b.get("nome"), 120, "o nome", True); need(len(nome) >= 2, "Informe seu nome.")
     fone = so_digitos(b.get("telefone")); need(fone, "Informe seu telefone."); fone = fone_br(fone)
     email = email_ok((b.get("email") or "").strip())
@@ -866,6 +869,18 @@ def r_pub_corretor(h, u, q_, b, code):
     need(b.get("consentimento") is True, "Marque a confirmação para continuar.")
     run("INSERT INTO broker_cards(broker_id,link_id,name,phone,email,signature) VALUES(?,?,?,?,?,?)", (L["broker_id"], L["link_id"], nome, fone, email, sig))
     return {"ok": True}
+
+
+def r_cartao_edit(h, u, q_, b, bid):
+    """Só a construtora altera nome, telefone e e-mail dos dados para proposta (a assinatura só se refaz liberando um novo cadastro)."""
+    c = q("SELECT * FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (int(bid),), one=True); need(c, "Este corretor ainda não enviou os dados.", 404)
+    nome = txt(b.get("nome"), 120, "o nome", True); fone = so_digitos(b.get("telefone")); need(fone, "Informe o telefone."); email = email_ok((b.get("email") or "").strip())
+    run("UPDATE broker_cards SET name=?, phone=?, email=? WHERE id=?", (nome, fone_br(fone), email, c["id"])); return {"ok": True}
+
+
+def r_cartao_liberar(h, u, q_, b, bid):
+    """Apaga os dados para o corretor preencher de novo (o popup abre mais uma vez, uma única)."""
+    run("DELETE FROM broker_cards WHERE broker_id=?", (int(bid),)); return {"ok": True}
 
 
 def r_pub_heartbeat(h, u, q_, b, code):
@@ -909,6 +924,7 @@ ROTAS = [
     ("GET", r"/api/questions", r_questions, ANY),
     ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER), ("POST", r"/api/exemplo", r_exemplo, OWNER),
     ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB), ("POST", r"/api/p/([a-z0-9]+)/corretor", r_pub_corretor, PUB),
+    ("PATCH", r"/api/brokers/(\d+)/cartao", r_cartao_edit, OWNER), ("POST", r"/api/brokers/(\d+)/cartao/liberar", r_cartao_liberar, OWNER),
     ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB),
 ]
 ROTAS = [(m, re.compile("^" + p + "$"), f, r) for m, p, f, r in ROTAS]
@@ -974,7 +990,7 @@ class H(BaseHTTPRequestHandler):
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
             tag = '<script src="/painel/materiais.js?v=1"></script><script src="/painel/casca.js?v=4"></script>' + tag  # materiais (galeria, planta, antes/depois) + cabeçalho padrão  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
             if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=13" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=16" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200

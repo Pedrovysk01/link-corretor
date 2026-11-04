@@ -566,6 +566,11 @@ async function telaCorretores() {
     h("div", { class: "muted small" }, "Última abertura " + quando(b.ultima))))));
   return el;
 }
+function formCartao(b) {
+  const c = b.cartao, corpo = [campo("Nome", h("input", { type: "text", name: "nome", value: c.name, required: true })), h("div", { class: "grid2" }, campo("Telefone / WhatsApp", h("input", { type: "tel", name: "telefone", value: fone(c.phone), required: true })), campo("E-mail", h("input", { type: "email", name: "email", value: c.email, required: true }))),
+    h("p", { class: "muted small" }, "A assinatura não muda aqui. Para refazê-la, use “Liberar novo cadastro”.")];
+  dialogo("Dados para proposta · " + b.name, corpo, [btnFechar(), btnOk("Salvar")], { onSubmit: async (f, fechar) => { await api("PATCH", `/api/brokers/${b.id}/cartao`, { nome: f.get("nome"), telefone: f.get("telefone"), email: f.get("email") }); fechar(); aviso("Dados salvos."); rotear(); } });
+}
 async function telaCorretor(id) {
   const b = await api("GET", "/api/brokers/" + id);
   const el = h("div", { class: "stack" }, voltar("corretores", "Corretores"),
@@ -577,7 +582,9 @@ async function telaCorretor(id) {
     h("div", { class: "kpis" }, h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.clientes)), h("span", { class: "l" }, "clientes")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.novos)), h("span", { class: "l" }, "novos para atender")),
       h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.aberturas)), h("span", { class: "l" }, "aberturas")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.fechados)), h("span", { class: "l" }, "fechados"))),
     h("div", { class: "card" }, h("h2", null, "Dados para proposta"), b.cartao ? h("div", { class: "cartao-c" }, h("img", { class: "assin", src: b.cartao.signature, alt: "Assinatura digital de " + b.cartao.name }),
-      h("div", null, h("b", { class: "wrap" }, b.cartao.name), h("p", { class: "muted wrap" }, [fone(b.cartao.phone), b.cartao.email].filter(Boolean).join(" · ")), h("p", { class: "muted small" }, "Enviado pelo corretor em " + dataHora(b.cartao.created)))) : h("p", { class: "muted" }, "Ainda não enviou. Quando ele escolher o perfil Corretor numa apresentação, o popup pede nome, telefone, e-mail e assinatura digital.")),
+      h("div", null, h("b", { class: "wrap" }, b.cartao.name), h("p", { class: "muted wrap" }, [fone(b.cartao.phone), b.cartao.email].filter(Boolean).join(" · ")), h("p", { class: "muted small" }, "Cadastrado em " + dataHora(b.cartao.created) + " · o corretor não consegue alterar; só você."),
+        h("div", { class: "row", style: "margin-top:10px" }, h("button", { class: "btn sm", onclick: () => formCartao(b) }, ic("edit"), "Editar contato"),
+          h("button", { class: "btn sm", onclick: async () => { if (!confirm("Apagar os dados e a assinatura? O popup abrirá uma única vez para o corretor preencher de novo.")) return; await api("POST", `/api/brokers/${b.id}/cartao/liberar`, {}); aviso("Liberado: o corretor preenche de novo no próximo acesso."); rotear(); } }, "Liberar novo cadastro")))) : h("p", { class: "muted" }, "Ainda não cadastrou. Na primeira vez que ele escolher o perfil Corretor numa apresentação, o popup pede nome, telefone, e-mail e assinatura digital — uma única vez. Depois, só você altera aqui.")),
     h("div", { class: "card" }, h("h2", null, `Clientes de ${b.name.split(" ")[0]}`), b.clientes_lista.length ? listaPessoas(b.clientes_lista, { semCorretor: true }) : vazio("people", "Nenhum cliente ainda", "Quando alguém se identificar num link dele, aparece aqui.")),
     h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", null, "Links"), h("button", { class: "btn sm", onclick: () => formLink(null, [b], b.id) }, ic("plus"), "Novo link")), b.links.length ? tabelaLinks(b.links, true) : h("p", { class: "muted" }, "Sem links ainda.")));
   return el;
