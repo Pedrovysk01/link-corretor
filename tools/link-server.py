@@ -42,7 +42,7 @@ SESSAO_DIAS = 30
 VISITANTE_DIAS = 365
 STATUS = ["novo", "contatado", "visita", "proposta", "fechado", "perdido"]
 CANAIS = ["whatsapp", "instagram", "qr", "email", "site", "outro"]
-IDIOMAS = ["pt-BR", "en", "es"]
+IDIOMAS = ["pt-BR", "en", "es", "zh", "hi", "ar", "fr", "bn", "ru"]  # os 9 mais falados; mesma lista em IDIOMAS_IA do painel.js
 # Recursos da apresentação que a construtora liga/desliga por empreendimento (todos ligados por padrão).
 RECURSOS = {"sol": "Posição solar", "mapa": "Mapa com distâncias", "selo": "Selo do corretor que atende", "proposta": "Simulador de proposta",
             "unidades": "Tabela de unidades", "whatsapp": "WhatsApp do corretor", "ia": "Perguntas à IA", "cadastro": "Cadastro do cliente (3ª interação)"}
@@ -265,7 +265,7 @@ def env_limpo():
 
 
 def perguntar_ia(prop, pergunta, lang, corretor):
-    nomes = {"pt-BR": "português do Brasil", "en": "English", "es": "español"}
+    nomes = {"pt-BR": "português do Brasil", "en": "English", "es": "español", "zh": "中文 (chinês mandarim)", "hi": "हिन्दी (hindi)", "ar": "العربية (árabe)", "fr": "français", "bn": "বাংলা (bengali)", "ru": "русский (russo)"}
     sistema = (
         f'Você é o assistente de vendas do empreendimento "{prop["name"]}". Fala com um possível comprador atendido pelo corretor {corretor}. '
         f'Responda SOMENTE com base nos FATOS abaixo. Se a informação não estiver nos fatos, diga que não tem esse dado e que {corretor} responde. '

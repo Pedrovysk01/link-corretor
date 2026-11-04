@@ -86,6 +86,9 @@ select{appearance:auto}
 .check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
 .check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--brass);flex:none;appearance:auto;padding:0;min-height:0;border-radius:4px}
 .caixas{display:grid;gap:8px}   /* caixas de marcar enfileiradas, uma por linha (idiomas, recursos) */
+.caixas.cols3{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px}   /* idiomas: 3 por linha */
+.caixas .bandeira{font-size:1.15em;line-height:1;margin-right:2px}
+@media (max-width:600px){.caixas.cols3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .caixas .check{align-items:center;min-height:28px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .err{color:var(--danger);font-size:var(--fs-sm);min-height:0}
