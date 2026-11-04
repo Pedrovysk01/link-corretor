@@ -578,10 +578,22 @@ async function telaConfig() {
       campo("Perguntas à IA por mês, por empreendimento", h("input", { type: "number", name: "ai_limite", min: 0, max: 100000, value: c.ai_limite }), "Passou do teto, a IA para e manda falar com o corretor."),
       h("div", null, h("div", { class: "row between small" }, h("span", null, "Uso neste mês"), h("strong", null, fmtN(c.ai_usadas))), h("div", { class: "bar", style: "margin-top:6px" }, h("i", { style: `width:${pct}%` }))),
       !c.claude_cli && h("p", { class: "err", style: "display:block" }, "O Claude Code não foi encontrado neste computador: as perguntas à IA ficam sem resposta."), h("div", null, h("button", { class: "btn primary", type: "submit" }, "Salvar"))),
+    blocoVisual(),
     h("div", { class: "card stack" }, h("h2", null, "Regra da comissão"), h("p", { class: "muted" }, "O cliente pertence ao primeiro corretor por quem se identificou. Se abrir o link de outro corretor, a abertura é registrada no nome dele, mas a origem não muda. Só o dono transfere um cliente, na página do cliente.")),
     h("div", { class: "card stack" }, h("h2", null, "Dados de exemplo"), h("p", { class: "muted" }, c.exemplo ? "Há corretores, clientes e aberturas fictícios no painel (marcados como “exemplo”)." : "Carregue corretores, clientes e aberturas fictícios para ver o painel cheio."),
       h("div", null, c.exemplo ? h("button", { class: "btn danger", onclick: async () => { if (!confirm("Apagar os corretores de exemplo e tudo que veio com eles?")) return; const r = await api("POST", "/api/exemplo", { remover: true }); aviso(`${r.removidos} corretor(es) de exemplo removido(s).`); rotear(); } }, "Apagar dados de exemplo")
         : h("button", { class: "btn", onclick: async () => { const r = await api("POST", "/api/exemplo", {}); aviso(`${r.criados} corretores de exemplo criados. Senha: corretor123.`); rotear(); } }, "Carregar dados de exemplo"))));
+}
+// Visual do painel: "novo" (tema-painel.css, inspirado no Sábio) ou "classico" (só painel.css). Fica no navegador (localStorage lc.visual); index.html lê antes de pintar.
+function visualAtual() { try { return localStorage.getItem("lc.visual") === "classico" ? "classico" : "novo"; } catch (e) { return "novo"; } }
+function blocoVisual() {
+  const chips = h("div", { class: "chips", role: "group", "aria-label": "Visual do painel" });
+  const pintar = () => { const v = visualAtual(); chips.replaceChildren(...[["novo", "Novo"], ["classico", "Clássico"]].map(([k, t]) => h("button", { type: "button", class: "chip", "aria-pressed": String(v === k), onclick: () => {
+    try { localStorage.setItem("lc.visual", k); } catch (e) {}
+    const l = document.getElementById("tema-novo"); if (l) l.disabled = k === "classico";
+    pintar(); aviso(k === "novo" ? "Visual novo ligado." : "Visual clássico ligado."); } }, t))); };
+  pintar();
+  return h("div", { class: "card stack" }, h("h2", null, "Visual do painel"), h("p", { class: "muted" }, "Novo: barra ardósia, acento esmeralda e cartões com borda. Clássico: verde-escuro e latão. A escolha vale só neste navegador."), chips);
 }
 function blocoLogo(c) {
   const formas = [["round", "Redonda"], ["square", "Quadrada 1:1"], ["wide", "Horizontal"], ["tall", "Vertical"]];
