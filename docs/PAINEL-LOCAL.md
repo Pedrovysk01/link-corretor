@@ -44,6 +44,14 @@ A escolha vale até fechar a aba. Quem já se cadastrou neste aparelho abre dire
 
 Em toda apresentação aberta por quem está logado (dono ou corretor) aparece a aba **← Painel** na lateral esquerda (`painel/voltar.js`); o cliente final não a vê.
 
+## Recursos por empreendimento
+
+Em **Empreendimentos → Editar → Recursos na apresentação**, a construtora liga ou desliga, por empreendimento: posição solar,
+mapa com distâncias, selo do corretor que atende, simulador de proposta, tabela de unidades, WhatsApp do corretor, perguntas
+à IA e cadastro do cliente. **Tudo nasce ligado.** O servidor injeta `painel/recursos.js` na apresentação com o estado das
+chaves; cada módulo leva `data-recurso="<chave>"` no HTML e some quando a chave está desligada (`window.LC_RECURSOS` tem o
+mapa para lógica extra). Selo, WhatsApp, IA e cadastro são tratados no próprio widget (`embed.js`).
+
 ## IA
 
 `claude -p` do Claude Code instalado (assinatura, sem chave de API), modelo `haiku` (`LC_AI_MODEL` troca). Responde só com o

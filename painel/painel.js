@@ -501,7 +501,9 @@ async function telaProps() {
   return el;
 }
 async function formProp(p) {
-  const novo = !p; p = p || { name: "", city: "", facts: "", whatsapp: "", ai_on: 1, form_on: 1, active: 1, languages: ["pt-BR"], source_dir: "", external_url: "" };
+  const novo = !p; p = p || { name: "", city: "", facts: "", whatsapp: "", ai_on: 1, form_on: 1, active: 1, languages: ["pt-BR"], source_dir: "", external_url: "", recursos: {} };
+  const REC = [["sol", "Posição solar"], ["mapa", "Mapa com distâncias"], ["selo", "Selo do corretor que atende"], ["proposta", "Simulador de proposta"], ["unidades", "Tabela de unidades"], ["whatsapp", "WhatsApp do corretor"], ["ia", "Perguntas à IA"], ["cadastro", "Cadastro do cliente (3ª interação)"]];
+  const rec = p.recursos || {};
   let fontes = []; try { fontes = await api("GET", "/api/sources"); } catch { /* segue */ }
   if (p.source_dir && !fontes.includes(p.source_dir)) fontes.unshift(p.source_dir);
   const corpo = [h("div", { class: "grid2" }, campo("Nome", h("input", { type: "text", name: "name", value: p.name, required: true })), campo("Cidade ou região", h("input", { type: "text", name: "city", value: p.city }))),
@@ -509,10 +511,11 @@ async function formProp(p) {
     campo("Ou link externo", h("input", { type: "text", name: "external_url", value: p.external_url || "", placeholder: "https://…", inputmode: "url" }), "Se a apresentação já está publicada em outro lugar. Nesse caso o cadastro, a faixa do corretor e a IA não aparecem."),
     campo("WhatsApp do empreendimento", h("input", { type: "tel", name: "whatsapp", value: p.whatsapp ? fone(p.whatsapp) : "", placeholder: "(47) 99999-9999" }), "Usado quando o corretor não tem WhatsApp cadastrado."),
     h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "chips" }, [["pt-BR", "Português"], ["en", "English"], ["es", "Español"]].map(([c, t]) => caixa(t, p.languages.includes(c), "lang-" + c)))),
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "Na apresentação"), caixa("Perguntas à IA", p.ai_on, "ai_on"), caixa("Empreendimento ativo (links funcionam)", p.active, "active")),
+    h("div", { class: "field" }, h("span", { class: "lbl" }, "Recursos na apresentação"), h("div", { class: "chips" }, REC.map(([k, t]) => caixa(t, rec[k] !== false, "rec-" + k))), h("small", { class: "help" }, "Tudo ligado por padrão. Desligue o que não quiser mostrar neste empreendimento; vale para todos os links dele.")),
+    h("div", { class: "field" }, caixa("Empreendimento ativo (links funcionam)", p.active, "active")),
     campo("O que a IA sabe", h("textarea", { name: "facts", rows: 10, placeholder: "Tipologias, metragens, preços, condições de pagamento, áreas comuns, localização…" }, p.facts || ""), "Única fonte da IA: responde só com isso e manda falar com o corretor quando não souber. Mantenha preços e disponibilidade em dia.")];
   dialogo(novo ? "Novo empreendimento" : "Editar empreendimento", corpo, [btnFechar(), btnOk("Salvar")], { onSubmit: async (f, fechar) => {
-    const corpoApi = { name: f.get("name"), city: f.get("city"), whatsapp: f.get("whatsapp"), languages: ["pt-BR", "en", "es"].filter((c) => f.get("lang-" + c)), ai_on: f.get("ai_on") === "on", form_on: true, active: f.get("active") === "on", facts: f.get("facts"), source_dir: f.get("source_dir"), external_url: f.get("external_url") };
+    const corpoApi = { name: f.get("name"), city: f.get("city"), whatsapp: f.get("whatsapp"), languages: ["pt-BR", "en", "es"].filter((c) => f.get("lang-" + c)), recursos: Object.fromEntries(REC.map(([k]) => [k, f.get("rec-" + k) === "on"])), ai_on: f.get("rec-ia") === "on", form_on: f.get("rec-cadastro") === "on", active: f.get("active") === "on", facts: f.get("facts"), source_dir: f.get("source_dir"), external_url: f.get("external_url") };
     await (novo ? api("POST", "/api/properties", corpoApi) : api("PATCH", `/api/properties/${p.id}`, corpoApi)); fechar(); aviso("Empreendimento salvo."); rotear(); } });
 }
 

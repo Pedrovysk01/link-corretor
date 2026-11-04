@@ -31,6 +31,9 @@ VISITANTE_DIAS = 365
 STATUS = ["novo", "contatado", "visita", "proposta", "fechado", "perdido"]
 CANAIS = ["whatsapp", "instagram", "qr", "email", "site", "outro"]
 IDIOMAS = ["pt-BR", "en", "es"]
+# Recursos da apresentação que a construtora liga/desliga por empreendimento (todos ligados por padrão).
+RECURSOS = {"sol": "Posição solar", "mapa": "Mapa com distâncias", "selo": "Selo do corretor que atende", "proposta": "Simulador de proposta",
+            "unidades": "Tabela de unidades", "whatsapp": "WhatsApp do corretor", "ia": "Perguntas à IA", "cadastro": "Cadastro do cliente (3ª interação)"}
 CLAUDE_EXE = shutil.which("claude") or str(pathlib.Path.home() / ".local" / "bin" / "claude.exe")
 AI_MODEL = os.environ.get("LC_AI_MODEL", "haiku")
 AI_SEM = threading.Semaphore(3)
@@ -106,6 +109,8 @@ def init_db():
     if "ai_questions" in tabelas and "visitor_id" not in [r[1] for r in c.execute("PRAGMA table_info(ai_questions)")]:
         c.execute("ALTER TABLE ai_questions RENAME TO ai_questions_old")  # versão anterior: recria com a coluna nova
     c.executescript(SCHEMA)
+    if "features" not in [r[1] for r in c.execute("PRAGMA table_info(properties)")]:
+        c.execute("ALTER TABLE properties ADD COLUMN features TEXT NOT NULL DEFAULT '{}'")  # recursos ligados/desligados; vazio = tudo ligado
     if "ai_questions_old" in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}:
         c.execute("INSERT INTO ai_questions(id,link_id,property_id,ts,question,answer,lang) SELECT id,link_id,property_id,ts,question,answer,lang FROM ai_questions_old")
         c.execute("DROP TABLE ai_questions_old")
@@ -464,8 +469,17 @@ def r_senha(h, u, q_, b):
 def r_dashboard(h, u, q_, b): return dashboard(u, int(q_.get("dias", 30) or 30))
 
 
+def recursos_de(p):
+    """Dicionário recurso→bool do empreendimento: tudo ligado, exceto o que a construtora desligou. IA e cadastro seguem ai_on/form_on."""
+    try: salvo = json.loads(p["features"] or "{}") if "features" in p.keys() else {}
+    except (ValueError, TypeError): salvo = {}
+    out = {k: bool(salvo.get(k, True)) for k in RECURSOS}
+    out["ia"] = bool(p["ai_on"]); out["cadastro"] = bool(p["form_on"])
+    return out
+
+
 def prop_pub(p):
-    p = dict(p); p["languages"] = json.loads(p["languages"] or "[]")
+    p = dict(p); p["languages"] = json.loads(p["languages"] or "[]"); p["recursos"] = recursos_de(p)
     p["tem_apresentacao"] = (bool(p["source_dir"]) and bool(pasta_da(p))) or bool(p["external_url"]); return p
 
 
@@ -487,6 +501,11 @@ def validar_prop(b, atual=None):
     if "whatsapp" in b: d["whatsapp"] = fone_br(b.get("whatsapp"))
     for k in ("ai_on", "form_on", "active"):
         if k in b: d[k] = 1 if b.get(k) else 0
+    if "recursos" in b:
+        r = b.get("recursos") or {}; need(isinstance(r, dict), "Recursos inválidos.")
+        d["features"] = json.dumps({k: bool(r.get(k, True)) for k in RECURSOS if k not in ("ia", "cadastro")})
+        if "ia" in r: d["ai_on"] = 1 if r["ia"] else 0
+        if "cadastro" in r: d["form_on"] = 1 if r["cadastro"] else 0
     if "languages" in b:
         l = [x for x in (b.get("languages") or []) if x in IDIOMAS]; need(l, "Deixe pelo menos um idioma ligado."); d["languages"] = json.dumps(l)
     if "source_dir" in b or "external_url" in b:
@@ -684,7 +703,7 @@ def r_pub_info(h, u, q_, b, code):
     dono_nome = q("SELECT name, phone FROM users WHERE id=?", (v["broker_id"],), one=True) if v else None
     atendido = dono_nome or {"name": L["corretor"], "phone": L["corretor_fone"]}
     return {"empreendimento": L["name"], "corretor": atendido["name"], "whatsapp": atendido["phone"] or L["whatsapp"], "ia": bool(L["ai_on"]), "form": bool(L["form_on"]),
-            "idiomas": json.loads(L["languages"] or "[]"), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
+            "idiomas": json.loads(L["languages"] or "[]"), "recursos": recursos_de(L), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
             "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"]}
 
 
@@ -811,13 +830,14 @@ class H(BaseHTTPRequestHandler):
                 f'<div style="max-width:420px;text-align:center"><h1 style="font:400 28px Georgia,serif;margin:0 0 8px">{titulo}</h1><p style="margin:0;opacity:.8">{texto}</p></div>')
         self.resp(code, html.encode("utf-8"), "text/html; charset=utf-8", {"Cache-Control": "no-store"})
 
-    def arquivo(self, caminho, injetar_code=None, voltar=False):
+    def arquivo(self, caminho, injetar_code=None, voltar=False, recursos=None):
         ext = caminho.suffix.lower()
         tipo = TIPOS.get(ext) or mimetypes.guess_type(str(caminho))[0] or "application/octet-stream"
         if (injetar_code or voltar) and ext == ".html":
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=7" data-code="{injetar_code}" defer></script>'
+            if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=8" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -852,12 +872,12 @@ class H(BaseHTTPRequestHandler):
         if any(p.startswith(".") or p in NEGADO_DIR for p in partes) or alvo.suffix.lower() in NEGADO_EXT: return None
         return alvo
 
-    def servir_pasta(self, pasta, rel, entrada, injetar=None, voltar=False):
+    def servir_pasta(self, pasta, rel, entrada, injetar=None, voltar=False, recursos=None):
         alvo = self.dentro(pasta, rel or entrada)
         if alvo and alvo.is_dir(): alvo = alvo / "index.html"
         if not alvo or not alvo.is_file(): return self.pagina_erro(404, "Não encontrado", "Este arquivo não existe.")
         eh_entrada = alvo == (pasta / entrada).resolve()
-        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada)
+        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None)
 
     def apresentacao(self, code, rel):
         L = link_publico(code)
@@ -866,7 +886,7 @@ class H(BaseHTTPRequestHandler):
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
         v = visitante_do_cookie(self)
         if not rel and v: registrar_abertura(self, v, L)  # cliente já identificado: abertura no nome dele. Sem cadastro, o widget pede depois de 3 interações
-        self.servir_pasta(pasta, rel, L["entry"], injetar=code, voltar=True)
+        self.servir_pasta(pasta, rel, L["entry"], injetar=code, voltar=True, recursos=recursos_de(L))
 
     def previa(self, pid, resto):
         if not self.usuario(): return self.pagina_erro(401, "Entre no painel", "Abra o painel e entre para ver a apresentação.")
@@ -876,7 +896,7 @@ class H(BaseHTTPRequestHandler):
         if resto is None: return self.redireciona(f"/pre/{pid}/")
         pasta = pasta_da(prop)
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
-        self.servir_pasta(pasta, resto.lstrip("/"), prop["entry"], voltar=True)
+        self.servir_pasta(pasta, resto.lstrip("/"), prop["entry"], voltar=True, recursos=recursos_de(prop))
 
     def clique(self, code):
         L = link_publico(code)

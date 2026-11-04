@@ -155,12 +155,13 @@
     if (info.cliente) papel = "cliente"; // ja cadastrado neste aparelho: abre direto
     const escolher = (p) => { if (p === "construtora") { location.href = "/painel/"; return; } papel = p; try { sessionStorage.setItem(KEY, p); } catch { /* sem storage */ } toques = 0; render(); };
     const trocar = () => { papel = null; try { sessionStorage.removeItem(KEY); } catch { /* sem storage */ } render(); };
-    const fone = String(info.whatsapp || "").replace(/\D/g, "");
+    const rec = info.recursos || {};
+    const fone = rec.whatsapp === false ? "" : String(info.whatsapp || "").replace(/\D/g, "");
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
     // conta interações na apresentação (não no widget); na terceira, pede o cadastro
-    const interagiu = (e) => { if (papel !== "cliente" || info.cliente || gate || e.composedPath().includes(host)) return; const agora = Date.now(); if (agora - ultimo < 400) return; ultimo = agora; if (++toques >= LIMITE) { gate = true; render(); } };
+    const interagiu = (e) => { if (papel !== "cliente" || rec.cadastro === false || info.cliente || gate || e.composedPath().includes(host)) return; const agora = Date.now(); if (agora - ultimo < 400) return; ultimo = agora; if (++toques >= LIMITE) { gate = true; render(); } };
     document.addEventListener("pointerdown", interagiu, true); document.addEventListener("keydown", interagiu, true);
     setInterval(() => { if (papel !== "corretor" && !document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
 
@@ -199,7 +200,7 @@
         sh.querySelector(".modo button").onclick = trocar; return;
       }
       sh.innerHTML = `<style>${CSS}</style>${cadastro()}
-        <button class="badge" type="button" title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(info.corretor)}</b></span></button>
+        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(info.corretor)}</b></span></button>
         <button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
           <div class="hd"><span class="av">${esc(ini(info.corretor))}</span><div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}</span></div>
@@ -235,7 +236,7 @@
         info.cliente = r.cliente; info.corretor = r.corretor; info.whatsapp = r.whatsapp || info.whatsapp; gate = false; render(); }
       catch (x) { er.textContent = x.message === "erro" ? t.net : x.message; b.disabled = false; }
     }
-    function pedirCadastro() { if (!info.cliente) { gate = true; render(); return true; } return false; }
+    function pedirCadastro() { if (!info.cliente && rec.cadastro !== false) { gate = true; render(); return true; } return false; }
     function bolha(cls, texto) { const d = document.createElement("div"); d.className = "m " + cls; d.textContent = texto; const l = sh.querySelector(".msgs"); l.append(d); l.scrollTop = l.scrollHeight; return d; }
     async function perguntar(txt) {
       if (pedirCadastro() || ocupado) return; ocupado = true;

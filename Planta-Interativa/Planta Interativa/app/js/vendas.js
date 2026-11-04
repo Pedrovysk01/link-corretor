@@ -31,7 +31,7 @@ const closeShare=()=>{document.querySelectorAll(".share-pop").forEach(p=>{p.clos
 
 /* ---------- botões na ficha ---------- */
 function ctaHTML(u){
-  const main=u.status!=="d"?"":`<button class="cta-main" data-cta="proposta">Enviar proposta</button>`;
+  const main=u.status!=="d"?"":`<button class="cta-main" data-cta="proposta" data-recurso="proposta">Enviar proposta</button>`;
   return `<div class="cta">${main}<button class="cta-sec" data-cta="sharemenu" aria-haspopup="menu" aria-expanded="false">${IC.out} Compartilhar</button><button class="ai-pill cta-ai" data-cta="ai" aria-label="Tirar dúvidas" title="Tirar dúvidas"><i aria-hidden="true">${IC.spark}</i><span>Tirar dúvidas</span></button></div>`}
 
 /* ---------- proposta (corretor) e interesse (cliente) ---------- */
