@@ -25,6 +25,8 @@ html.lc-mat-on .lc-casca,html.lc-mat-on .lc-panel{display:none!important}  /* o 
 /* balão do ponto: o plugin posiciona mal dentro de uma área rolável/recortada; vira uma ficha centralizada na tela, igual no celular */
 .lc-mat-planta .ci-hotspot-popover{position:fixed!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:min(360px,calc(100vw - 32px))!important;max-height:min(80vh,560px);overflow:auto;z-index:5;box-shadow:0 30px 80px rgba(0,0,0,.3)}
 .lc-mat-planta .ci-hotspot-popover [class*="arrow"]{display:none!important}
+.lc-mat-planta .ci-hotspot-popover-cta{background:#16302e!important;color:#f3efe6!important;border-radius:9px!important}
+.lc-mat-planta .ci-hotspot-popover-cta:hover{background:#0f2422!important}
 /* variáveis dos plugins: marcadores em latão, popover em papel */
 .lc-mat{--ci-hotspot-marker-bg:#c9944a;--ci-hotspot-marker-color:#16302e;--ci-hotspot-popover-bg:#fffdf9;--ci-hotspot-popover-color:#16302e;--ci-hotspot-popover-radius:14px}
 @media (max-width:720px){.lc-mat-topo{padding-left:12px;padding-right:12px;gap:8px}.lc-mat-corpo{padding:0 10px calc(env(safe-area-inset-bottom,0px) + 10px)}.lc-mat-aba{padding:8px 10px}}
