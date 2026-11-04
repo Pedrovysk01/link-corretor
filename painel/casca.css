@@ -1,0 +1,57 @@
+/* Link Corretor — casca padrão das apresentações (cabeçalho igual ao do Bossa em TODOS os empreendimentos).
+   Injetado pelo link-server em /p/<código>/ e /pre/<id>/ junto com casca.js. Três peças: cartão da marca (saudação, eyebrow,
+   título), seletor "Visão 3D / Visão de Cima" e o menu (Visão geral · Unidades · Experiências · Materiais · Apresentação · ajustes).
+   O que a apresentação ainda não tem aparece desligado com a etiqueta "em breve". Tokens copiados de app/css/base.css do Bossa;
+   tudo com prefixo lc- para não vazar nem herdar estilo. */
+.lc-casca{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 14px);display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between;pointer-events:none;z-index:2147482000}
+.lc-casca,.lc-panel{
+  --lc-ink:#16302e;--lc-ink-soft:#4d6460;--lc-paper:#f3efe6;--lc-brass-deep:#a87a3c;--lc-brass-ink:#80592a;--lc-brass-soft:rgba(168,122,60,.14);--lc-line:rgba(22,48,46,.14);
+  --lc-material:rgba(246,243,236,.74);--lc-edge:rgba(255,255,255,.6);--lc-blur:blur(22px) saturate(1.7);--lc-track:rgba(22,48,46,.07);--lc-thumb:#fffdf9;--lc-thumb-hover:rgba(255,255,255,.55);
+  --lc-display:"Instrument Serif","Cormorant Garamond",Georgia,serif;--lc-body:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --lc-sh-0:0 1px 2px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06);--lc-sh-1:0 4px 14px rgba(0,0,0,.25);--lc-sh-2:0 10px 30px rgba(0,0,0,.22);
+  font:500 .75rem/1 var(--lc-body);color:var(--lc-ink);-webkit-font-smoothing:antialiased}
+.lc-casca *{box-sizing:border-box}
+.lc-casca>*{pointer-events:auto}
+.lc-l{display:grid;gap:8px;justify-items:start;min-width:0}
+.lc-r{display:grid;justify-items:end;min-width:0;margin-left:auto}
+.lc-brand,.lc-seg,.lc-nav{background:var(--lc-material);-webkit-backdrop-filter:var(--lc-blur);backdrop-filter:var(--lc-blur);border:1px solid var(--lc-edge)}
+.lc-brand{border-radius:14px;padding:12px 16px;display:grid;gap:4px;min-width:0;box-shadow:var(--lc-sh-2)}
+.lc-greet{margin:0 0 2px;font-family:var(--lc-display);font-weight:400;font-size:.75rem;line-height:1.2}
+.lc-greet i{color:var(--lc-brass-deep);font-style:italic}
+.lc-eyebrow{font-size:.625rem;letter-spacing:.16em;text-transform:uppercase;color:var(--lc-ink-soft)}
+.lc-brand h1{margin:0;font-family:var(--lc-display);font-weight:400;font-size:1.625rem;line-height:1.05;text-wrap:balance;letter-spacing:-.01em}
+.lc-brand h1 i{color:var(--lc-brass-deep);font-style:italic}
+.lc-seg{display:flex;flex-wrap:nowrap;gap:2px;padding:3px;border-radius:9px;box-shadow:var(--lc-sh-1)}
+.lc-nav{display:flex;flex-wrap:nowrap;gap:2px;padding:3px;border-radius:9px;box-shadow:var(--lc-sh-1);max-width:100%;overflow-x:auto;scrollbar-width:none}
+.lc-nav::-webkit-scrollbar{display:none}
+.lc-chip{font:500 .75rem/1 var(--lc-body);letter-spacing:.01em;color:var(--lc-ink);background:transparent;border:0;border-radius:6px;padding:7px 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.3em;transition:background-color .2s,color .2s}
+.lc-chip:hover{background:var(--lc-thumb-hover)}
+.lc-chip[aria-pressed="true"],.lc-chip[aria-expanded="true"]{background:var(--lc-thumb);color:var(--lc-ink);box-shadow:var(--lc-sh-0)}
+.lc-seg .lc-chip{padding:7px 14px}
+.lc-seg .lc-chip[aria-pressed="true"]{background:var(--lc-ink);color:var(--lc-paper);box-shadow:none}
+.lc-chip svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lc-chip.lc-ic{padding:7px 9px;margin-left:2px;border-left:1px solid var(--lc-line);border-radius:0 6px 6px 0}
+.lc-chip.lc-ic svg{width:18px;height:18px}
+.lc-chip:focus-visible{outline:2px solid var(--lc-brass-deep);outline-offset:2px}
+/* ainda não existe nesta apresentação: cinza, sem clique, etiqueta "em breve" (mesma do Bossa, vendas.css .soon) */
+.lc-chip[disabled]{color:var(--lc-ink-soft);cursor:not-allowed;opacity:.9}
+.lc-chip[disabled]:hover{background:transparent}
+.lc-soon{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--lc-brass-soft);color:var(--lc-brass-ink);font:600 .625rem/1.4 var(--lc-body);letter-spacing:.06em;text-transform:uppercase}
+/* painel suspenso (ex.: lista de unidades) */
+.lc-panel{position:fixed;right:16px;top:calc(env(safe-area-inset-top,0px) + 70px);z-index:2147482001;min-width:220px;max-width:min(360px,calc(100vw - 32px));padding:8px;border-radius:14px;background:var(--lc-material);-webkit-backdrop-filter:var(--lc-blur);backdrop-filter:var(--lc-blur);border:1px solid var(--lc-edge);box-shadow:var(--lc-sh-2);display:grid;gap:2px;font:500 .8125rem/1.3 var(--lc-body);color:var(--lc-ink)}
+.lc-panel[hidden]{display:none}
+.lc-panel button{font:inherit;color:inherit;text-align:left;background:transparent;border:0;border-radius:9px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.lc-panel button:hover{background:var(--lc-thumb-hover)}
+.lc-panel button[aria-pressed="true"]{background:var(--lc-thumb);box-shadow:var(--lc-sh-0)}
+.lc-panel button small{font-size:.625rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lc-ink-soft)}
+/* a apresentação pode esconder sua própria marca/menu quando a casca está presente (html.lc-casca-on) */
+@media (max-width:720px){
+  .lc-casca{left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);gap:8px}
+  .lc-l{flex:1 1 100%}
+  .lc-brand{padding:9px 12px;gap:2px;width:100%}
+  .lc-brand h1{font-size:1.25rem}
+  .lc-brand h1 i,.lc-greet i{color:var(--lc-brass-ink)}  /* título pequeno: dourado escuro para contraste AA */
+  .lc-r{width:100%;margin-left:0;justify-items:stretch}
+  .lc-nav{width:100%}
+  .lc-panel{left:12px;right:12px;max-width:none;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+}

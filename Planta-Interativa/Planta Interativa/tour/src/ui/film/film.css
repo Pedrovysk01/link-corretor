@@ -45,6 +45,11 @@
   pointer-events: none;
 }
 
+/* com o cabeçalho padrão do painel (casca.js), o cabeçalho do filme desce para não ficar embaixo dele */
+html.lc-casca-on .film__header {
+  top: calc(var(--gutter) + 64px);
+}
+
 .film__header {
   position: absolute;
   top: var(--gutter);

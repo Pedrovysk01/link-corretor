@@ -837,6 +837,7 @@ class H(BaseHTTPRequestHandler):
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
+            tag = '<script src="/painel/casca.js?v=1"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
             if injetar_code: tag += f'<script src="/painel/embed.js?v=8" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})

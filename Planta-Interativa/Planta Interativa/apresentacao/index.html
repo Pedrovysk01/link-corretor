@@ -90,6 +90,9 @@ transition:opacity .55s var(--ease),transform .55s var(--ease),filter .55s var(-
 .stat b{display:block;font:500 30px/1 var(--serif);letter-spacing:-.01em}.stat span{display:block;font-size:12px;line-height:1.3;color:rgba(255,255,255,.88);margin-top:6px}
 .stat small{display:block;font-size:10px;color:var(--mute);margin-top:5px}
 .title{position:absolute;left:clamp(16px,4vw,48px);top:calc(96px + env(safe-area-inset-top));max-width:520px;pointer-events:none}
+html.lc-casca-on .title{top:calc(176px + env(safe-area-inset-top))} /* abaixo do cabeçalho padrão do painel (casca.js) */
+html.lc-casca-on .bar{top:calc(78px + env(safe-area-inset-top))}     /* barra de horas do sol desce para não bater no menu da casca */
+@media (max-width:720px){html.lc-casca-on .bar{top:calc(150px + env(safe-area-inset-top))}html.lc-casca-on .title{top:calc(200px + env(safe-area-inset-top))}}
 .title h2{font-size:clamp(34px,5vw,64px);line-height:1;letter-spacing:-.02em;text-shadow:0 2px 30px rgba(0,0,0,.45)}
 .title p{margin:10px 0 0;color:rgba(255,255,255,.85);text-shadow:0 1px 20px rgba(0,0,0,.5);max-width:42ch}
 .halo{position:relative;width:18px;height:18px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.4)}
@@ -264,5 +267,16 @@ transition:opacity .55s var(--ease),transform .55s var(--ease),filter .55s var(-
 <script src="maps.js?v=5"></script>
 <script src="torre.js"></script>
 <script src="main.js"></script>
+<script>/* casca padrão do painel (painel/casca.js): o que cada botão faz aqui. Sem função = "em breve". */
+window.LC_CASCA = {
+  empresa: EMPRESA.nome, cidade: PROJ.cidade, titulo: "Felicità <i>402</i> Home Club", esconder: ["#brand"],
+  visao: () => (/^#(cidade|futuro|vida)$/.test(location.hash) ? "2d" : "3d"),
+  acoes: {
+    v3d: () => go("projeto"), vcima: () => go("cidade"), geral: () => go("projeto"),
+    unidades: async () => { await go("projeto"); const b = document.querySelector("#floors button:not(.none)"); if (b) b.click(); },
+    experiencias: async () => { await go("projeto"); document.getElementById("b-lazer").click(); },
+    materiais: async () => { await go("projeto"); document.getElementById("b-gal").click(); }
+  }
+};</script>
 </body>
 </html>
