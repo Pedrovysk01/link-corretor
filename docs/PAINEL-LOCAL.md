@@ -42,6 +42,8 @@ A escolha vale até fechar a aba. Quem já se cadastrou neste aparelho abre dire
 
 **Aviso lateral no painel:** **5 minutos** depois que o cliente abriu e se cadastrou, aparece um cartão à direita: *"Cliente abriu e se cadastrou · há 5 min — <nome> · <empreendimento> · Veio do corretor <X> · <canal>"*, com o botão "Ver cliente". O dono vê o corretor de origem; cada corretor vê só os seus (*"Veio do seu link"*). O atraso muda em **Configurações → Aviso de cliente novo** (0 a 120 min). Clientes que voltam a abrir avisam na hora.
 
+Em toda apresentação aberta por quem está logado (dono ou corretor) aparece a aba **← Painel** na lateral esquerda (`painel/voltar.js`); o cliente final não a vê.
+
 ## IA
 
 `claude -p` do Claude Code instalado (assinatura, sem chave de API), modelo `haiku` (`LC_AI_MODEL` troca). Responde só com o
@@ -49,7 +51,7 @@ texto "O que a IA sabe" do empreendimento e cita o corretor quando não souber. 
 
 ## Empreendimentos cadastrados
 
-Bossa (`Planta-Interativa/Planta Interativa/app`) e Felicità 402 (`.../apresentacao`). Textos da IA em `tools/seed/*.txt`,
+Bossa (`Planta-Interativa/Planta Interativa/app`), Felicità 402 (`.../apresentacao`) e Villa Montemerano (`.../tour/dist`, compilado por `npm run build:painel`; o `Iniciar painel.bat` compila na primeira vez). Textos da IA em `tools/seed/*.txt`,
 gerados dos dados reais das apresentações. **Revise preços e disponibilidade.** O dono vê a apresentação sem rastreio em `/pre/<id>/`.
 
 ## Dados, segurança e testes

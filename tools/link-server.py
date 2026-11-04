@@ -415,7 +415,8 @@ def semear_empreendimentos():
     def fatos(n):
         p = SEED / n; return p.read_text(encoding="utf-8") if p.is_file() else ""
     base = "Planta-Interativa/Planta Interativa"
-    for nome, cidade, pasta, arq in [("Bossa Eco Luxury Villas", "Praia do Toque", f"{base}/app", "bossa-fatos.txt"), ("Felicità 402 Home Club", "Itapema · SC", f"{base}/apresentacao", "felicita-fatos.txt")]:
+    for nome, cidade, pasta, arq in [("Bossa Eco Luxury Villas", "Praia do Toque", f"{base}/app", "bossa-fatos.txt"), ("Felicità 402 Home Club", "Itapema · SC", f"{base}/apresentacao", "felicita-fatos.txt"),
+                                       ("Villa Montemerano", "Meia Praia · Itapema · SC", f"{base}/tour/dist", "montemerano-fatos.txt")]:  # o tour precisa estar compilado: npm run build:painel
         if pasta_ok(pasta) and not q("SELECT 1 FROM properties WHERE source_dir=?", (pasta,), one=True):
             run("INSERT INTO properties(name,city,source_dir,facts,languages) VALUES(?,?,?,?,?)", (nome, cidade, pasta, fatos(arq), json.dumps(IDIOMAS)))
 
@@ -810,12 +811,13 @@ class H(BaseHTTPRequestHandler):
                 f'<div style="max-width:420px;text-align:center"><h1 style="font:400 28px Georgia,serif;margin:0 0 8px">{titulo}</h1><p style="margin:0;opacity:.8">{texto}</p></div>')
         self.resp(code, html.encode("utf-8"), "text/html; charset=utf-8", {"Cache-Control": "no-store"})
 
-    def arquivo(self, caminho, injetar_code=None):
+    def arquivo(self, caminho, injetar_code=None, voltar=False):
         ext = caminho.suffix.lower()
         tipo = TIPOS.get(ext) or mimetypes.guess_type(str(caminho))[0] or "application/octet-stream"
-        if injetar_code and ext == ".html":
+        if (injetar_code or voltar) and ext == ".html":
             html = caminho.read_text(encoding="utf-8", errors="replace")
-            tag = f'<script src="/painel/embed.js?v=7" data-code="{injetar_code}" defer></script>'
+            tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=7" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -850,11 +852,12 @@ class H(BaseHTTPRequestHandler):
         if any(p.startswith(".") or p in NEGADO_DIR for p in partes) or alvo.suffix.lower() in NEGADO_EXT: return None
         return alvo
 
-    def servir_pasta(self, pasta, rel, entrada, injetar=None):
+    def servir_pasta(self, pasta, rel, entrada, injetar=None, voltar=False):
         alvo = self.dentro(pasta, rel or entrada)
         if alvo and alvo.is_dir(): alvo = alvo / "index.html"
         if not alvo or not alvo.is_file(): return self.pagina_erro(404, "Não encontrado", "Este arquivo não existe.")
-        self.arquivo(alvo, injetar_code=injetar if alvo == (pasta / entrada).resolve() else None)
+        eh_entrada = alvo == (pasta / entrada).resolve()
+        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada)
 
     def apresentacao(self, code, rel):
         L = link_publico(code)
@@ -863,7 +866,7 @@ class H(BaseHTTPRequestHandler):
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
         v = visitante_do_cookie(self)
         if not rel and v: registrar_abertura(self, v, L)  # cliente já identificado: abertura no nome dele. Sem cadastro, o widget pede depois de 3 interações
-        self.servir_pasta(pasta, rel, L["entry"], injetar=code)
+        self.servir_pasta(pasta, rel, L["entry"], injetar=code, voltar=True)
 
     def previa(self, pid, resto):
         if not self.usuario(): return self.pagina_erro(401, "Entre no painel", "Abra o painel e entre para ver a apresentação.")
@@ -873,7 +876,7 @@ class H(BaseHTTPRequestHandler):
         if resto is None: return self.redireciona(f"/pre/{pid}/")
         pasta = pasta_da(prop)
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
-        self.servir_pasta(pasta, resto.lstrip("/"), prop["entry"])
+        self.servir_pasta(pasta, resto.lstrip("/"), prop["entry"], voltar=True)
 
     def clique(self, code):
         L = link_publico(code)
