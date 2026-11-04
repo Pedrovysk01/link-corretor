@@ -89,7 +89,7 @@ export interface Room {
   readonly view?: RoomView
 }
 
-export type Surroundings = 'garden' | 'skyline'
+export type Surroundings = 'garden' | 'skyline' | 'cidade'
 
 export interface Property {
   readonly id: string
@@ -105,6 +105,8 @@ export interface Property {
   readonly bathrooms: number
   readonly wallHeight: number
   readonly surroundings: Surroundings
+  /** Com `cidade`: pavimentos entre o piso mostrado e o pódio (torre real com a fachada). */
+  readonly floorsBelow?: number
   /** Imagem de capa do empreendimento, relativa a public/. Opcional. */
   readonly cover?: string
   readonly rooms: readonly Room[]

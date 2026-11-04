@@ -18,7 +18,8 @@ export const montemeranoLazer: Property = {
   bedrooms: 0,
   bathrooms: 0,
   wallHeight: 3,
-  surroundings: 'skyline',
+  surroundings: 'cidade',
+  floorsBelow: 1,
   cover: 'img/externa-aerea.webp',
   tour: ['circulacao', 'salao', 'gourmet', 'piscina', 'piscina-inf', 'fireplace', 'jogos', 'academia', 'brinquedoteca', 'playground', 'pet', 'quadra'],
   rooms: [

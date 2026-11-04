@@ -55,7 +55,7 @@ export function TourCanvas({ onReady }: { readonly onReady: () => void }) {
         <SceneLighting bounds={bounds} surroundings={property.surroundings} quality={quality} />
 
         <group key={property.id}>
-        <Surroundings kind={property.surroundings} bounds={bounds} />
+        <Surroundings kind={property.surroundings} bounds={bounds} floorsBelow={property.floorsBelow} />
         <RoomFloors rooms={property.rooms} />
         <Structure property={property} />
         <group position={[0, FLOOR_TOP, 0]}>

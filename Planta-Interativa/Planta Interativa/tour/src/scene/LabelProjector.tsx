@@ -26,6 +26,16 @@ export function LabelProjector() {
         top: MathUtils.clamp(((1 - point.y) / 2) * size.height, halfHeight, size.height - halfHeight),
       }
     })
+    // Rótulos de ambiente que caem um sobre o outro: empurra o de baixo para baixo até não cobrir o de cima.
+    const labels = placements.filter((p) => p.el.classList.contains('room-label') && !p.isBehindCamera).sort((a, b) => a.top - b.top)
+    for (let i = 0; i < labels.length; i++) {
+      for (let j = 0; j < i; j++) {
+        const a = labels[j], b = labels[i]
+        const dx = Math.abs(a.left - b.left), dy = b.top - a.top
+        const minX = (a.el.offsetWidth + b.el.offsetWidth) / 2 + 4, minY = (a.el.offsetHeight + b.el.offsetHeight) / 2 + 4
+        if (dx < minX && dy < minY) b.top = a.top + minY
+      }
+    }
     for (const { el, isBehindCamera, left, top } of placements) {
       el.style.transform = `translate(${left}px, ${top}px) translate(-50%, -50%)`
       el.style.visibility = isBehindCamera ? 'hidden' : 'visible'

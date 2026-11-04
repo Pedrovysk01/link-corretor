@@ -3,6 +3,7 @@ import type { Rect } from '../data/types'
 import { seededRandom } from '../lib/random'
 import { Cypress, OliveTree } from './garden/Trees'
 import { MATERIALS } from './materials'
+import { Cidade } from './Cidade'
 import { ModelBoundary, ModelPiece } from './models/ModelPiece'
 import { preloadModels } from './models/preload'
 
@@ -137,6 +138,7 @@ function Skyline({ bounds }: { readonly bounds: Rect }) {
   )
 }
 
-export function Surroundings({ kind, bounds }: { readonly kind: 'garden' | 'skyline'; readonly bounds: Rect }) {
+export function Surroundings({ kind, bounds, floorsBelow = 14 }: { readonly kind: 'garden' | 'skyline' | 'cidade'; readonly bounds: Rect; readonly floorsBelow?: number }) {
+  if (kind === 'cidade') return <Cidade bounds={bounds} floorsBelow={floorsBelow} />
   return kind === 'garden' ? <Garden bounds={bounds} /> : <Skyline bounds={bounds} />
 }

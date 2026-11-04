@@ -19,7 +19,8 @@ export const montemerano01: Property = {
   bedrooms: 3,
   bathrooms: 4,
   wallHeight: 2.7,
-  surroundings: 'skyline',
+  surroundings: 'cidade',
+  floorsBelow: 14,
   cover: 'img/externa-01.webp',
   tour: ['hall', 'living', 'kitchen', 'sacada', 'master', 'bwc-master', 'suite-2', 'suite-1'],
   rooms: [

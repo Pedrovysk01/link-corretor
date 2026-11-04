@@ -8,6 +8,7 @@ const SUN_DISTANCE = 40
 const SHADOW_MAP: Record<Quality, number> = { high: 4096, low: 2048, minimal: 1024 }
 const GARDEN_HAZE: [number, number] = [160, 900]
 const SKYLINE_HAZE: [number, number] = [140, 700]
+const CIDADE_HAZE: [number, number] = [400, 2600]
 
 interface SceneLightingProps {
   readonly bounds: Rect
@@ -31,7 +32,7 @@ export function SceneLighting({ bounds, surroundings, quality }: SceneLightingPr
   const [dx, dy, dz] = sunDirection()
   const sun: [number, number, number] = [cx + dx * SUN_DISTANCE, dy * SUN_DISTANCE, cz + dz * SUN_DISTANCE]
   const extent = Math.max(bounds.w, bounds.d) * 0.85
-  const [near, far] = surroundings === 'skyline' ? SKYLINE_HAZE : GARDEN_HAZE
+  const [near, far] = surroundings === 'cidade' ? CIDADE_HAZE : surroundings === 'skyline' ? SKYLINE_HAZE : GARDEN_HAZE
 
   return (
     <>
