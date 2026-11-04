@@ -3,7 +3,8 @@
 "use strict";
 
 // Idiomas da IA: os 9 mais falados no mundo (código BCP 47, bandeira do país de referência, nome no próprio idioma). Mesma lista em IDIOMAS do servidor.
-const IDIOMAS_IA = [["pt-BR", "🇧🇷", "Português"], ["en", "🇺🇸", "English"], ["es", "🇪🇸", "Español"], ["zh", "🇨🇳", "中文"], ["hi", "🇮🇳", "हिन्दी"], ["ar", "🇸🇦", "العربية"], ["fr", "🇫🇷", "Français"], ["bn", "🇧🇩", "বাংলা"], ["ru", "🇷🇺", "Русский"]];
+const IDIOMAS_IA = [["pt-BR", "br", "Português"], ["en", "us", "English"], ["es", "es", "Español"], ["zh", "cn", "中文"], ["hi", "in", "हिन्दी"], ["ar", "sa", "العربية"], ["fr", "fr", "Français"], ["bn", "bd", "বাংলা"], ["ru", "ru", "Русский"]];
+const bandeira = (pais) => h("img", { class: "bandeira", src: `vendor/bandeiras/${pais}.png`, alt: "", width: 20, height: 15, loading: "lazy" });  // PNG local: o Windows não desenha emoji de bandeira
 const ICONES = {
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   dash: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
@@ -583,7 +584,7 @@ async function telaProps() {
     el.append(h("div", { class: "card" }, h("p", { class: "muted small", style: "margin-bottom:8px" }, "Clique numa linha para ver os clientes do empreendimento aqui mesmo."), tabela([
       { t: "Empreendimento", v: (p) => h("div", null, h("div", { class: "cell-main wrap" }, p.name), h("div", { class: "cell-sub wrap" }, p.city || "—")), cls: "main-cell" },
       { t: "Apresentação", v: (p) => p.tem_apresentacao ? pill(p.external_url ? "Link externo" : "3D", "on") : pill("Sem", "warn") }, { t: "IA", v: (p) => p.ai_on ? "Ligada" : "Desligada" },
-      { t: "Idiomas", v: (p) => p.languages.map((l) => (IDIOMAS_IA.find((x) => x[0] === l) || [l, ""])[1] + " " + l.split("-")[0].toUpperCase()).join(" · ") },
+      { t: "Idiomas", v: (p) => h("span", { class: "idiomas-lista" }, ...p.languages.map((l) => { const i = IDIOMAS_IA.find((x) => x[0] === l); return h("span", { class: "idioma", title: i ? i[2] : l }, i ? bandeira(i[1]) : null, l.split("-")[0].toUpperCase()); })) },
       { t: "Clientes", v: (p) => fmtN(p.clientes), cls: "num" }, { t: "Aberturas", v: (p) => fmtN(p.aberturas), cls: "num" }, { t: "Links", v: (p) => fmtN(p.links), cls: "num" },
       { t: "Situação", v: (p) => pill(p.active ? "Ativo" : "Pausado", p.active ? "on" : "off") },
       { t: "", v: (p) => h("div", { class: "row", style: "gap:6px;justify-content:flex-end" }, p.tem_apresentacao && h("a", { class: "btn sm", href: p.external_url || `/pre/${p.id}/`, target: "_blank", rel: "noopener", "aria-label": "Ver apresentação" }, ic("ext")), h("button", { class: "btn sm", "aria-label": "Editar", onclick: () => formProp(p) }, ic("edit"))), cls: "acoes" },
@@ -607,7 +608,7 @@ async function formProp(p) {
     campo("Apresentação 3D", h("select", { name: "source_dir" }, h("option", { value: "" }, "Nenhuma (usar link externo)"), fontes.map((f) => h("option", { value: f, selected: f === p.source_dir }, f.split("/").slice(-2).join(" / ")))), "Pastas de apresentação encontradas dentro do projeto."),
     campo("Ou link externo", h("input", { type: "text", name: "external_url", value: p.external_url || "", placeholder: "https://…", inputmode: "url" }), "Se a apresentação já está publicada em outro lugar. Nesse caso o cadastro, a faixa do corretor e a IA não aparecem."),
     campo("WhatsApp do empreendimento", h("input", { type: "tel", name: "whatsapp", value: p.whatsapp ? fone(p.whatsapp) : "", placeholder: "(47) 99999-9999" }), "Usado quando o corretor não tem WhatsApp cadastrado."),
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "caixas cols3" }, IDIOMAS_IA.map(([c, bandeira, t]) => caixa(h("span", null, h("span", { class: "bandeira", "aria-hidden": "true" }, bandeira), " ", t), p.languages.includes(c), "lang-" + c))), h("small", { class: "help" }, "Os 9 idiomas mais falados. A IA responde no idioma do navegador do cliente, se estiver ligado aqui.")),
+    h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "caixas cols3" }, IDIOMAS_IA.map(([c, pais, t]) => caixa(h("span", { class: "idioma" }, bandeira(pais), t), p.languages.includes(c), "lang-" + c))), h("small", { class: "help" }, "Os 9 idiomas mais falados. A IA responde no idioma do navegador do cliente, se estiver ligado aqui.")),
     h("div", { class: "field" }, h("span", { class: "lbl" }, "Recursos na apresentação"), h("div", { class: "caixas" }, REC.map(([k, t]) => caixa(t, rec[k] !== false, "rec-" + k))), h("small", { class: "help" }, "Tudo ligado por padrão. Desligue o que não quiser mostrar neste empreendimento; vale para todos os links dele.")),
     h("div", { class: "field" }, caixa("Empreendimento ativo (links funcionam)", p.active, "active")),
     campo("O que a IA sabe", h("textarea", { name: "facts", rows: 10, placeholder: "Tipologias, metragens, preços, condições de pagamento, áreas comuns, localização…" }, p.facts || ""), "Única fonte da IA: responde só com isso e manda falar com o corretor quando não souber. Mantenha preços e disponibilidade em dia.")];
