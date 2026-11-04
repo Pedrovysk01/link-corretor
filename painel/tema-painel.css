@@ -186,3 +186,24 @@ table.t tr.exp:hover td,table.t tr.exp.on td,.pessoa:hover,.pessoa.on{background
 :root[data-modo="light"] .side .nav a[aria-current=page] .ic{color:var(--bar-icon-active)}
 :root[data-modo="light"] .topo{background:var(--top-bg);box-shadow:none}
 :root[data-modo="light"] .side .av,:root[data-modo="light"] .topo .av{background:var(--brass);color:var(--accent-text)}
+
+/* ───────── moldura (como no Sábio): topo e barra lateral formam um "L" contínuo da mesma cor;
+   o conteúdo é um painel com o canto superior esquerdo arredondado, encaixado dentro da moldura ───────── */
+.side{border-right:0}
+.topo{background:var(--bar-bg);border-bottom:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.main{background:var(--bar-bg)}
+#conteudo{flex:1;max-width:none;background:var(--bg);border-top-left-radius:24px;padding:28px max(32px,calc((100% - 1216px) / 2)) 56px}
+@media (max-width:1024px){#conteudo{border-radius:20px 20px 0 0}}
+@media (max-width:899px){#conteudo{padding:16px 16px 40px}}
+
+/* busca global: centralizada no topo, em vidro escuro sobre a moldura */
+.topo .bg{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--bar-text);box-shadow:none;border-radius:12px;height:44px}
+.topo .bg>.ic{color:var(--bar-muted)}
+.topo .bg-in::placeholder{color:var(--bar-muted);opacity:1}
+.topo .bg:focus-within{border-color:rgba(52,211,153,.6);box-shadow:0 0 0 3px rgba(16,185,129,.18)}
+.topo .bg .bg-lista{color:var(--text)}
+@media (min-width:900px){
+  .topo .bg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 600px))}
+}
+@media (min-width:900px) and (max-width:1180px){.topo .bg{width:min(420px,calc(100% - 520px))}.user-btn div{display:none}}
+@media (max-width:899px){.topo .esq{margin-right:6px}.topo .dir{flex:none}.topo .bg{width:100%}}
