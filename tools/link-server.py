@@ -125,6 +125,8 @@ def init_db():
     if "ai_questions" in tabelas and "visitor_id" not in [r[1] for r in c.execute("PRAGMA table_info(ai_questions)")]:
         c.execute("ALTER TABLE ai_questions RENAME TO ai_questions_old")  # versão anterior: recria com a coluna nova
     c.executescript(SCHEMA)
+    if "photo" not in [r[1] for r in c.execute("PRAGMA table_info(users)")]:
+        c.execute("ALTER TABLE users ADD COLUMN photo TEXT NOT NULL DEFAULT ''")  # foto 1:1 do corretor (data URL reduzida no navegador)
     if "features" not in [r[1] for r in c.execute("PRAGMA table_info(properties)")]:
         c.execute("ALTER TABLE properties ADD COLUMN features TEXT NOT NULL DEFAULT '{}'")  # recursos ligados/desligados; vazio = tudo ligado
     if "ai_questions_old" in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}:
@@ -292,7 +294,7 @@ def perguntar_ia(prop, pergunta, lang, corretor):
 
 
 # ───────────────────────── consultas do painel ─────────────────────────
-def usuario_publico(u): return {"id": u["id"], "role": u["role"], "name": u["name"], "email": u["email"], "phone": u["phone"]}
+def usuario_publico(u): return {"id": u["id"], "role": u["role"], "name": u["name"], "email": u["email"], "phone": u["phone"], "tem_foto": bool(u["photo"] if "photo" in u.keys() else "")}
 
 
 def escopo(user, col="v.broker_id"):
@@ -309,13 +311,13 @@ def dia_local(n):
 
 CLIENTE_SQL = """
 SELECT v.id, v.name, v.phone, v.email, v.status, v.notes, v.message, v.consent, v.created, v.broker_id, v.property_id,
-  u.name AS corretor, u.phone AS corretor_fone, p.name AS empreendimento, l.channel, l.code,
+  u.name AS corretor, u.phone AS corretor_fone, (u.photo<>'') corretor_tem_foto, p.name AS empreendimento, l.channel, l.code,
   (SELECT COUNT(*) FROM opens o WHERE o.visitor_id=v.id) aberturas,
   (SELECT MIN(o.ts) FROM opens o WHERE o.visitor_id=v.id) primeira,
   (SELECT MAX(o.last_seen) FROM opens o WHERE o.visitor_id=v.id) ultima,
   (SELECT COUNT(*) FROM ai_questions a WHERE a.visitor_id=v.id) perguntas,
   (SELECT COUNT(DISTINCT o.broker_id) FROM opens o WHERE o.visitor_id=v.id AND o.broker_id<>v.broker_id) outros_corretores,
-  (SELECT json_group_array(json_object('broker_id',s.broker_id,'pct',s.pct,'name',u2.name)) FROM commission_shares s JOIN users u2 ON u2.id=s.broker_id WHERE s.visitor_id=v.id) shares
+  (SELECT json_group_array(json_object('broker_id',s.broker_id,'pct',s.pct,'name',u2.name,'tem_foto',u2.photo<>'')) FROM commission_shares s JOIN users u2 ON u2.id=s.broker_id WHERE s.visitor_id=v.id) shares
 FROM visitors v JOIN users u ON u.id=v.broker_id JOIN properties p ON p.id=v.property_id LEFT JOIN links l ON l.id=v.first_link_id
 WHERE 1=1"""
 
@@ -560,7 +562,20 @@ def recursos_de(p):
 
 def prop_pub(p):
     p = dict(p); p["languages"] = json.loads(p["languages"] or "[]"); p["recursos"] = recursos_de(p)
-    p["tem_apresentacao"] = (bool(p["source_dir"]) and bool(pasta_da(p))) or bool(p["external_url"]); return p
+    p["tem_apresentacao"] = (bool(p["source_dir"]) and bool(pasta_da(p))) or bool(p["external_url"])
+    p["capa"] = capa_de(p); return p
+
+
+CAPAS = ["img/externa-01.webp", "media/hero-dia.jpg", "media/g02.jpg", "media/voo-geral.jpg", "media/render.webp", "capa.jpg", "capa.webp"]
+def capa_de(p):
+    """Imagem 1:1 do cartão do empreendimento: a primeira das CAPAS que existir na pasta da apresentação (servida por /pre/<id>/)."""
+    try:
+        pasta = pasta_da(p) if p["source_dir"] else None
+        if not pasta: return ""
+        for rel in CAPAS:
+            if (pasta / rel).is_file(): return f"/pre/{p['id']}/{rel}"
+    except Exception: pass
+    return ""
 
 
 def r_props(h, u, q_, b):
@@ -615,7 +630,8 @@ def r_prop_edit(h, u, q_, b, pid):
 def r_sources(h, u, q_, b): return fontes_detectadas()
 
 
-BROKER_SQL = """SELECT u.id, u.name, u.email, u.phone, u.active, u.demo, u.created,
+BROKER_SQL = """SELECT u.id, u.name, u.email, u.phone, u.active, u.demo, u.created, (u.photo<>'') tem_foto,
+  COALESCE((SELECT bc.phone FROM broker_cards bc WHERE bc.broker_id=u.id AND bc.phone<>'' ORDER BY bc.id DESC LIMIT 1), u.phone) whatsapp,
   (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id) clientes, (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='novo') novos,
   (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='fechado') fechados,
   (SELECT COUNT(*) FROM opens o JOIN visitors v ON v.id=o.visitor_id WHERE v.broker_id=u.id) aberturas, (SELECT MAX(o.ts) FROM opens o JOIN visitors v ON v.id=o.visitor_id WHERE v.broker_id=u.id) ultima,
@@ -641,6 +657,22 @@ def r_broker_new(h, u, q_, b):
     return {"id": run("INSERT INTO users(role,name,email,phone,pw_salt,pw_hash) VALUES('broker',?,?,?,?,?)", (nome, email, fone_br(b.get("telefone")), s, hs)), "senha": senha}
 
 
+def foto_ok(v):
+    v = str(v or "")
+    need(v == "" or (re.match(r"data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$", v) and len(v) <= 400_000), "Foto inválida. Envie PNG, JPG ou WebP até 300 KB.")
+    return v
+
+
+def r_me_foto(h, u, q_, b): run("UPDATE users SET photo=? WHERE id=?", (foto_ok(b.get("foto")), u["id"])); return {"ok": True}
+
+
+def r_foto(h, u, q_, b, uid):
+    r = q("SELECT photo FROM users WHERE id=?", (int(uid),), one=True); need(r and r["photo"], "Sem foto.", 404)
+    cab, dado = r["photo"].split(",", 1)
+    import base64
+    h.resp(200, base64.b64decode(dado), cab[5:].split(";")[0], {"Cache-Control": "private, max-age=300"}); return None
+
+
 def r_broker_edit(h, u, q_, b, bid):
     r = q("SELECT * FROM users WHERE id=? AND role='broker'", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404)
     out = {"ok": True}
@@ -648,6 +680,7 @@ def r_broker_edit(h, u, q_, b, bid):
         run("UPDATE users SET active=? WHERE id=?", (1 if b["active"] else 0, r["id"]))
         if not b["active"]: run("DELETE FROM sessions WHERE user_id=?", (r["id"],))
     if "nome" in b: run("UPDATE users SET name=? WHERE id=?", (txt(b["nome"], 120, "o nome", True), r["id"]))
+    if "foto" in b: run("UPDATE users SET photo=? WHERE id=?", (foto_ok(b["foto"]), r["id"]))
     if "telefone" in b: run("UPDATE users SET phone=? WHERE id=?", (fone_br(b["telefone"]), r["id"]))
     if b.get("nova_senha"):
         senha = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8)); s, hs = hash_pw(senha)
@@ -867,7 +900,7 @@ def r_pub_message(h, u, q_, b, code):
 
 OWNER, ANY, PUB = "owner", "any", None
 ROTAS = [
-    ("GET", r"/api/me", r_me, PUB), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY),
+    ("GET", r"/api/me", r_me, PUB), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY), ("POST", r"/api/me/foto", r_me_foto, ANY), ("GET", r"/api/foto/(\d+)", r_foto, ANY),
     ("GET", r"/api/dashboard", r_dashboard, ANY), ("GET", r"/api/notify", r_notify, ANY),
     ("GET", r"/api/properties", r_props, ANY), ("POST", r"/api/properties", r_prop_new, OWNER), ("PATCH", r"/api/properties/(\d+)", r_prop_edit, OWNER), ("GET", r"/api/sources", r_sources, OWNER),
     ("GET", r"/api/brokers", r_brokers, OWNER), ("GET", r"/api/brokers/(\d+)", r_broker, OWNER), ("POST", r"/api/brokers", r_broker_new, OWNER), ("PATCH", r"/api/brokers/(\d+)", r_broker_edit, OWNER),
@@ -941,7 +974,7 @@ class H(BaseHTTPRequestHandler):
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
             tag = '<script src="/painel/materiais.js?v=1"></script><script src="/painel/casca.js?v=4"></script>' + tag  # materiais (galeria, planta, antes/depois) + cabeçalho padrão  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
             if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=12" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=13" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -1071,7 +1104,9 @@ class H(BaseHTTPRequestHandler):
             user = self.usuario()
             if papel in (ANY, OWNER): need(user, "Entre para continuar.", 401)
             if papel == OWNER: need(user["role"] == "owner", "Só o dono pode fazer isso.", 403)
-            return self.json(200, fn(self, user, qs, body, *mt.groups()))
+            out = fn(self, user, qs, body, *mt.groups())
+            if out is None: return  # a rota já respondeu (ex.: /api/foto devolve a imagem)
+            return self.json(200, out)
         if any(rx.match(p) for _, rx, _, _ in ROTAS): raise ApiError(405, "Método não permitido.")
         raise ApiError(404, "Não encontrado.")
 

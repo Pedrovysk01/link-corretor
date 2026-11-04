@@ -109,7 +109,17 @@ const dono = () => S.me && S.me.role === "owner";
 const pill = (txt, cls) => h("span", { class: "pill " + (cls || "") }, txt);
 const statusPill = (s) => pill(STATUS[s] || s, "s-" + s);
 const ini = (n) => String(n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
-const avatar = (nome, cls) => h("span", { class: "av " + (cls || ""), "aria-hidden": "true" }, ini(nome));
+const avatar = (nome, cls, foto) => h("span", { class: "av " + (cls || "") + (foto ? " com-foto" : ""), "aria-hidden": "true" }, foto ? h("img", { src: foto, alt: "", loading: "lazy" }) : ini(nome));
+const S_FOTO = { v: Date.now() };  // muda quando alguém troca a foto: força o navegador a buscar de novo
+const fotoDe = (id, tem) => (tem ? `/api/foto/${id}?v=${S_FOTO.v}` : null);
+// Foto 1:1: recorta o centro e reduz a 320 px (JPEG), pronta para /api/me/foto ou PATCH /api/brokers/<id> {foto}
+const fotoQuadrada = (f) => new Promise((ok, erro) => { if (!f) return ok(null); const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => { const lado = Math.min(img.width, img.height), M = 320, c = h("canvas", { width: M, height: M }); c.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, M, M); URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", .86)); };
+  img.onerror = () => erro(new Error("Não consegui ler esta imagem.")); img.src = url; });
+const escolherFoto = (aoEscolher) => { const i = h("input", { type: "file", accept: "image/png,image/jpeg,image/webp", style: "display:none" }); i.onchange = async () => { try { const d = await fotoQuadrada(i.files[0]); if (d) await aoEscolher(d); } catch (e) { aviso(e.message, true); } i.remove(); }; document.body.append(i); i.click(); };
+// Logo do WhatsApp, preenchida
+const icWa = () => { const sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("viewBox", "0 0 24 24"); sv.setAttribute("class", "ic ic-wa"); sv.setAttribute("aria-hidden", "true");
+  sv.innerHTML = '<path fill="currentColor" stroke="none" d="M12.04 2a9.9 9.9 0 0 0-8.5 14.98L2 22l5.17-1.5A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.07.9.92-2.99-.2-.31a8.2 8.2 0 1 1 6.83 3.73Zm4.5-6.14c-.25-.12-1.46-.72-1.68-.8-.23-.09-.39-.13-.56.12-.16.24-.64.8-.78.97-.15.16-.29.18-.54.06a6.7 6.7 0 0 1-3.3-2.88c-.25-.43.25-.4.71-1.33.08-.16.04-.3-.02-.42-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47a.9.9 0 0 0-.65.3 2.75 2.75 0 0 0-.86 2.04 4.8 4.8 0 0 0 1 2.53 10.9 10.9 0 0 0 4.2 3.7c1.56.68 2.17.73 2.95.62.48-.07 1.46-.6 1.67-1.18.2-.58.2-1.07.15-1.18-.07-.1-.23-.16-.48-.28Z"/>'; return sv; };
 const vazio = (icone, titulo, texto, acao) => h("div", { class: "vazio" }, h("span", { class: "ic-box" }, ic(icone)), h("strong", null, titulo), texto && h("p", null, texto), acao);
 let _id = 0;
 function campo(rotulo, input, dica) { const id = "c" + ++_id; input.id = id; return h("div", { class: "field" }, h("label", { for: id }, rotulo), input, dica && h("span", { class: "hint" }, dica)); }
@@ -215,7 +225,7 @@ function casca() {
     h("div", { class: "nav-label" }, "Menu"),
     h("nav", { class: "nav", "aria-label": "Principal" }, itens.map(link)),
     h("div", { class: "foot" },
-      h("div", { class: "quem" }, avatar(S.me.name, "sm"), h("div", { style: "min-width:0" }, h("strong", { class: "wrap" }, S.me.name), h("span", { class: "muted" }, dono() ? "Dono" : "Corretor"))),
+      h("div", { class: "quem" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { style: "min-width:0" }, h("strong", { class: "wrap" }, S.me.name), h("span", { class: "muted" }, dono() ? "Dono" : "Corretor"))),
       h("button", { type: "button", class: "sb-hide", "aria-label": mini ? "Mostrar barra" : "Ocultar barra", title: mini ? "Mostrar barra" : "Ocultar barra", onclick: () => { const on = !document.body.classList.contains("sb-mini"); document.body.classList.toggle("sb-mini", on); try { on ? localStorage.setItem("lc_sbmini", "1") : localStorage.removeItem("lc_sbmini"); } catch { /* sem storage */ } casca(); rotear(); } }, ic(mini ? "panelR" : "panelL"), h("span", null, mini ? "Mostrar barra" : "Ocultar barra"))));
   const topo = h("header", { class: "topo" },
     h("div", { class: "esq" },
@@ -224,7 +234,7 @@ function casca() {
     h("div", { class: "dir" },
       h("button", { class: "icon-btn sino", id: "sino", type: "button", hidden: !S.pendentes.length, "aria-haspopup": "true", "aria-expanded": "false", "aria-label": "Avisos", title: "Clientes novos", onclick: (e) => { const p = $("#sino-painel"); p.hidden = !p.hidden; e.currentTarget.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("#avisos").querySelectorAll(".aviso-cliente").forEach((a) => a.remove()); pintarSinoPainel(); } } }, ic("bell"), h("span", { class: "badge", "aria-hidden": "true" }, "0")),  // abrir o sino recolhe os cartões: a lista tem todos
       h("div", { class: "card sino-painel", id: "sino-painel", hidden: true, role: "dialog", "aria-label": "Clientes novos" }),
-      h("a", { class: "user-btn", href: "#/conta", title: "Minha conta" }, avatar(S.me.name, "sm"), h("div", { style: "min-width:0" }, h("b", null, S.me.name), h("small", null, S.me.email))),
+      h("a", { class: "user-btn", href: "#/conta", title: "Minha conta" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { style: "min-width:0" }, h("b", null, S.me.name), h("small", null, S.me.email))),
       h("button", { class: "icon-btn", "aria-label": "Sair", title: "Sair", onclick: sair }, ic("out"))));
   const scrim = h("div", { class: "scrim", onclick: () => document.body.classList.remove("sb-open") });
   const main = h("div", { class: "main" }, topo, h("main", { id: "conteudo", tabindex: "-1" }));
@@ -337,10 +347,18 @@ const cabeca = (t, sub, ...acoes) => h("div", { class: "page-h" }, h("div", { st
 const voltar = (rota, txt) => h("a", { class: "voltar", href: "#/" + rota }, ic("back"), txt);
 
 // ───────── componentes de pessoa ─────────
+// Selo de quem atende o cliente: o corretor de origem ou, se a comissão foi dividida, cada corretor com a sua parte
+function seloAtendimento(d) {
+  const lista = d.shares && d.shares.length ? d.shares.map((x) => ({ id: x.broker_id, nome: x.name, foto: x.tem_foto, pct: x.pct })) : [{ id: d.broker_id, nome: d.corretor, foto: d.corretor_tem_foto, pct: null }];
+  return h("div", { class: "selos" }, h("span", { class: "eyebrow" }, lista.length > 1 ? "Corretores que atendem" : "Corretor que atende"),
+    h("div", { class: "selos-l" }, lista.map((x) => h(dono() ? "a" : "span", { class: "selo", href: dono() ? "#/corretor/" + x.id : null }, avatar(x.nome, "sm", fotoDe(x.id, x.foto)), h("span", { class: "selo-n" }, x.nome), x.pct != null && h("span", { class: "selo-p" }, x.pct + "%")))));
+}
 function detalheInline(c) {
   return api("GET", "/api/clientes/" + c.id).then((d) => h("div", { class: "det-grid" },
-    h("div", null, h("span", { class: "eyebrow" }, `Todos os acessos (${d.historico.length})`), d.historico.length ? h("div", { class: "timeline", style: "margin-top:8px" }, d.historico.map((o) => h("div", { class: "tl" }, h("span", { class: "tl-dot" + (o.broker_id !== d.broker_id ? " warn" : "") }),
-      h("div", null, h("div", { class: "cell-main" }, dataHora(o.ts)), h("div", { class: "muted small wrap" }, [o.empreendimento, o.device, o.segundos > 30 ? "ficou " + dur(o.segundos) : null, o.broker_id !== d.broker_id ? "link de " + o.corretor : CANAIS[o.channel]].filter(Boolean).join(" · ")))))) : h("p", { class: "muted small", style: "margin-top:8px" }, "Cadastrou-se, mas ainda não abriu a apresentação de novo.")),
+    h("div", null, h("span", { class: "eyebrow" }, d.historico.length > 1 ? `Último acesso (de ${d.historico.length})` : "Último acesso"), d.historico.length ? h("div", { class: "timeline", style: "margin-top:8px" }, d.historico.slice(0, 1).map((o) => h("div", { class: "tl" }, h("span", { class: "tl-dot" + (o.broker_id !== d.broker_id ? " warn" : "") }),
+      h("div", null, h("div", { class: "cell-main" }, dataHora(o.ts)), h("div", { class: "muted small wrap" }, [o.empreendimento, o.device, o.segundos > 30 ? "ficou " + dur(o.segundos) : null, o.broker_id !== d.broker_id ? "link de " + o.corretor : CANAIS[o.channel]].filter(Boolean).join(" · ")))))) : h("p", { class: "muted small", style: "margin-top:8px" }, "Cadastrou-se, mas ainda não abriu a apresentação de novo."),
+      d.historico.length > 1 && h("a", { class: "btn sm ghost mais-acessos", href: "#/cliente/" + c.id }, `Carregar mais (${d.historico.length - 1})`),
+      seloAtendimento(d)),
     h("div", null, h("span", { class: "eyebrow" }, "Recado e perguntas"), h("p", { class: "wrap small", style: "margin-top:8px;white-space:pre-wrap" }, d.message || "Sem recado."),
       d.perguntas_lista.slice(0, 5).map((x) => h("div", { class: "qa" }, h("span", { class: "q wrap small" }, x.question), x.answer && h("span", { class: "a wrap small" }, x.answer))),
       h("div", { class: "row", style: "margin-top:12px" }, h("a", { class: "btn sm primary", href: "#/cliente/" + c.id }, "Ver mais detalhes"),
@@ -540,8 +558,10 @@ async function telaCorretores() {
     ], bs, async (b) => { const d = await api("GET", "/api/brokers/" + b.id); return d.clientes_lista.length ? tabelaClientes(d.clientes_lista, { semCorretor: true }) : h("p", { class: "muted small" }, "Nenhum cliente ainda."); })));
     return el;
   }
-  el.append(h("div", { class: "props" }, bs.map((b) => h("a", { class: "card corretor" + (b.active ? "" : " off"), href: "#/corretor/" + b.id },
-    h("div", { class: "row", style: "gap:12px;flex-wrap:nowrap" }, avatar(b.name), h("div", { style: "min-width:0;flex:1" }, h("h2", { class: "wrap", style: "margin:0" }, b.name, b.demo ? [" ", pill("exemplo")] : null), h("div", { class: "muted small wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · "))), !b.active && pill("Desativado", "off")),
+  const abrirCorretor = (b) => (e) => { if (e.target.closest("a,button")) return; if (e.type === "keydown" && e.key !== "Enter") return; location.hash = "#/corretor/" + b.id; };
+  el.append(h("div", { class: "props" }, bs.map((b) => h("div", { class: "card corretor" + (b.active ? "" : " off"), role: "link", tabindex: "0", "aria-label": "Abrir " + b.name, onclick: abrirCorretor(b), onkeydown: abrirCorretor(b) },
+    h("div", { class: "row", style: "gap:12px;flex-wrap:nowrap" }, avatar(b.name, "foto-c", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0;flex:1" }, h("h2", { class: "wrap", style: "margin:0" }, b.name, b.demo ? [" ", pill("exemplo")] : null), h("div", { class: "muted small wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · "))), !b.active && pill("Desativado", "off"),
+      (b.whatsapp || b.phone) && h("a", { class: "btn-wa", href: wa(b.whatsapp || b.phone, `Olá ${b.name.split(" ")[0]}, tudo bem?`), target: "_blank", rel: "noopener", title: "Chamar " + b.name + " no WhatsApp", "aria-label": "Chamar " + b.name + " no WhatsApp" }, icWa())),
     h("div", { class: "stats" }, h("div", null, h("b", null, fmtN(b.clientes)), h("span", null, "clientes")), h("div", null, h("b", null, fmtN(b.novos)), h("span", null, "novos")), h("div", null, h("b", null, fmtN(b.aberturas)), h("span", null, "aberturas")), h("div", null, h("b", null, fmtN(b.fechados)), h("span", null, "fechados"))),
     h("div", { class: "muted small" }, "Última abertura " + quando(b.ultima))))));
   return el;
@@ -549,9 +569,9 @@ async function telaCorretores() {
 async function telaCorretor(id) {
   const b = await api("GET", "/api/brokers/" + id);
   const el = h("div", { class: "stack" }, voltar("corretores", "Corretores"),
-    h("div", { class: "card hero-p" }, avatar(b.name, "lg"), h("div", { style: "flex:1;min-width:0" }, h("div", { class: "row", style: "gap:8px" }, h("h1", { class: "wrap" }, b.name), pill(b.active ? "Ativo" : "Desativado", b.active ? "on" : "off")),
+    h("div", { class: "card hero-p" }, avatar(b.name, "lg", fotoDe(b.id, b.tem_foto)), h("div", { style: "flex:1;min-width:0" }, h("div", { class: "row", style: "gap:8px" }, h("h1", { class: "wrap" }, b.name), pill(b.active ? "Ativo" : "Desativado", b.active ? "on" : "off")),
       h("p", { class: "muted wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · ")),
-      h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn sm", onclick: () => redefinir(b) }, "Nova senha"),
+      h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn sm", onclick: () => escolherFoto(async (d) => { await api("PATCH", `/api/brokers/${b.id}`, { foto: d }); S_FOTO.v = Date.now(); aviso("Foto salva."); rotear(); }) }, b.tem_foto ? "Trocar foto" : "Adicionar foto"), h("button", { class: "btn sm", onclick: () => redefinir(b) }, "Nova senha"),
         h("button", { class: "btn sm" + (b.active ? " danger" : ""), onclick: async () => { await api("PATCH", `/api/brokers/${b.id}`, { active: !b.active }); aviso(b.active ? "Acesso desativado. Os links dele param de funcionar." : "Acesso reativado."); rotear(); } }, b.active ? "Desativar" : "Reativar"),
         h("a", { class: "btn sm", href: "/clientes.csv?corretor=" + b.id, download: "clientes.csv" }, ic("down"), "CSV dos clientes")))),
     h("div", { class: "kpis" }, h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.clientes)), h("span", { class: "l" }, "clientes")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.novos)), h("span", { class: "l" }, "novos para atender")),
@@ -570,8 +590,8 @@ function mostrarSenha(nome, email, senha) {
 }
 function formCorretor() {
   dialogo("Novo corretor", [campo("Nome", h("input", { type: "text", name: "nome", required: true, autocomplete: "off" })), campo("E-mail (é o login)", h("input", { type: "email", name: "email", required: true, autocomplete: "off" })),
-    campo("WhatsApp", h("input", { type: "tel", name: "telefone", placeholder: "(47) 99999-9999", autocomplete: "off" }), "Aparece para o cliente na apresentação."), campo("Senha inicial", h("input", { type: "text", name: "senha", autocomplete: "off", placeholder: "Deixe vazio para gerar" }), "Mínimo de 8 caracteres.")],
-    [btnFechar(), btnOk("Criar acesso")], { onSubmit: async (f, fechar) => { const r = await api("POST", "/api/brokers", { nome: f.get("nome"), email: f.get("email"), telefone: f.get("telefone"), senha: f.get("senha") }); fechar(); mostrarSenha(f.get("nome"), f.get("email"), r.senha); rotear(); } });
+    campo("WhatsApp", h("input", { type: "tel", name: "telefone", placeholder: "(47) 99999-9999", autocomplete: "off" }), "Aparece para o cliente na apresentação."), campo("Senha inicial", h("input", { type: "text", name: "senha", autocomplete: "off", placeholder: "Deixe vazio para gerar" }), "Mínimo de 8 caracteres."), campo("Foto (opcional)", h("input", { type: "file", name: "foto", accept: "image/png,image/jpeg,image/webp" }), "Quadrada (1:1): a imagem é recortada no centro. O corretor também pode trocar em Minha conta.")],
+    [btnFechar(), btnOk("Criar acesso")], { onSubmit: async (f, fechar) => { const r = await api("POST", "/api/brokers", { nome: f.get("nome"), email: f.get("email"), telefone: f.get("telefone"), senha: f.get("senha") }); const arq = f.get("foto"); if (arq && arq.size) { try { await api("PATCH", `/api/brokers/${r.id}`, { foto: await fotoQuadrada(arq) }); } catch (e) { aviso("Corretor criado, mas a foto não foi salva: " + e.message, true); } } fechar(); mostrarSenha(f.get("nome"), f.get("email"), r.senha); rotear(); } });
 }
 async function redefinir(b) { if (!confirm(`Gerar uma nova senha para ${b.name}? A atual deixa de funcionar e ele será desconectado.`)) return; const r = await api("PATCH", `/api/brokers/${b.id}`, { nova_senha: true }); mostrarSenha(b.name, b.email, r.senha); }
 
@@ -591,7 +611,7 @@ async function telaProps() {
     ], props, async (p) => { const cs = await api("GET", "/api/clientes?empreendimento=" + p.id); return cs.length ? tabelaClientes(cs) : h("p", { class: "muted small" }, "Nenhum cliente ainda."); })));
     return el;
   }
-  el.append(h("div", { class: "props" }, props.map((p) => h("article", { class: "card prop" },
+  el.append(h("div", { class: "props" }, props.map((p) => h("article", { class: "card prop" + (p.capa ? " com-capa" : "") }, p.capa && h("img", { class: "prop-capa", src: p.capa, alt: "", loading: "lazy" }),
     h("div", { class: "row between", style: "align-items:flex-start" }, h("div", { style: "min-width:0" }, h("h2", { class: "wrap", style: "margin:0" }, p.name), h("span", { class: "muted small wrap" }, p.city || "Cidade não informada")), pill(p.active ? "Ativo" : "Pausado", p.active ? "on" : "off")),
     h("div", { class: "chips" }, p.tem_apresentacao ? pill(p.external_url ? "Link externo" : "Apresentação 3D", "on") : pill("Sem apresentação", "warn"), pill(p.ai_on ? "IA ligada" : "IA desligada"), pill(p.languages.map((l) => l.split("-")[0].toUpperCase()).join(" · "))),
     h("div", { class: "stats" }, h("div", null, h("b", null, fmtN(p.clientes)), h("span", null, "clientes")), h("div", null, h("b", null, fmtN(p.aberturas)), h("span", null, "aberturas")), h("div", null, h("b", null, fmtN(p.links)), h("span", null, "links"))),
@@ -762,7 +782,10 @@ function enviarLogo(f) {
 }
 async function telaConta() {
   return h("div", { class: "stack", style: "max-width:520px" }, cabeca("Minha conta"),
-    h("div", { class: "card hero-p" }, avatar(S.me.name, "lg"), h("div", null, h("strong", { class: "wrap" }, S.me.name), h("div", { class: "muted wrap" }, S.me.email), h("div", { class: "muted small" }, dono() ? "Dono" : "Corretor"))),
+    h("div", { class: "card hero-p" }, avatar(S.me.name, "lg", fotoDe(S.me.id, S.me.tem_foto)), h("div", null, h("strong", { class: "wrap" }, S.me.name), h("div", { class: "muted wrap" }, S.me.email), h("div", { class: "muted small" }, dono() ? "Dono" : "Corretor"),
+      h("div", { class: "row", style: "margin-top:10px" }, h("button", { class: "btn sm", type: "button", onclick: () => escolherFoto(async (d) => { await api("POST", "/api/me/foto", { foto: d }); S.me.tem_foto = true; S_FOTO.v = Date.now(); aviso("Foto salva."); casca(); rotear(); }) }, S.me.tem_foto ? "Trocar foto" : "Adicionar foto"),
+        S.me.tem_foto && h("button", { class: "btn sm ghost", type: "button", onclick: async () => { await api("POST", "/api/me/foto", { foto: "" }); S.me.tem_foto = false; aviso("Foto removida."); casca(); rotear(); } }, "Remover")),
+      !dono() && h("p", { class: "muted small", style: "margin-top:6px" }, "A foto (1:1) aparece no seu selo para a construtora."))),
     h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); const f = new FormData(e.target); try { await api("POST", "/api/me/senha", { atual: f.get("atual"), nova: f.get("nova") }); aviso("Senha alterada."); e.target.reset(); } catch (x) { aviso(x.message, true); } } },
       h("h2", null, "Trocar senha"), campo("Senha atual", h("input", { type: "password", name: "atual", autocomplete: "current-password", required: true })), campo("Nova senha", h("input", { type: "password", name: "nova", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
       h("div", null, h("button", { class: "btn primary", type: "submit" }, "Trocar senha"))),

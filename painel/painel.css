@@ -517,3 +517,26 @@ table.t .grip:active{cursor:grabbing}
 .bg-in:focus,.bg-in:focus-visible{outline:0!important;box-shadow:none!important}
 
 .cartao-c{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.cartao-c .assin{width:min(260px,100%);height:auto;border-radius:var(--r-md);border:1px dashed var(--line);background:#fffdf9;padding:6px}
+
+/* ───────── fotos 1:1, capa dos empreendimentos, WhatsApp do corretor, selo de quem atende ───────── */
+.av.com-foto{padding:0;overflow:hidden;background:var(--surface2)}
+.av.com-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.av.foto-c{width:56px;height:56px;font-size:18px}
+/* capa do empreendimento: quadrada, ocupando a largura do cartão */
+.card.prop.com-capa{padding:0 20px 20px!important;overflow:hidden}  /* padding fixo: a capa sangra exatamente até a borda */
+.prop-capa{display:block;width:calc(100% + 40px);margin:0 -20px 2px;aspect-ratio:1/1;object-fit:cover;background:var(--surface2)}
+/* botão só com a logo do WhatsApp (verde escuro: contraste ≥ 3:1 com o ícone branco) */
+.btn-wa{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#178a40;color:#fff;flex:none;text-decoration:none;box-shadow:0 2px 6px rgba(23,138,64,.3);transition:background-color .2s,scale .2s}
+.btn-wa:hover{background:#12733a}
+.btn-wa:active{scale:.94}
+.btn-wa .ic-wa{width:22px;height:22px;display:block}
+.card.corretor{cursor:pointer}
+.card.corretor:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+/* detalhe do cliente: "Carregar mais" e selo do corretor que atende */
+.mais-acessos{margin-top:8px}
+.selos{margin-top:16px;display:grid;gap:8px}
+.selos-l{display:flex;gap:8px;flex-wrap:wrap}
+.selo{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px;background:var(--surface2);color:var(--text);text-decoration:none;font-weight:600;font-size:var(--fs-sm);min-height:40px}
+a.selo:hover{background:var(--surface3,var(--surface2));text-decoration:underline}
+.selo .av.sm{width:32px;height:32px;font-size:11px}
+.selo-p{font-weight:500;color:var(--muted)}

@@ -101,6 +101,7 @@
   .gate label{display:grid;gap:5px;font-size:13px;font-weight:600}
   .gate input.t{width:100%;min-height:44px;padding:10px 12px;border-radius:9px;border:1px solid rgba(22,48,46,.28);background:#fffdf9;color:#16302e;font:400 16px "Figtree",sans-serif}
   .gate .ck{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:13px;line-height:1.4;color:#4d6460}.gate .ck input{width:20px;height:20px;margin:1px 0 0;accent-color:#c9944a;flex:none}
+  .gate .etapa2{display:grid;gap:12px;animation:pop .3s cubic-bezier(.2,.8,.2,1)}.gate .etapa2[hidden]{display:none}
   .gate .fine{margin:0;font-size:12px;color:#4d6460;line-height:1.4}
   @media (max-width:520px){.gate{align-items:end;padding:0}.gate form{border-radius:14px 14px 0 0;max-height:92dvh}.panel{right:8px;left:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom));height:min(80dvh,660px)}.badge{font-size:12px}}
     .portal{position:fixed;inset:0;z-index:2147483003;display:grid;place-items:center;padding:16px;background:rgba(10,18,15,.62);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);font-family:"Figtree",system-ui,sans-serif}
@@ -179,9 +180,10 @@
     const cadastro = () => `<div class="gate" ${gate ? "" : "hidden"} role="dialog" aria-modal="true" aria-labelledby="lc-reg-t"><form class="reg" novalidate>
       <p class="eyebrow">${esc(info.empresa || info.empreendimento)}</p><h2 id="lc-reg-t">${esc(t.reg_t)}</h2><p class="lead">${esc(t.reg_s(info.corretor))}</p>
       <label>${esc(t.reg_nome)}<input class="t" name="nome" type="text" autocomplete="name" maxlength="120"></label>
+      <div class="etapa2" hidden>
       <label>${esc(t.reg_fone)}<input class="t" name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(47) 99999-9999"></label>
       <label>${esc(t.reg_mail)}<input class="t" name="email" type="email" autocomplete="email"></label>
-      <label class="ck"><input name="ok" type="checkbox"><span>${esc(t.reg_ok(info.corretor, info.empresa || "a construtora"))}</span></label>
+      <label class="ck"><input name="ok" type="checkbox"><span>${esc(t.reg_ok(info.corretor, info.empresa || "a construtora"))}</span></label></div>
       <p class="er" role="alert"></p><button class="btn" type="submit">${esc(t.reg_go)}</button><p class="fine">${esc(t.reg_fine(info.corretor))}</p></form></div>`;
     const ia = () => `<div class="msgs" role="log" aria-live="polite"><div class="m bot">${esc(t.hello(info.corretor, info.cliente && info.cliente.nome))}</div></div>
       <div class="sug">${t.sug.map((s) => `<button type="button" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div><p class="note">${esc(t.note)}</p>
@@ -252,7 +254,7 @@
           const cartao = { nome: g("nome"), telefone: g("telefone"), email: g("email"), assinatura };
           try { localStorage.setItem(CK, JSON.stringify(cartao)); sessionStorage.setItem(SK, "1"); } catch { /* sem storage */ }
           publicar(cartao); cartaoAberto = false; render();
-        } catch (x) { er.textContent = x.message === "erro" ? t.net : x.message; b.disabled = false; } };
+        } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; } };
     }
     function render() {
       t = T[lang] || T["pt-BR"];
@@ -293,19 +295,22 @@
       sh.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => { aba = b.dataset.a; render(); (sh.querySelector(".in input") || sh.querySelector("textarea"))?.focus(); }));
       sh.querySelectorAll(".sug button").forEach((b) => (b.onclick = () => perguntar(b.dataset.s)));
       const fi = q("form.in"); if (fi) fi.onsubmit = (e) => { e.preventDefault(); const i = fi.querySelector("input"), v = i.value.trim(); if (v) { i.value = ""; perguntar(v); } };
-      const fg = q("form.reg"); if (fg) { fg.onsubmit = registrar; if (gate) setTimeout(() => fg.elements.nome.focus(), 50); }
+      const fg = q("form.reg"); if (fg) { fg.onsubmit = registrar; fg.elements.nome.addEventListener("input", () => { if (fg.elements.nome.value.trim().length >= 2) fg.querySelector(".etapa2").hidden = false; }); if (gate) setTimeout(() => fg.elements.nome.focus(), 50); }
       const fr = q("form.rec"); if (fr) fr.onsubmit = async (e) => { e.preventDefault(); const er = fr.querySelector(".er"), ok = fr.querySelector(".ok"), v = fr.elements.m.value.trim(); er.textContent = ok.textContent = "";
         if (!v) return; const b = fr.querySelector("button"); b.disabled = true;
-        try { await post("message", { mensagem: v }); ok.textContent = t.msg_ok.replace("{c}", info.corretor); fr.elements.m.value = ""; } catch (x) { er.textContent = x.message === "erro" ? t.net : x.message; } b.disabled = false; };
+        try { await post("message", { mensagem: v }); ok.textContent = t.msg_ok.replace("{c}", info.corretor); fr.elements.m.value = ""; } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; } b.disabled = false; };
     }
     async function registrar(e) {
       e.preventDefault(); const f = e.target, er = f.querySelector(".er"), g = (n) => f.elements[n].value.trim(); er.textContent = "";
-      if (g("nome").length < 2 || !(g("telefone") || g("email"))) return (er.textContent = t.reg_need);
+      const e2 = f.querySelector(".etapa2");
+      if (g("nome").length < 2) { er.textContent = t.reg_need; f.elements.nome.focus(); return; }
+      if (e2.hidden) { e2.hidden = false; f.elements.telefone.focus(); return; }  // 1ª etapa: só o nome; agora pede o contato
+      if (!(g("telefone") || g("email"))) return (er.textContent = t.reg_need);
       if (!f.elements.ok.checked) return (er.textContent = t.reg_agree);
       const b = f.querySelector("button[type=submit]"); b.disabled = true;
       try { const r = await post("register", { nome: g("nome"), telefone: g("telefone"), email: g("email"), consentimento: true });
         info.cliente = r.cliente; info.corretor = r.corretor; info.whatsapp = r.whatsapp || info.whatsapp; gate = false; render(); }
-      catch (x) { er.textContent = x.message === "erro" ? t.net : x.message; b.disabled = false; }
+      catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; }
     }
     function pedirCadastro() { if (!info.cliente && rec.cadastro !== false) { gate = true; render(); return true; } return false; }
     function bolha(cls, texto) { const d = document.createElement("div"); d.className = "m " + cls; d.textContent = texto; const l = sh.querySelector(".msgs"); l.append(d); l.scrollTop = l.scrollHeight; return d; }
