@@ -452,6 +452,7 @@ table.t tr.det table.t{box-shadow:none}
 .sino-item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:var(--r-md);color:inherit;text-decoration:none;min-width:0}
 .sino-item:hover{background:var(--surface2)}
 .sino-item b{display:block;font-weight:600}
+.sino-painel,.sino-painel b,.sino-painel strong{color:var(--text)}  /* fica dentro do topo (texto claro): volta à tinta do conteúdo */
 @media (max-width:899px){.sino-painel{right:8px;left:8px;width:auto}}
 
 /* aviso lateral de cliente novo (abriu e se cadastrou, veio do corretor X) */
