@@ -425,3 +425,14 @@ table.t tr.det table.t{box-shadow:none}
 @media (max-width:899px){.pessoa-det{padding:6px 4px 16px}}
 
 .shares{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* aviso lateral de cliente novo (abriu e se cadastrou, veio do corretor X) */
+.aviso.aviso-cliente{position:relative;display:grid;gap:2px;width:min(340px,calc(100vw - 32px));padding:14px 40px 14px 16px;border-left-width:4px;animation:rise .3s var(--ease)}
+.aviso-cliente .aviso-eyebrow{margin:0 0 4px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--brass-hi)}
+.aviso-cliente b{font:600 var(--fs-xl)/1.1 var(--display);letter-spacing:-.01em}
+.aviso-cliente span{color:rgba(243,239,230,.85)}
+.aviso-cliente small{font-size:var(--fs-sm);color:var(--brass-hi)}
+.aviso-cliente .aviso-ver{margin-top:8px;justify-self:start;font-size:var(--fs-sm);font-weight:600;color:var(--ink);background:var(--paper);padding:6px 12px;border-radius:var(--r-sm);text-decoration:none}
+.aviso-cliente .aviso-ver:focus-visible,.aviso-cliente .aviso-x:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}
+.aviso-cliente .aviso-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:var(--paper);font-size:var(--fs-lg);line-height:1;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.aviso.aviso-cliente{animation:none}}

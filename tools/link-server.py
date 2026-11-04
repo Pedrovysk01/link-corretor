@@ -610,13 +610,14 @@ def r_questions(h, u, q_, b):
 
 
 def r_settings(h, u, q_, b):
-    return {"empresa": setting("business_name", ""), "ai_limite": int(setting("ai_monthly_limit", 300)),
+    return {"empresa": setting("business_name", ""), "notify_min": int(setting("notify_min", 5) or 0), "ai_limite": int(setting("ai_monthly_limit", 300)),
             "ai_usadas": q("SELECT COUNT(*) n FROM ai_questions WHERE ts>=datetime('now','start of month')", one=True)["n"],
             "exemplo": q("SELECT COUNT(*) n FROM users WHERE demo=1", one=True)["n"] > 0, "claude_cli": os.path.isfile(CLAUDE_EXE), "logo": setting("business_logo", ""), "logo_shape": setting("business_logo_shape", "round"), "theme": json.loads(setting("business_theme", "null") or "null")}
 
 
 def r_settings_edit(h, u, q_, b):
     if "empresa" in b: set_setting("business_name", txt(b["empresa"], 120, "o nome da empresa", True))
+    if "notify_min" in b: m = int(b["notify_min"]); need(0 <= m <= 120, "O atraso do aviso deve ficar entre 0 e 120 minutos."); set_setting("notify_min", m)
     if "ai_limite" in b: n = int(b["ai_limite"]); need(0 <= n <= 100000, "O limite deve ficar entre 0 e 100.000."); set_setting("ai_monthly_limit", n)
     if "logo" in b:  # data URL de imagem reduzida no navegador; vazio apaga
         logo = str(b["logo"] or "")
@@ -637,14 +638,22 @@ def r_exemplo(h, u, q_, b): return {"removidos": remover_exemplo()} if b.get("re
 
 
 def r_notify(h, u, q_, b):
+    """Avisos do painel. Cliente novo só vira aviso depois de `notify_min` minutos (padrão 5) desde que abriu e se cadastrou:
+    o aviso diz quem é, qual empreendimento e de qual corretor veio o link. Retornos (cliente que abre de novo) avisam na hora.
+    Primeira chamada com init=1 só devolve as marcas (v, o), sem avisos antigos."""
     sc, sa = escopo(u); so, soa = escopo(u, "o.broker_id")
-    depois_v, depois_o = int(q_.get("v") or 0), int(q_.get("o") or 0)
-    uv = q(f"SELECT COALESCE(MAX(v.id),0) m FROM visitors v WHERE 1=1{sc}", sa, one=True)["m"]
+    atraso = max(0, min(120, int(setting("notify_min", 5) or 0)))
+    corte = f"-{atraso} minutes"
+    uv = q(f"SELECT COALESCE(MAX(v.id),0) m FROM visitors v WHERE v.created<=datetime('now',?){sc}", (corte, *sa), one=True)["m"]
     uo = q(f"SELECT COALESCE(MAX(o.id),0) m FROM opens o WHERE 1=1{so}", soa, one=True)["m"]
-    out = {"v": uv, "o": uo, "novos": [], "retornos": []}
-    if depois_v: out["novos"] = q(f"SELECT v.id, v.name, p.name AS empreendimento, u.name AS corretor FROM visitors v JOIN properties p ON p.id=v.property_id JOIN users u ON u.id=v.broker_id WHERE v.id>?{sc} ORDER BY v.id", (depois_v, *sa))
-    if depois_o: out["retornos"] = q(f"SELECT o.id, v.id AS visitor_id, v.name, p.name AS empreendimento FROM opens o JOIN visitors v ON v.id=o.visitor_id JOIN properties p ON p.id=o.property_id "
-                                     f"WHERE o.id>?{so} AND (SELECT COUNT(*) FROM opens x WHERE x.visitor_id=v.id)>1 ORDER BY o.id", (depois_o, *soa))
+    out = {"v": uv, "o": uo, "atraso": atraso, "novos": [], "retornos": []}
+    if q_.get("init"): return out
+    depois_v, depois_o = int(q_.get("v") or 0), int(q_.get("o") or 0)
+    out["novos"] = q(f"SELECT v.id, v.name, v.created, CAST((julianday('now')-julianday(v.created))*1440 AS INTEGER) AS minutos, p.name AS empreendimento, u.name AS corretor, "
+                     f"(SELECT l.channel FROM links l WHERE l.id=v.first_link_id) AS canal FROM visitors v JOIN properties p ON p.id=v.property_id JOIN users u ON u.id=v.broker_id "
+                     f"WHERE v.id>? AND v.created<=datetime('now',?){sc} ORDER BY v.id", (depois_v, corte, *sa))
+    out["retornos"] = q(f"SELECT o.id, v.id AS visitor_id, v.name, p.name AS empreendimento FROM opens o JOIN visitors v ON v.id=o.visitor_id JOIN properties p ON p.id=o.property_id "
+                        f"WHERE o.id>?{so} AND (SELECT COUNT(*) FROM opens x WHERE x.visitor_id=v.id)>1 ORDER BY o.id", (depois_o, *soa))
     return out
 
 
@@ -806,7 +815,7 @@ class H(BaseHTTPRequestHandler):
         tipo = TIPOS.get(ext) or mimetypes.guess_type(str(caminho))[0] or "application/octet-stream"
         if injetar_code and ext == ".html":
             html = caminho.read_text(encoding="utf-8", errors="replace")
-            tag = f'<script src="/painel/embed.js?v=5" data-code="{injetar_code}" defer></script>'
+            tag = f'<script src="/painel/embed.js?v=7" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200

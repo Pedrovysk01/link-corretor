@@ -38,7 +38,7 @@ function h(tag, props, ...kids) {
   kids.forEach(add); return el;
 }
 const $ = (s, r = document) => r.querySelector(s);
-const S = { me: null, empresa: "", logo: "", logoShape: "round", theme: null, rota: null, arg: null, nv: 0, no: 0, tok: 0 };
+const S = { me: null, empresa: "", logo: "", logoShape: "round", theme: null, rota: null, arg: null, nv: null, no: null, tok: 0 };
 const CANAIS = { whatsapp: "WhatsApp", instagram: "Instagram", qr: "QR Code", email: "E-mail", site: "Site", outro: "Outro" };
 const STATUS = { novo: "Novo", contatado: "Contatado", visita: "Visita marcada", proposta: "Proposta", fechado: "Fechado", perdido: "Perdido" };
 
@@ -50,6 +50,18 @@ async function api(metodo, caminho, corpo) {
   if (r.status === 401 && S.me) { S.me = null; entrada(); throw new Error("Sua sessão terminou. Entre de novo."); }
   if (!r.ok) throw new Error((j && j.erro) || "Algo deu errado. Tente de novo.");
   return j;
+}
+// Aviso lateral de cliente novo: aparece depois do atraso configurado (padrão 5 min) e fica na tela até ser fechado ou aberto.
+function avisoCliente(l) {
+  const quando = l.minutos < 1 ? "agora" : l.minutos === 1 ? "há 1 min" : `há ${l.minutos} min`;
+  const a = h("div", { class: "aviso aviso-cliente", role: "status" },
+    h("button", { class: "aviso-x", type: "button", "aria-label": "Fechar aviso", onclick: () => a.remove() }, "×"),
+    h("p", { class: "aviso-eyebrow" }, `Cliente abriu e se cadastrou · ${quando}`),
+    h("b", null, l.name),
+    h("span", null, l.empreendimento),
+    h("small", null, dono() ? `Veio do corretor ${l.corretor}${l.canal ? " · " + l.canal : ""}` : "Veio do seu link"),
+    h("a", { class: "aviso-ver", href: `#/cliente/${l.id}`, onclick: () => a.remove() }, "Ver cliente"));
+  $("#avisos").append(a); setTimeout(() => a.remove(), 60000);
 }
 function aviso(msg, erro) { const a = h("div", { class: "aviso" + (erro ? " erro" : ""), role: erro ? "alert" : "status" }, msg); $("#avisos").append(a); setTimeout(() => a.remove(), erro ? 6500 : 4500); }
 async function copiar(txt, ok = "Copiado.") {
@@ -556,9 +568,10 @@ async function telaPerguntas() {
 async function telaConfig() {
   const c = await api("GET", "/api/settings"), pct = c.ai_limite ? Math.min(100, Math.round((c.ai_usadas / c.ai_limite) * 100)) : 100;
   return h("div", { class: "stack", style: "max-width:720px" }, cabeca("Configurações"),
-    h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); const f = new FormData(e.target); try { await api("PATCH", "/api/settings", { empresa: f.get("empresa"), ai_limite: Number(f.get("ai_limite")) }); S.empresa = f.get("empresa"); aviso("Configurações salvas."); rotear(); } catch (x) { aviso(x.message, true); } } },
+    h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); const f = new FormData(e.target); try { await api("PATCH", "/api/settings", { empresa: f.get("empresa"), ai_limite: Number(f.get("ai_limite")), notify_min: Number(f.get("notify_min")) }); S.empresa = f.get("empresa"); aviso("Configurações salvas."); rotear(); } catch (x) { aviso(x.message, true); } } },
       h("h2", null, "Empresa e IA"), campo("Nome da empresa", h("input", { type: "text", name: "empresa", value: c.empresa, required: true }), "Aparece no painel, no cadastro do cliente e no aceite."),
       blocoLogo(c),
+      campo("Aviso de cliente novo, depois de quantos minutos", h("input", { type: "number", name: "notify_min", min: 0, max: 120, value: c.notify_min }), "O painel avisa que o cliente abriu, se cadastrou e de qual corretor veio. Padrão: 5 minutos."),
       campo("Perguntas à IA por mês, por empreendimento", h("input", { type: "number", name: "ai_limite", min: 0, max: 100000, value: c.ai_limite }), "Passou do teto, a IA para e manda falar com o corretor."),
       h("div", null, h("div", { class: "row between small" }, h("span", null, "Uso neste mês"), h("strong", null, fmtN(c.ai_usadas))), h("div", { class: "bar", style: "margin-top:6px" }, h("i", { style: `width:${pct}%` }))),
       !c.claude_cli && h("p", { class: "err", style: "display:block" }, "O Claude Code não foi encontrado neste computador: as perguntas à IA ficam sem resposta."), h("div", null, h("button", { class: "btn primary", type: "submit" }, "Salvar"))),
@@ -628,13 +641,16 @@ let _poll = null;
 async function checar() {
   if (!S.me || document.hidden) return;
   try {
-    const n = await api("GET", `/api/notify?v=${S.nv}&o=${S.no}`);
-    if (S.nv && n.novos.length) n.novos.forEach((l) => aviso(`Novo cliente: ${l.name} · ${l.empreendimento}${dono() ? " · por " + l.corretor : ""}`));
-    if (S.no && n.retornos.length) n.retornos.forEach((l) => aviso(`${l.name} voltou a abrir ${l.empreendimento}`));
-    if ((S.nv && n.novos.length) || (S.no && n.retornos.length)) { if (["", "clientes", "corretor"].includes(S.rota)) rotear(); }
+    const primeira = S.nv === null;
+    const n = await api("GET", primeira ? "/api/notify?init=1" : `/api/notify?v=${S.nv}&o=${S.no}`);
+    if (!primeira) {
+      n.novos.forEach(avisoCliente);
+      n.retornos.forEach((l) => aviso(`${l.name} voltou a abrir ${l.empreendimento}`));
+      if ((n.novos.length || n.retornos.length) && ["", "clientes", "corretor"].includes(S.rota)) rotear();
+    }
     S.nv = n.v; S.no = n.o;
   } catch { /* próximo ciclo */ }
 }
-function iniciar() { try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = 0; rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
+function iniciar() { try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = null; rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
 window.addEventListener("hashchange", rotear);
 entrada();

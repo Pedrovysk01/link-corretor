@@ -28,6 +28,20 @@ Primeiro acesso: o painel pede o nome da empresa e cria a conta do dono. A caixa
 | Corretor (celular) | Resumo, Clientes (só os dele), Meus links (copiar, QR, WhatsApp), Perguntas |
 | Cliente final | Apresentação com faixa do corretor; popup de cadastro na 3ª interação; IA; recado; WhatsApp do corretor |
 
+## Tela de perfis e aviso de cliente novo
+
+**Tela inicial da apresentação** (`/r/<código>` → `/p/<código>/`): antes de qualquer coisa aparecem três botões.
+
+| Botão | O que acontece |
+|---|---|
+| **Construtora** | Abre o painel (`/painel/`). |
+| **Corretor** | Apresentação normal: **sem coleta de dados** (sem faixa, sem IA, sem cadastro, sem batimento). Um selo "Modo corretor" permite trocar o perfil. |
+| **Cliente** | Apresentação com o corretor do link; na **3ª interação** (toque, clique ou tecla) abre o popup de cadastro (nome + WhatsApp ou e-mail + aceite). |
+
+A escolha vale até fechar a aba. Quem já se cadastrou neste aparelho abre direto como cliente (não vê a tela de perfis).
+
+**Aviso lateral no painel:** **5 minutos** depois que o cliente abriu e se cadastrou, aparece um cartão à direita: *"Cliente abriu e se cadastrou · há 5 min — <nome> · <empreendimento> · Veio do corretor <X> · <canal>"*, com o botão "Ver cliente". O dono vê o corretor de origem; cada corretor vê só os seus (*"Veio do seu link"*). O atraso muda em **Configurações → Aviso de cliente novo** (0 a 120 min). Clientes que voltam a abrir avisam na hora.
+
 ## IA
 
 `claude -p` do Claude Code instalado (assinatura, sem chave de API), modelo `haiku` (`LC_AI_MODEL` troca). Responde só com o

@@ -103,9 +103,37 @@
   .gate .ck{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:13px;line-height:1.4;color:#4d6460}.gate .ck input{width:20px;height:20px;margin:1px 0 0;accent-color:#c9944a;flex:none}
   .gate .fine{margin:0;font-size:12px;color:#4d6460;line-height:1.4}
   @media (max-width:520px){.gate{align-items:end;padding:0}.gate form{border-radius:14px 14px 0 0;max-height:92dvh}.panel{right:8px;left:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom));height:min(80dvh,660px)}.badge{font-size:12px}}
+    .portal{position:fixed;inset:0;z-index:2147483003;display:grid;place-items:center;padding:16px;background:rgba(10,18,15,.62);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);font-family:"Figtree",system-ui,sans-serif}
+  .portal .box{width:min(760px,100%);background:#f3efe6;color:#16302e;border-radius:14px;padding:28px 26px 22px;box-shadow:0 30px 80px rgba(0,0,0,.4);display:grid;gap:16px;animation:pop .35s cubic-bezier(.2,.8,.2,1)}
+  .portal .eyebrow{margin:0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#80592a;font-weight:600}
+  .portal h2{margin:6px 0 4px;font:400 2rem/1.05 "Instrument Serif",Georgia,serif;letter-spacing:-.01em}
+  .portal .lead{margin:0;color:#4d6460;font-size:14px;line-height:1.45}
+  .portal .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .portal .opt{display:grid;gap:6px;justify-items:start;text-align:left;padding:16px 14px;min-height:132px;border-radius:9px;border:1px solid rgba(22,48,46,.18);background:#fffdf9;color:#16302e;cursor:pointer;font:inherit;transition:translate .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s,scale .2s}
+  .portal .opt:hover{translate:0 -2px;box-shadow:0 10px 24px rgba(0,0,0,.14);border-color:#c9944a}
+  .portal .opt:active{scale:.97}.portal .opt:focus-visible{outline:2px solid #c9944a;outline-offset:2px}
+  .portal .opt .ic{width:26px;height:26px;stroke:#80592a;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .portal .opt b{font:400 1.45rem/1 "Instrument Serif",Georgia,serif}
+  .portal .opt small{color:#4d6460;font-size:12px;line-height:1.35}
+  .portal .opt.main{background:#16302e;color:#f3efe6;border-color:#16302e}.portal .opt.main small{color:rgba(243,239,230,.8)}.portal .opt.main .ic{stroke:#f0c27f}
+  .modo{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483001;display:flex;gap:8px;align-items:center;padding:7px 12px;border-radius:999px;background:rgba(22,48,46,.9);color:#f3efe6;font:500 12px "Figtree",system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .modo button{all:unset;cursor:pointer;color:#f0c27f;text-decoration:underline;text-underline-offset:2px}.modo button:focus-visible{outline:2px solid #f0c27f;outline-offset:2px;border-radius:4px}
+  @media (max-width:640px){.portal{align-items:end;padding:0}.portal .box{border-radius:14px 14px 0 0;padding:22px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:94dvh;overflow:auto}.portal .opts{grid-template-columns:1fr}.portal .opt{min-height:0;grid-template-columns:auto 1fr;column-gap:12px;align-items:center}.portal .opt .ic{grid-row:span 2}}
+  @media (prefers-reduced-motion:reduce){.portal .box{animation:none}.portal .opt{transition:none}.portal .opt:active{scale:1}}
   @media (prefers-reduced-motion:reduce){.badge,.panel{animation:none}.fab:active,.btn:active{scale:1}}`;
   const ICON = { chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
     wa: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>' };
+  Object.assign(ICON, { obra: '<path d="M4 21V5l9-2v18"/><path d="M13 9h7v12"/><path d="M8 8h1M8 12h1M8 16h1M16 13h1M16 17h1"/>', corretor: '<circle cx="12" cy="7" r="3.2"/><path d="M5 21v-1.5A5.5 5.5 0 0 1 10.5 14h3A5.5 5.5 0 0 1 19 19.5V21"/><path d="M12 14v4"/>', cliente: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>' });
+  const P = {
+    "pt-BR": { h: "Escolha seu perfil", lead: (e) => `Apresentação de ${e}. Cada perfil abre de um jeito.`,
+      c1: "Construtora", d1: "Abrir o painel de gestão: clientes, corretores e avisos.", c2: "Corretor", d2: "Apresentar o empreendimento. Nenhum dado é coletado.", c3: "Cliente", d3: "Conhecer o empreendimento e falar com o corretor.",
+      modo: "Modo corretor · sem coleta de dados", trocar: "Trocar perfil" },
+    en: { h: "Choose your profile", lead: (e) => `${e} presentation. Each profile opens differently.`,
+      c1: "Developer", d1: "Open the management panel: clients, brokers and alerts.", c2: "Broker", d2: "Present the development. No data is collected.", c3: "Client", d3: "Explore the development and talk to the broker.",
+      modo: "Broker mode · no data collection", trocar: "Switch profile" },
+    es: { h: "Elige tu perfil", lead: (e) => `Presentación de ${e}. Cada perfil abre distinto.`,
+      c1: "Constructora", d1: "Abrir el panel de gestión: clientes, corredores y avisos.", c2: "Corredor", d2: "Presentar el proyecto. No se recopilan datos.", c3: "Cliente", d3: "Conocer el proyecto y hablar con el corredor.",
+      modo: "Modo corredor · sin recopilación de datos", trocar: "Cambiar perfil" } };
   const svg = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ini = (n) => String(n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
@@ -120,14 +148,21 @@
     let lang = idiomas.find((l) => nav.startsWith(l.toLowerCase().split("-")[0])) || idiomas[0];
     let t = T[lang] || T["pt-BR"], aba = info.ia ? "ia" : "contato", ocupado = false, aberto = false, msgs = null, gate = false, toques = 0, ultimo = 0;
     const LIMITE = 3;
+    // Perfil escolhido na tela inicial: construtora abre o painel; corretor ve a apresentacao sem coleta; cliente segue o fluxo (cadastro na 3a interacao).
+    const KEY = "lc_perfil_" + code;
+    let papel = null; try { papel = sessionStorage.getItem(KEY); } catch { /* sem storage */ }
+    if (papel !== "cliente" && papel !== "corretor") papel = null;
+    if (info.cliente) papel = "cliente"; // ja cadastrado neste aparelho: abre direto
+    const escolher = (p) => { if (p === "construtora") { location.href = "/painel/"; return; } papel = p; try { sessionStorage.setItem(KEY, p); } catch { /* sem storage */ } toques = 0; render(); };
+    const trocar = () => { papel = null; try { sessionStorage.removeItem(KEY); } catch { /* sem storage */ } render(); };
     const fone = String(info.whatsapp || "").replace(/\D/g, "");
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
     // conta interações na apresentação (não no widget); na terceira, pede o cadastro
-    const interagiu = (e) => { if (info.cliente || gate || e.composedPath().includes(host)) return; const agora = Date.now(); if (agora - ultimo < 400) return; ultimo = agora; if (++toques >= LIMITE) { gate = true; render(); } };
+    const interagiu = (e) => { if (papel !== "cliente" || info.cliente || gate || e.composedPath().includes(host)) return; const agora = Date.now(); if (agora - ultimo < 400) return; ultimo = agora; if (++toques >= LIMITE) { gate = true; render(); } };
     document.addEventListener("pointerdown", interagiu, true); document.addEventListener("keydown", interagiu, true);
-    setInterval(() => { if (!document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
+    setInterval(() => { if (papel !== "corretor" && !document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
 
     const cadastro = () => `<div class="gate" ${gate ? "" : "hidden"} role="dialog" aria-modal="true" aria-labelledby="lc-reg-t"><form class="reg" novalidate>
       <p class="eyebrow">${esc(info.empresa || info.empreendimento)}</p><h2 id="lc-reg-t">${esc(t.reg_t)}</h2><p class="lead">${esc(t.reg_s(info.corretor))}</p>
@@ -146,6 +181,23 @@
 
     function render() {
       t = T[lang] || T["pt-BR"];
+      const pp = P[lang] || P["pt-BR"];
+      if (papel === null) { // tela inicial: tres perfis
+        sh.innerHTML = `<style>${CSS}</style><div class="portal" role="dialog" aria-modal="true" aria-labelledby="lc-pf-t"><div class="box">
+          <div><p class="eyebrow">${esc(info.empresa || info.empreendimento)}</p><h2 id="lc-pf-t">${esc(pp.h)}</h2><p class="lead">${esc(pp.lead(info.empreendimento))}</p></div>
+          <div class="opts">
+            <button class="opt" type="button" data-p="construtora">${svg("obra")}<b>${esc(pp.c1)}</b><small>${esc(pp.d1)}</small></button>
+            <button class="opt" type="button" data-p="corretor">${svg("corretor")}<b>${esc(pp.c2)}</b><small>${esc(pp.d2)}</small></button>
+            <button class="opt main" type="button" data-p="cliente">${svg("cliente")}<b>${esc(pp.c3)}</b><small>${esc(pp.d3)}</small></button>
+          </div></div></div>`;
+        sh.querySelectorAll(".opt").forEach((b) => (b.onclick = () => escolher(b.dataset.p)));
+        (sh.querySelector(".opt.main") || sh.querySelector(".opt")).focus();
+        return;
+      }
+      if (papel === "corretor") { // apresentacao normal: sem faixa, sem IA, sem cadastro, sem batimento
+        sh.innerHTML = `<style>${CSS}</style><div class="modo" role="status"><span>${esc(pp.modo)}</span><button type="button">${esc(pp.trocar)}</button></div>`;
+        sh.querySelector(".modo button").onclick = trocar; return;
+      }
       sh.innerHTML = `<style>${CSS}</style>${cadastro()}
         <button class="badge" type="button" title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(info.corretor)}</b></span></button>
         <button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
