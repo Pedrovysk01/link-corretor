@@ -14,7 +14,7 @@ export function RoomPanel({ property, room }: { readonly property: Property; rea
 
   return (
     <section className="glass panel panel--room" aria-labelledby="room-name">
-      <RoomImage src={room.image} alt={`Render ilustrativo: ${room.name}`} />
+      <RoomImage src={room.image} srcs={room.images} alt={`Render ilustrativo: ${room.name}`} />
       <p className="visually-hidden" aria-live="polite">
         Você está em {room.name}
       </p>

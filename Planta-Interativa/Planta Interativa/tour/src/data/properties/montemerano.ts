@@ -12,7 +12,7 @@ export const montemerano01: Property = {
   shortName: 'Montemerano 01',
   type: 'Apartment',
   tagline: 'Três suítes, living integrado de 50 m² e sacada gourmet de canto com vista para o mar.',
-  location: 'Meia Praia · Itapema/SC',
+  location: 'Balneário Perequê · Porto Belo/SC',
   priceFrom: 0,
   currency: 'BRL',
   completion: 'A confirmar',
@@ -77,7 +77,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'suite-2',
-      image: 'img/suite.webp',
+      // sem render próprio: o render do catálogo é da suíte master
       name: 'Suíte 02',
       kind: 'bedroom',
       rect: { x: 3.3, z: 2.4, w: 3.3, d: 4.0 },
@@ -109,7 +109,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'suite-1',
-      image: 'img/suite.webp',
+      // sem render próprio: o render do catálogo é da suíte master
       name: 'Suíte 01',
       kind: 'bedroom',
       rect: { x: 3.3, z: 7.7, w: 3.3, d: 4.3 },
@@ -189,7 +189,7 @@ export const montemerano01: Property = {
     },
     {
       id: 'living',
-      image: 'img/living-estar.webp',
+      images: ['img/living-estar.webp', 'img/living-jantar.webp'],  // catálogo: Living · Estar e Living · Jantar
       name: 'Living',
       kind: 'living',
       rect: { x: 2.3, z: 12.0, w: 4.3, d: 7.6 },
@@ -218,7 +218,7 @@ export const montemerano01: Property = {
       kind: 'living',
       rect: { x: 2.3, z: 19.6, w: 4.3, d: 1.8 },
       floor: 'stone',
-      description: 'Sacada gourmet de canto, envidraçada, com mesa em mármore e vista aberta para a Meia Praia.',
+      description: 'Sacada gourmet de canto, envidraçada, com mesa em mármore e vista aberta para o mar.',
       features: ['Vidro de canto', 'Vista para o mar', 'Mesa em mármore', 'Integrada ao living'],
       view: { eye: [2.7, 20.0], look: [6.4, 21.2] },
       furniture: [

@@ -11,7 +11,7 @@ export const montemeranoLazer: Property = {
   shortName: 'Área de lazer',
   type: 'Lazer',
   tagline: 'Piscinas, área gourmet, fire place, quadra, playground, pet place, academia e salão de festas.',
-  location: 'Meia Praia · Itapema/SC',
+  location: 'Balneário Perequê · Porto Belo/SC',
   priceFrom: 0,
   currency: 'BRL',
   completion: 'A confirmar',
@@ -26,6 +26,7 @@ export const montemeranoLazer: Property = {
     {
       id: 'quadra',
       name: 'Mini quadra poliesportiva',
+      image: 'img/petplace.webp',  // catálogo: "Pet place · Mini quadra" no mesmo render
       kind: 'outdoor',
       rect: { x: 0.3, z: 0.2, w: 6, d: 3.4 },
       floor: 'tile',

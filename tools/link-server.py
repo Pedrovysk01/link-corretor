@@ -501,7 +501,7 @@ def semear_empreendimentos():
         p = SEED / n; return p.read_text(encoding="utf-8") if p.is_file() else ""
     base = "Planta-Interativa/Planta Interativa"
     for nome, cidade, pasta, arq in [("Bossa Eco Luxury Villas", "Praia do Toque", f"{base}/app", "bossa-fatos.txt"), ("Felicità 402 Home Club", "Itapema · SC", f"{base}/apresentacao", "felicita-fatos.txt"),
-                                       ("Villa Montemerano", "Meia Praia · Itapema · SC", f"{base}/tour/dist", "montemerano-fatos.txt")]:  # o tour precisa estar compilado: npm run build:painel
+                                       ("Villa Montemerano", "Balneário Perequê · Porto Belo · SC", f"{base}/tour/dist", "montemerano-fatos.txt")]:  # o tour precisa estar compilado: npm run build:painel
         if pasta_ok(pasta) and not q("SELECT 1 FROM properties WHERE source_dir=?", (pasta,), one=True):
             run("INSERT INTO properties(name,city,source_dir,facts,languages) VALUES(?,?,?,?,?)", (nome, cidade, pasta, fatos(arq), json.dumps(IDIOMAS)))
 

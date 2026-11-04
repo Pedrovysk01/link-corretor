@@ -83,6 +83,8 @@ export interface Room {
   readonly floor: FloorFinish
   /** Render ilustrativo do ambiente, relativo a public/ (ex.: 'img/living-estar.webp'). Opcional. */
   readonly image?: string
+  /** Vários renders do MESMO ambiente (carrossel no painel). Se existir, vale no lugar de `image`. */
+  readonly images?: readonly string[]
   readonly description: string
   readonly features: readonly string[]
   readonly furniture: readonly FurnitureItem[]

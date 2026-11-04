@@ -5,7 +5,7 @@ import type { Rect } from '../data/types'
 import { MATERIALS } from './materials'
 
 /** Entorno real do empreendimento: a torre com o render da fachada, o pódio, o chão em imagem de satélite e um
- *  panorama cilíndrico feito dos quadros do drone. Sem prédios genéricos: o que se vê é Itapema. */
+ *  panorama cilíndrico feito dos quadros do drone. Sem prédios genéricos: o que se vê é o entorno real (ATENÇÃO: o mosaico atual foi feito em Itapema; o empreendimento fica em Perequê, Porto Belo). */
 
 const STOREY = 3
 /** Pavimentos que a textura da fachada mostra (render "Externa 01"); a repetição vertical mantém 3 m por andar. */

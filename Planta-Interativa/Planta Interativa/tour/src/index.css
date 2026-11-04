@@ -1024,3 +1024,54 @@ textarea {
   font-weight: 500;
   letter-spacing: 0;
 }
+
+/* Carrossel do render no painel do ambiente (RoomImage): várias fotos do MESMO ambiente, arrastar ou setas */
+.media__track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.media__track::-webkit-scrollbar { display: none; }
+.media__track:focus-visible { outline: 2px solid var(--color-accent, #c9944a); outline-offset: -2px; }
+.media__track img { flex: 0 0 100%; scroll-snap-align: start; }
+.media__nav {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(12, 18, 18, 0.55);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.media__nav:hover { background: rgba(12, 18, 18, 0.75); }
+.media__nav--prev { left: 10px; }
+.media__nav--next { right: 10px; }
+.media__dots { position: absolute; right: 14px; bottom: 12px; display: flex; gap: 5px; }
+.media__dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.5); }
+.media__dots span.on { background: #fff; }
+
+/* Casca padrão do painel (casca.js): cabeçalho no alto à esquerda e rodapé (legenda + i à esquerda, ✦ à direita).
+   Os painéis e a planta do tour sobem para nunca ficar embaixo do rodapé. */
+html.lc-casca-on .panel { bottom: calc(var(--gutter) + 68px); max-height: calc(100% - 340px); }
+html.lc-casca-on .plan,
+html.lc-casca-on .plan-toggle,
+html.lc-casca-on .hint { bottom: calc(var(--gutter) + 76px); }
+@media (max-width: 900px) {
+  html.lc-casca-on .panel { bottom: calc(var(--gutter) + 150px); max-height: calc(100% - 420px); }
+  html.lc-casca-on .hint { bottom: calc(var(--gutter) + 156px); }
+}
+/* celular: a planta do tour ficava no alto, embaixo do cabeçalho da casca; ela continua acessível por "Visão de Cima" e "Materiais" */
+@media (max-width: 767px) {
+  html.lc-casca-on .plan,
+  html.lc-casca-on .plan-toggle { display: none; }
+}

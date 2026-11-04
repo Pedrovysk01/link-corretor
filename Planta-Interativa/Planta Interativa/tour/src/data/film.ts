@@ -12,7 +12,7 @@ export interface FilmChapter {
 export const FILM_CHAPTERS: readonly FilmChapter[] = [
   {
     shot: 'shot-1-chegada',
-    eyebrow: 'Villa Montemerano · Meia Praia, Itapema',
+    eyebrow: 'Villa Montemerano · Perequê, Porto Belo',
     title: 'Um novo jeito de viver em frente ao mar.',
     body: 'Apartamentos de até 128 m² com três suítes e um lazer completo no mesmo endereço.',
   },
