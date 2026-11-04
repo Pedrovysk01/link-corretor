@@ -207,3 +207,10 @@ table.t tr.exp:hover td,table.t tr.exp.on td,.pessoa:hover,.pessoa.on{background
 }
 @media (min-width:900px) and (max-width:1180px){.topo .bg{width:min(420px,calc(100% - 520px))}.user-btn div{display:none}}
 @media (max-width:899px){.topo .esq{margin-right:6px}.topo .dir{flex:none}.topo .bg{width:100%}}
+
+/* REGRA: topo, barra lateral e o fundo atrás do conteúdo são SEMPRE a mesma cor, sem divisória nem sombra entre eles —
+   parecem um elemento só. Vale nos modos claro/escuro e com o tema da logo (aplicarTema muda só --bar-bg, para os três). */
+:root .side,:root .topo,:root .main,
+:root[data-modo] .side,:root[data-modo] .topo,:root[data-modo] .main{background:var(--bar-bg)!important;border:0!important;box-shadow:none!important}
+:root .side::after,:root[data-modo] .side::after{display:none!important}
+:root .topo::after,:root[data-modo] .topo::after{display:none!important}

@@ -540,3 +540,19 @@ table.t .grip:active{cursor:grabbing}
 a.selo:hover{background:var(--surface3,var(--surface2));text-decoration:underline}
 .selo .av.sm{width:32px;height:32px;font-size:11px}
 .selo-p{font-weight:500;color:var(--muted)}
+
+/* cartões de corretores e empreendimentos: fileiras de 4 sempre que couber (3 → 2 → 1 conforme a largura) */
+.props{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1279px){.props{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:767px){.props{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:519px){.props{grid-template-columns:minmax(0,1fr)}}
+/* cartão do corretor mais estreito: nome e contato quebram, o botão do WhatsApp fica no canto */
+.card.corretor{position:relative}
+.card.corretor .btn-wa{position:absolute;top:14px;right:14px;width:36px;height:36px}
+.card.corretor .btn-wa .ic-wa{width:20px;height:20px}
+.card.corretor>.row:first-child{padding-right:40px}
+.card.corretor h2{font-size:1.0625rem}
+.card.corretor .stats,.card.prop .stats{gap:14px}
+.card.prop .row{flex-wrap:wrap}
+
+.contato-c{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}  /* e-mail e telefone do corretor: uma linha cada, sem quebrar no meio */
