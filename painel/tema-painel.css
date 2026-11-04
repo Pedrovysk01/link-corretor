@@ -31,8 +31,8 @@
   --top-bg:rgba(15,23,42,.93); --top-line:rgba(255,255,255,.08);   /* .93: o texto apagado do topo (#94a3b8) fica ≥ 4,5:1 sobre o vidro */
   --av-bg:#0f172a; --av-text:#ffffff; --logo-backing:rgba(255,255,255,.92);
 }
-@media (prefers-color-scheme:dark){
-  :root{
+/* modo escuro: index.html põe data-modo="dark" (automático pelo sistema, ou forçado em Configurações) */
+:root[data-modo="dark"]{
     --bg:#0e0e10; --surface:#18181b; --surface2:rgba(255,255,255,.06); --surface3:rgba(255,255,255,.1);
     --text:#f4f4f5; --muted:#a1a1aa; --line:#2c2c31; --line-strong:#3f3f46;
     --accent:#f4f4f5; --accent-ink:#0e0e10;
@@ -47,7 +47,6 @@
     --bar-active:rgba(110,231,183,.14); --bar-active-text:#6ee7b7; --bar-icon-active:#6ee7b7;
     --top-bg:rgba(14,14,16,.82); --top-line:#2c2c31;
     --av-bg:#27272a; --av-text:#f4f4f5; --logo-backing:rgba(255,255,255,.92);
-  }
 }
 
 /* ───────── tipografia: títulos em negrito com tracking fechado (text-3xl font-bold tracking-tight) ───────── */
@@ -73,7 +72,7 @@ dialog.modal{border-radius:var(--r-lg);box-shadow:var(--sh-3)}
 .kpi .n{font-size:1.875rem;line-height:1.1;margin-top:2px}
 .kpi .l{font-size:var(--fs-sm);font-weight:500;color:var(--muted)}
 a.kpi:hover{border-color:rgba(16,185,129,.4)!important}
-@media (prefers-color-scheme:dark){.kpi::before{background:linear-gradient(90deg,#10b981,#84cc16)}}
+:root[data-modo="dark"] .kpi::before{background:linear-gradient(90deg,#10b981,#84cc16)}
 
 /* ───────── botões (shadcn Button): primário marinho, secundário branco com borda, raio 8, 40 px ───────── */
 .btn{min-height:40px;padding:0 16px;border-radius:var(--r-md);font-weight:500;font-size:var(--fs-base);border:1px solid var(--line)!important;background:var(--surface);box-shadow:var(--sh-0);transition:background-color var(--t-fast),border-color var(--t-fast),scale var(--t-fast) var(--ease)}
@@ -168,9 +167,22 @@ table.t tr.exp:hover td,table.t tr.exp.on td,.pessoa:hover,.pessoa.on{background
 .aviso-cliente .aviso-eyebrow,.aviso-cliente small{color:#6ee7b7}
 .aviso-cliente .aviso-ver{background:#fff;color:#0f172a}
 .aviso-cliente span{color:rgba(248,250,252,.85)}
-@media (prefers-color-scheme:dark){.aviso{background:#27272a;border-left-color:#6ee7b7}.aviso.erro{background:#450a0a}}
+:root[data-modo="dark"] .aviso{background:#27272a;border-left-color:#6ee7b7}:root[data-modo="dark"] .aviso.erro{background:#450a0a}
 
 /* foco e seleção */
 :focus-visible{outline:2px solid var(--brass-deep);outline-offset:2px}
 ::selection{background:rgba(16,185,129,.25)}
 .sw-btn:hover .sw{box-shadow:0 0 0 3px var(--brass-soft),inset 0 0 0 1px rgba(0,0,0,.08)}
+
+/* ───────── modo de cor forçado (data-modo) ─────────
+   painel.css ainda tem blocos @media (prefers-color-scheme:dark); quando o sistema está escuro mas o painel foi forçado para o
+   claro, estas regras devolvem o claro. Os tokens já vêm de :root acima; aqui só o que painel.css pinta direto. */
+:root[data-modo="light"]{color-scheme:light}
+:root[data-modo="dark"]{color-scheme:dark}
+:root[data-modo="light"] .av{background:var(--av-bg);color:var(--av-text)}
+:root[data-modo="light"] .topo::after{top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(16,185,129,.45),rgba(163,230,53,.6),rgba(16,185,129,.45),transparent)}
+:root[data-modo="light"] .side::after{display:none}
+:root[data-modo="light"] .side .nav a[aria-current=page]{background:var(--bar-active);color:var(--bar-active-text)}
+:root[data-modo="light"] .side .nav a[aria-current=page] .ic{color:var(--bar-icon-active)}
+:root[data-modo="light"] .topo{background:var(--top-bg);box-shadow:none}
+:root[data-modo="light"] .side .av,:root[data-modo="light"] .topo .av{background:var(--brass);color:var(--accent-text)}

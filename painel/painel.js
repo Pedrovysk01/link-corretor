@@ -510,8 +510,8 @@ async function formProp(p) {
     campo("Apresentação 3D", h("select", { name: "source_dir" }, h("option", { value: "" }, "Nenhuma (usar link externo)"), fontes.map((f) => h("option", { value: f, selected: f === p.source_dir }, f.split("/").slice(-2).join(" / ")))), "Pastas de apresentação encontradas dentro do projeto."),
     campo("Ou link externo", h("input", { type: "text", name: "external_url", value: p.external_url || "", placeholder: "https://…", inputmode: "url" }), "Se a apresentação já está publicada em outro lugar. Nesse caso o cadastro, a faixa do corretor e a IA não aparecem."),
     campo("WhatsApp do empreendimento", h("input", { type: "tel", name: "whatsapp", value: p.whatsapp ? fone(p.whatsapp) : "", placeholder: "(47) 99999-9999" }), "Usado quando o corretor não tem WhatsApp cadastrado."),
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "chips" }, [["pt-BR", "Português"], ["en", "English"], ["es", "Español"]].map(([c, t]) => caixa(t, p.languages.includes(c), "lang-" + c)))),
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "Recursos na apresentação"), h("div", { class: "chips" }, REC.map(([k, t]) => caixa(t, rec[k] !== false, "rec-" + k))), h("small", { class: "help" }, "Tudo ligado por padrão. Desligue o que não quiser mostrar neste empreendimento; vale para todos os links dele.")),
+    h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "caixas" }, [["pt-BR", "Português"], ["en", "English"], ["es", "Español"]].map(([c, t]) => caixa(t, p.languages.includes(c), "lang-" + c)))),
+    h("div", { class: "field" }, h("span", { class: "lbl" }, "Recursos na apresentação"), h("div", { class: "caixas" }, REC.map(([k, t]) => caixa(t, rec[k] !== false, "rec-" + k))), h("small", { class: "help" }, "Tudo ligado por padrão. Desligue o que não quiser mostrar neste empreendimento; vale para todos os links dele.")),
     h("div", { class: "field" }, caixa("Empreendimento ativo (links funcionam)", p.active, "active")),
     campo("O que a IA sabe", h("textarea", { name: "facts", rows: 10, placeholder: "Tipologias, metragens, preços, condições de pagamento, áreas comuns, localização…" }, p.facts || ""), "Única fonte da IA: responde só com isso e manda falar com o corretor quando não souber. Mantenha preços e disponibilidade em dia.")];
   dialogo(novo ? "Novo empreendimento" : "Editar empreendimento", corpo, [btnFechar(), btnOk("Salvar")], { onSubmit: async (f, fechar) => {
@@ -565,8 +565,17 @@ async function telaPerguntas() {
   if (!qs.length) { el.append(h("div", { class: "card" }, vazio("chat", "Nenhuma pergunta ainda"))); return el; }
   const sem = qs.filter((x) => !x.answer).length;
   if (sem) el.append(h("div", { class: "card alerta-card" }, `${sem} pergunta(s) ficaram sem resposta (limite do mês ou falha da IA). Vale retornar para esses clientes.`));
-  el.append(h("div", { class: "card" }, qs.map((x) => h("div", { class: "qa" }, h("div", { class: "row between" }, h("span", { class: "q wrap" }, x.question), !x.answer && pill("sem resposta", "warn")), x.answer && h("span", { class: "a wrap" }, x.answer),
-    h("span", { class: "muted small" }, h("a", { href: "#/cliente/" + x.visitor_id }, x.cliente), ` · ${x.empreendimento}${dono() ? " · " + x.corretor : ""} · ${quando(x.ts)}`))))); return el;
+  // conversas: uma por cliente, em balões (cliente à direita, IA à esquerda), da mais recente para a mais antiga
+  const por = new Map();
+  qs.forEach((x) => { const k = x.visitor_id; if (!por.has(k)) por.set(k, { cliente: x.cliente, visitor_id: k, empreendimento: x.empreendimento, corretor: x.corretor, ts: x.ts, itens: [] }); por.get(k).itens.push(x); });
+  const convs = [...por.values()];
+  convs.forEach((c) => c.itens.sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : a.id - b.id)));
+  el.append(h("div", { class: "convs" }, convs.map((c) => h("article", { class: "card conv" },
+    h("header", { class: "conv-h" }, avatar(c.cliente, "sm"), h("div", { style: "min-width:0;flex:1" }, h("a", { class: "cell-main", href: "#/cliente/" + c.visitor_id }, c.cliente), h("div", { class: "cell-sub wrap" }, `${c.empreendimento}${dono() ? " · " + c.corretor : ""}`)), h("span", { class: "muted small" }, quando(c.ts))),
+    h("div", { class: "conv-b" }, c.itens.map((x) => [
+      h("div", { class: "msg cli" }, h("span", { class: "wrap" }, x.question)),
+      x.answer ? h("div", { class: "msg ia" }, h("span", { class: "msg-quem" }, "IA"), h("span", { class: "wrap" }, x.answer)) : h("div", { class: "msg ia sem" }, pill("sem resposta", "warn"), h("span", { class: "muted small" }, "Limite do mês ou falha da IA. Vale retornar para este cliente."))]))))));
+  return el;
 }
 async function telaConfig() {
   const c = await api("GET", "/api/settings"), pct = c.ai_limite ? Math.min(100, Math.round((c.ai_usadas / c.ai_limite) * 100)) : 100;
@@ -581,6 +590,9 @@ async function telaConfig() {
     blocoVisual(),
     h("div", { class: "card stack" }, h("h2", null, "Regra da comissão"), h("p", { class: "muted" }, "O cliente pertence ao primeiro corretor por quem se identificou. Se abrir o link de outro corretor, a abertura é registrada no nome dele, mas a origem não muda. Só o dono transfere um cliente, na página do cliente.")),
     h("div", { class: "card stack" }, h("h2", null, "Dados de exemplo"), h("p", { class: "muted" }, c.exemplo ? "Há corretores, clientes e aberturas fictícios no painel (marcados como “exemplo”)." : "Carregue corretores, clientes e aberturas fictícios para ver o painel cheio."),
+      c.exemplo && h("label", { class: "check" }, h("input", { type: "checkbox", checked: c.fluxo, onchange: async (e) => { const r = await api("POST", "/api/exemplo", { fluxo: e.target.checked }); aviso(r.fluxo ? "Cadastros simulados ligados: enquanto o painel estiver aberto, chega um cliente novo a cada 1–2 minutos." : "Cadastros simulados desligados."); } }),
+        h("span", null, "Simular cadastros enquanto o painel está aberto", h("span", { class: "hint", style: "display:block" }, "Só demonstração: a cada 1–2 minutos um cliente fictício abre, se cadastra por um corretor de exemplo e, às vezes, conversa com a IA. O aviso aparece aqui no painel."))),
+      c.exemplo && h("div", null, h("button", { class: "btn sm", onclick: async () => { const r = await api("POST", "/api/exemplo", { cliente: true }); aviso(r.cliente ? `${r.cliente.nome} acabou de se cadastrar (simulação).` : "Nenhum corretor de exemplo disponível."); } }, "Simular um cadastro agora")),
       h("div", null, c.exemplo ? h("button", { class: "btn danger", onclick: async () => { if (!confirm("Apagar os corretores de exemplo e tudo que veio com eles?")) return; const r = await api("POST", "/api/exemplo", { remover: true }); aviso(`${r.removidos} corretor(es) de exemplo removido(s).`); rotear(); } }, "Apagar dados de exemplo")
         : h("button", { class: "btn", onclick: async () => { const r = await api("POST", "/api/exemplo", {}); aviso(`${r.criados} corretores de exemplo criados. Senha: corretor123.`); rotear(); } }, "Carregar dados de exemplo"))));
 }
@@ -593,7 +605,15 @@ function blocoVisual() {
     const l = document.getElementById("tema-novo"); if (l) l.disabled = k === "classico";
     pintar(); aviso(k === "novo" ? "Visual novo ligado." : "Visual clássico ligado."); } }, t))); };
   pintar();
-  return h("div", { class: "card stack" }, h("h2", null, "Visual do painel"), h("p", { class: "muted" }, "Novo: barra ardósia, acento esmeralda e cartões com borda. Clássico: verde-escuro e latão. A escolha vale só neste navegador."), chips);
+  // modo de cor: automático (segue o sistema), claro ou escuro — index.html aplica em data-modo; vale para o visual Novo
+  const modos = h("div", { class: "chips", role: "group", "aria-label": "Modo de cor" });
+  const modoAtual = () => { try { return localStorage.getItem("lc.modo") || ""; } catch (e) { return ""; } };
+  const pintarModo = () => { const v = modoAtual(); modos.replaceChildren(...[["", "Automático"], ["light", "Claro"], ["dark", "Escuro"]].map(([k, t]) => h("button", { type: "button", class: "chip", "aria-pressed": String(v === k), onclick: () => {
+    try { if (k) localStorage.setItem("lc.modo", k); else localStorage.removeItem("lc.modo"); } catch (e) {}
+    if (window.LC_APLICAR_MODO) window.LC_APLICAR_MODO(); pintarModo(); } }, t))); };
+  pintarModo();
+  return h("div", { class: "card stack" }, h("h2", null, "Visual do painel"), h("p", { class: "muted" }, "Novo: barra ardósia, acento esmeralda e cartões com borda. Clássico: verde-escuro e latão. A escolha vale só neste navegador."), chips,
+    h("div", { class: "lbl", style: "margin-top:4px" }, "Modo de cor"), h("p", { class: "muted small" }, "Automático segue o sistema. Claro e Escuro forçam o modo no visual Novo (o Clássico segue sempre o sistema)."), modos);
 }
 function blocoLogo(c) {
   const formas = [["round", "Redonda"], ["square", "Quadrada 1:1"], ["wide", "Horizontal"], ["tall", "Vertical"]];

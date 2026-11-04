@@ -382,7 +382,6 @@ def carregar_exemplo():
     if not ids or not props: return 0
     clientes = ["Helena Martins", "Carlos Pereira", "Juliana Reis", "Bruno Alves", "Patrícia Nunes", "Fernando Costa", "Letícia Ramos", "Gustavo Mendes", "Aline Barbosa",
                 "Rodrigo Teixeira", "Beatriz Lopes", "Thiago Moreira", "Vanessa Cardoso", "Eduardo Pires", "Larissa Freitas", "Marcelo Dias", "Renata Gomes", "Paulo Henrique"]
-    perg = ["Quantos quartos tem a unidade disponível?", "Qual é a forma de pagamento?", "Fica perto da praia?", "Tem área de lazer?", "Quando é a entrega?", "Aceita financiamento?"]
     pesos = [6, 4, 3]
     n_cli = 0
     for bi, b in enumerate(ids):
@@ -404,8 +403,62 @@ def carregar_exemplo():
                 run("INSERT INTO opens(visitor_id,link_id,broker_id,property_id,ts,last_seen,device) VALUES(?,?,?,?,datetime('now',?),datetime('now',?,?),?)",
                     (vid, lid, b, pid, f"-{d} days", f"-{d} days", f"+{rnd.randint(2, 14)} minutes", rnd.choice(["celular", "celular", "computador"])))
             if rnd.random() < .5:
-                run("INSERT INTO ai_questions(link_id,property_id,visitor_id,ts,question,answer) VALUES(?,?,?,datetime('now',?),?,?)", (lid, pid, vid, f"-{rnd.randint(0, 9)} days", rnd.choice(perg), "Resposta de exemplo (dado de demonstração)."))
+                d = rnd.randint(0, 9)
+                for i, (pergunta, resposta) in enumerate(rnd.choice(CONVERSAS_EXEMPLO)):  # conversa curta de exemplo com a IA
+                    run("INSERT INTO ai_questions(link_id,property_id,visitor_id,ts,question,answer) VALUES(?,?,?,datetime('now',?,?),?,?)", (lid, pid, vid, f"-{d} days", f"+{i * 2} minutes", pergunta, resposta))
     return len(ids)
+
+
+# Conversas de exemplo com a IA (só demonstração): pares pergunta → resposta, em sequência, como numa conversa real.
+CONVERSAS_EXEMPLO = [
+    [("Quantos quartos tem a unidade disponível?", "As unidades disponíveis têm 3 suítes, com a master voltada para o mar. A metragem privativa fica entre 118 e 128 m². Quer que eu mostre a planta?"),
+     ("Sim, e tem vaga de garagem?", "Cada unidade vem com 2 vagas cobertas e um depósito privativo no subsolo. Posso pedir ao corretor que confirme a numeração das vagas.")],
+    [("Qual é a forma de pagamento?", "O plano padrão é entrada de 20%, parcelas mensais durante a obra e o saldo na entrega das chaves, com possibilidade de financiamento bancário. Valores e condições são confirmados com o corretor."),
+     ("Aceita financiamento pela Caixa?", "Sim. O empreendimento é elegível a financiamento bancário na entrega, incluindo a Caixa. O corretor pode simular com você a parcela estimada.")],
+    [("Fica perto da praia?", "Fica a cerca de 350 m da praia, uns 5 minutos a pé. A região tem padaria, mercado e academia no mesmo quarteirão."),
+     ("E escola por perto?", "Há duas escolas particulares num raio de 1,5 km e uma escola municipal a 800 m. Se quiser, o corretor envia o mapa com as distâncias.")],
+    [("Quando é a entrega?", "A previsão de entrega é para o segundo semestre, conforme o cronograma da incorporadora. A data exata consta no contrato e o corretor pode confirmar o mês.")],
+    [("Tem área de lazer?", "Sim: piscina adulto e infantil, academia, salão de festas, espaço gourmet e playground. A área de lazer fica no térreo e na cobertura, com vista para o mar."),
+     ("A piscina é aquecida?", "A piscina adulto tem aquecimento solar com apoio elétrico; a infantil não é aquecida. Posso te mostrar as imagens do lazer na apresentação.")],
+    [("Qual o valor do condomínio?", "A estimativa da incorporadora é de R$ 8 a R$ 10 por m² privativo. O valor definitivo é definido pela assembleia de instalação. Confirme com o corretor antes de decidir."),
+     ("E o IPTU?", "Não tenho o valor do IPTU desta unidade. Vou deixar essa pergunta com o corretor, que te responde direto.")],
+    [("Dá para visitar o decorado?", "Sim, o apartamento decorado recebe visitas de terça a sábado, das 9h às 18h, com agendamento. Quer que eu peça ao corretor para marcar?")],
+]
+NOMES_SIMULADOS = ["Ana Clara Ribeiro", "Diego Fonseca", "Mariana Castro", "Lucas Andrade", "Isabela Moraes", "Felipe Tavares", "Carolina Pinto", "André Siqueira", "Natália Brito",
+                   "Vinícius Rocha", "Luana Machado", "Henrique Sales", "Camila Vieira", "Otávio Nogueira", "Priscila Amaral", "Rafaela Cunha", "Gabriel Lacerda", "Tatiane Xavier",
+                   "Leonardo Prado", "Bianca Monteiro", "Caio Figueiredo", "Sofia Bastos", "Murilo Campos", "Daniela Queiroz", "Pedro Henrique Lins", "Yasmin Correia"]
+
+
+def simular_cliente():
+    """Demonstração: cria um cliente fictício que acabou de abrir e se cadastrar por um corretor de exemplo, com uma conversa
+    curta com a IA. `created` recua `notify_min` minutos para o aviso aparecer no próximo ciclo do painel. Só roda quando há
+    corretores de exemplo e o fluxo simulado está ligado (Configurações → Dados de exemplo)."""
+    bs = [r["id"] for r in q("SELECT id FROM users WHERE demo=1 AND role='broker'")]
+    if not bs: return None
+    rnd = random.Random()
+    b = rnd.choice(bs)
+    links = q("SELECT l.id, l.property_id FROM links l JOIN properties p ON p.id=l.property_id WHERE l.broker_id=? AND p.active=1", (b,))
+    if not links:
+        props = [r["id"] for r in q("SELECT id FROM properties WHERE active=1")]
+        if not props: return None
+        pid = rnd.choice(props); links = [{"id": run("INSERT INTO links(code,broker_id,property_id,channel) VALUES(?,?,?,?)", (novo_codigo(), b, pid, rnd.choice(CANAIS[:4]))), "property_id": pid}]
+    l = rnd.choice(links)
+    usados = {r["name"] for r in q("SELECT name FROM visitors")}
+    livres = [n for n in NOMES_SIMULADOS if n not in usados] or [f"{rnd.choice(NOMES_SIMULADOS)} {rnd.randint(2, 99)}"]
+    nome = rnd.choice(livres)
+    fone = "5547" + str(rnd.randint(900000000, 999999999))
+    atraso = max(0, min(120, int(setting("notify_min", 5) or 0))) + 1
+    vid = run("INSERT INTO visitors(broker_id,first_link_id,property_id,name,phone,identity,token_hash,status,message,created) VALUES(?,?,?,?,?,?,?,?,?,datetime('now',?))",
+              (b, l["id"], l["property_id"], nome, fone, "tel:" + fone, tok_hash(secrets.token_urlsafe(16)), "novo", rnd.choice(["", "", "", "Quero mais informações.", "Pode me ligar à tarde?"]), f"-{atraso} minutes"))
+    run("INSERT INTO opens(visitor_id,link_id,broker_id,property_id,ts,last_seen,device) VALUES(?,?,?,?,datetime('now',?),datetime('now'),?)", (vid, l["id"], b, l["property_id"], f"-{atraso} minutes", rnd.choice(["celular", "celular", "computador"])))
+    run("INSERT INTO clicks(link_id,ts,device,visitor) VALUES(?,datetime('now',?),?,?)", (l["id"], f"-{atraso} minutes", "celular", secrets.token_hex(6)))
+    if rnd.random() < .7:
+        for i, (pergunta, resposta) in enumerate(rnd.choice(CONVERSAS_EXEMPLO)):
+            run("INSERT INTO ai_questions(link_id,property_id,visitor_id,ts,question,answer) VALUES(?,?,?,datetime('now',?),?,?)", (l["id"], l["property_id"], vid, f"-{max(0, atraso - 1 - i)} minutes", pergunta, resposta))
+    return {"id": vid, "nome": nome}
+
+
+def fluxo_simulado_ligado(): return setting("demo_fluxo", "1") != "0"
 
 
 def remover_exemplo():
@@ -632,7 +685,7 @@ def r_questions(h, u, q_, b):
 def r_settings(h, u, q_, b):
     return {"empresa": setting("business_name", ""), "notify_min": int(setting("notify_min", 5) or 0), "ai_limite": int(setting("ai_monthly_limit", 300)),
             "ai_usadas": q("SELECT COUNT(*) n FROM ai_questions WHERE ts>=datetime('now','start of month')", one=True)["n"],
-            "exemplo": q("SELECT COUNT(*) n FROM users WHERE demo=1", one=True)["n"] > 0, "claude_cli": os.path.isfile(CLAUDE_EXE), "logo": setting("business_logo", ""), "logo_shape": setting("business_logo_shape", "round"), "theme": json.loads(setting("business_theme", "null") or "null")}
+            "exemplo": q("SELECT COUNT(*) n FROM users WHERE demo=1", one=True)["n"] > 0, "fluxo": fluxo_simulado_ligado(), "claude_cli": os.path.isfile(CLAUDE_EXE), "logo": setting("business_logo", ""), "logo_shape": setting("business_logo_shape", "round"), "theme": json.loads(setting("business_theme", "null") or "null")}
 
 
 def r_settings_edit(h, u, q_, b):
@@ -654,7 +707,10 @@ def r_settings_edit(h, u, q_, b):
     return {"ok": True}
 
 
-def r_exemplo(h, u, q_, b): return {"removidos": remover_exemplo()} if b.get("remover") else {"criados": carregar_exemplo()}
+def r_exemplo(h, u, q_, b):
+    if "fluxo" in b: set_setting("demo_fluxo", "1" if b.get("fluxo") else "0"); return {"ok": True, "fluxo": fluxo_simulado_ligado()}
+    if b.get("cliente"): return {"cliente": simular_cliente()}
+    return {"removidos": remover_exemplo()} if b.get("remover") else {"criados": carregar_exemplo()}
 
 
 def r_notify(h, u, q_, b):
@@ -668,6 +724,9 @@ def r_notify(h, u, q_, b):
     uo = q(f"SELECT COALESCE(MAX(o.id),0) m FROM opens o WHERE 1=1{so}", soa, one=True)["m"]
     out = {"v": uv, "o": uo, "atraso": atraso, "novos": [], "retornos": []}
     if q_.get("init"): return out
+    # Demonstração: enquanto o painel está aberto (este endpoint é consultado a cada 12 s), com corretores de exemplo e o fluxo
+    # simulado ligado, cadastra-se um cliente fictício a cada ~1–2 min, para o painel nunca parar de receber gente.
+    if u["role"] == "owner" and fluxo_simulado_ligado() and random.random() < .14 and q("SELECT 1 FROM users WHERE demo=1", one=True): simular_cliente()
     depois_v, depois_o = int(q_.get("v") or 0), int(q_.get("o") or 0)
     out["novos"] = q(f"SELECT v.id, v.name, v.created, CAST((julianday('now')-julianday(v.created))*1440 AS INTEGER) AS minutos, p.name AS empreendimento, u.name AS corretor, "
                      f"(SELECT l.channel FROM links l WHERE l.id=v.first_link_id) AS canal FROM visitors v JOIN properties p ON p.id=v.property_id JOIN users u ON u.id=v.broker_id "
@@ -838,7 +897,7 @@ class H(BaseHTTPRequestHandler):
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
             tag = '<script src="/painel/casca.js?v=1"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=8" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=9" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200

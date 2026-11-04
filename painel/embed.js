@@ -162,7 +162,9 @@
     document.body.append(host);
     // conta interações na apresentação (não no widget); na terceira, pede o cadastro
     const interagiu = (e) => { if (papel !== "cliente" || rec.cadastro === false || info.cliente || gate || e.composedPath().includes(host)) return; const agora = Date.now(); if (agora - ultimo < 400) return; ultimo = agora; if (++toques >= LIMITE) { gate = true; render(); } };
-    document.addEventListener("pointerdown", interagiu, true); document.addEventListener("keydown", interagiu, true);
+    // 3ª interação: no celular conta o toque (pointerdown de dedo/caneta); no computador conta o CLIQUE completo do mouse (não tecla, não arrasto)
+    document.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" || e.pointerType === "pen") interagiu(e); }, true);
+    document.addEventListener("click", (e) => { if (e.pointerType === "mouse" || (!e.pointerType && !("ontouchstart" in window))) interagiu(e); }, true);
     setInterval(() => { if (papel !== "corretor" && !document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
 
     const cadastro = () => `<div class="gate" ${gate ? "" : "hidden"} role="dialog" aria-modal="true" aria-labelledby="lc-reg-t"><form class="reg" novalidate>

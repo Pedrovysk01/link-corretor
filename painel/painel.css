@@ -84,7 +84,9 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
 select{appearance:auto}
 .check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
-.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--brass);flex:none}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--brass);flex:none;appearance:auto;padding:0;min-height:0;border-radius:4px}
+.caixas{display:grid;gap:8px}   /* caixas de marcar enfileiradas, uma por linha (idiomas, recursos) */
+.caixas .check{align-items:center;min-height:28px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .err{color:var(--danger);font-size:var(--fs-sm);min-height:0}
 .err:empty{display:none}
@@ -425,6 +427,20 @@ table.t tr.det table.t{box-shadow:none}
 @media (max-width:899px){.pessoa-det{padding:6px 4px 16px}}
 
 .shares{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* conversas com a IA (tela Perguntas): um cartão por cliente, balões — cliente à direita (tinta), IA à esquerda (superfície) */
+.convs{display:grid;gap:14px}
+.conv{display:grid;gap:12px}
+.conv-h{display:flex;align-items:center;gap:12px;min-width:0}
+.conv-h .cell-main{color:inherit;text-decoration:none}
+.conv-h .cell-main:hover{text-decoration:underline}
+.conv-b{display:grid;gap:8px}
+.msg{max-width:min(72ch,88%);padding:10px 14px;border-radius:var(--r-lg);line-height:1.5;display:grid;gap:4px;min-width:0}
+.msg.cli{justify-self:end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:var(--r-sm)}
+.msg.ia{justify-self:start;background:var(--surface2);color:var(--text);border-bottom-left-radius:var(--r-sm)}
+.msg.ia.sem{background:transparent;padding-left:0;gap:8px}
+.msg-quem{font-size:var(--fs-xs);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brass-ink)}
+@media (max-width:899px){.msg{max-width:94%}}
 
 /* aviso lateral de cliente novo (abriu e se cadastrou, veio do corretor X) */
 .aviso.aviso-cliente{position:relative;display:grid;gap:2px;width:min(340px,calc(100vw - 32px));padding:14px 40px 14px 16px;border-left-width:4px;animation:rise .3s var(--ease)}
