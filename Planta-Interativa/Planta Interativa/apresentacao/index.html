@@ -188,6 +188,7 @@ html.lc-casca-on .bar{top:calc(78px + env(safe-area-inset-top))}     /* barra de
 @media(max-width:700px){#vista .cap{flex-direction:column;gap:8px;white-space:normal;width:calc(100vw - 24px)}}
 #msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:35;color:var(--mute);font-size:14px;pointer-events:none;transition:opacity .4s}
 .maplibregl-ctrl-attrib{font-size:10px!important}
+#g3d-attr{position:absolute;left:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:21;font:500 10px/1.3 var(--sans);color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.6);pointer-events:none;max-width:60vw}#g3d-attr b{font-weight:700;letter-spacing:.04em}
 </style>
 </head>
 <body>
@@ -264,7 +265,7 @@ html.lc-casca-on .bar{top:calc(78px + env(safe-area-inset-top))}     /* barra de
 <script src="data/projeto.js"></script>
 <script src="data/pois.js"></script>
 <script src="core.js"></script>
-<script src="maps.js?v=5"></script>
+<script src="maps.js?v=6"></script>
 <script src="torre.js"></script>
 <script src="main.js"></script>
 <script>/* casca padrão do painel (painel/casca.js): o que cada botão faz aqui. Sem função = "em breve". */
@@ -275,7 +276,14 @@ window.LC_CASCA = {
     v3d: () => go("projeto"), vcima: () => go("cidade"), geral: () => go("projeto"),
     unidades: async () => { await go("projeto"); const b = document.querySelector("#floors button:not(.none)"); if (b) b.click(); },
     experiencias: async () => { await go("projeto"); document.getElementById("b-lazer").click(); },
-    materiais: async () => { await go("projeto"); document.getElementById("b-gal").click(); }
+    materiais: async () => { await go("projeto"); document.getElementById("b-gal").click(); },
+    apresentacao: () => go("intro"),
+    ajustes: { lista: () => { const c = (sel) => async () => { await go("projeto"); const b = document.querySelector(sel); if (b) b.click(); };
+      const on = (sel) => () => !!document.querySelector(sel + ".on");
+      return [{ rotulo: "Manhã", sub: "Hora do sol", acao: c('#pbar [data-k="manha"]'), ativo: on('#pbar [data-k="manha"]') }, { rotulo: "Meio-dia", sub: "Hora do sol", acao: c('#pbar [data-k="dia"]'), ativo: on('#pbar [data-k="dia"]') },
+        { rotulo: "Fim de tarde", sub: "Hora do sol", acao: c('#pbar [data-k="tarde"]'), ativo: on('#pbar [data-k="tarde"]') }, { rotulo: "Noite", sub: "Hora do sol", acao: c('#pbar [data-k="noite"]'), ativo: on('#pbar [data-k="noite"]') },
+        { rotulo: "Dia todo", sub: "Animação", acao: c("#b-play") }, { rotulo: "Trocar estação", sub: "Verão · Outono/Primavera · Inverno", acao: c("#b-season") },
+        { rotulo: "Só disponíveis", sub: "Unidades", acao: c("#b-only"), ativo: on("#b-only") }, { rotulo: "Torre inteira", sub: "Câmera", acao: c("#b-fit") }]; } }
   }
 };</script>
 </body>

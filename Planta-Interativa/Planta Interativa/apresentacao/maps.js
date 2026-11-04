@@ -11,6 +11,7 @@ function ensureMap() {
       attributionControl: { compact: true }, maxPitch: 75, antialias: true });
     map.on("load", () => {
       realismo();
+      google3d();
       map.addSource("area", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({ id: "area-glow", type: "line", source: "area", paint: { "line-color": "#caa86b", "line-width": 16, "line-opacity": .28, "line-blur": 8 } });
       map.addLayer({ id: "area", type: "line", source: "area", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#caa86b", "line-width": 5 } });
@@ -74,6 +75,35 @@ function realismo() {
     "fill-extrusion-opacity": 1, "fill-extrusion-vertical-gradient": true } });
   map.setLight({ anchor: "viewport", color: "#fff1d6", intensity: .5, position: [1.4, 215, 50] });
   try { map.setSky({ "sky-color": "#7fa6d6", "horizon-color": "#dfe9f2", "fog-color": "#e8eef4", "sky-horizon-blend": .6, "horizon-fog-blend": .7, "fog-ground-blend": .3 }); } catch (e) {}
+}
+/* ---------- cidade fotorrealista (Google Photorealistic 3D Tiles), como no Google Earth ----------
+   Só quando o painel injeta window.LC_GOOGLE_KEY (GOOGLE_MAPS_KEY em .env.local). deck.gl (vendor/deck.gl.min.js, carregado na hora)
+   desenha a malha 3D do Google por cima do mapa; satélite, relevo e prédios do OSM saem (a malha já traz tudo), a torre do
+   Felicità continua desenhada no lote. Atribuição obrigatória: "Google" + créditos das imagens, em #g3d-attr.
+   Custo: 1 "root tile" por carregamento da página (1.000/mês grátis). Sem chave ou com erro, nada muda. */
+let g3d = null;
+function google3d() {
+  const key = window.LC_GOOGLE_KEY; if (!key || g3d) return;
+  const s = document.createElement("script"); s.src = "vendor/deck.gl.min.js";
+  s.onload = () => {
+    try {
+      const layer = new deck.Tile3DLayer({
+        id: "g3d", data: "https://tile.googleapis.com/v1/3dtiles/root.json", loadOptions: { fetch: { headers: { "X-GOOG-API-KEY": key } } },
+        operation: "terrain+draw", pickable: false, _subLayerProps: { scenegraph: { _lighting: "pbr" } },
+        onTilesetLoad: t => { const attr = document.createElement("div"); attr.id = "g3d-attr"; attr.innerHTML = "<b>Google</b> <span></span>"; $("#map").appendChild(attr);  // só quando a malha realmente carregou
+          try { const cr = (t.credits && t.credits.attributions || []).map(a => a.html || a.name || "").filter(Boolean); attr.querySelector("span").textContent = cr.join(" · "); } catch (e) {}
+          // a malha já tem terreno e prédios: tira satélite/relevo/OSM e deixa só nomes, rotas e a torre
+          try { map.setTerrain(null); } catch (e) {}
+          ["sat", "building-3d"].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, "visibility", "none"));
+          document.documentElement.classList.add("g3d-on"); },
+        onTileError: e => console.warn("3D Tiles:", e && e.message)
+      });
+      g3d = new deck.MapboxOverlay({ interleaved: true, layers: [layer] });
+      map.addControl(g3d);
+    } catch (e) { console.warn("cidade 3D:", e); }
+  };
+  s.onerror = () => console.warn("cidade 3D: deck.gl não carregou");
+  document.head.appendChild(s);
 }
 const fly = (o, ms = 3200) => map.flyTo(Object.assign({ duration: REDUCED ? 0 : ms, essential: true, curve: 1.5 }, o));
 const mkLabel = (txt, ll, cls = "") => { const d = document.createElement("div"); d.className = "mk " + cls; d.textContent = txt; return new maplibregl.Marker({ element: d }).setLngLat(ll).addTo(map); };

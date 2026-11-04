@@ -69,9 +69,9 @@
   chip("materiais", "Materiais", { icon: "materiais" });
   chip("apresentacao", "Apresentação", { icon: "apresentacao" });
   if (cfg.contato) { const b = el("button", { class: "lc-chip", type: "button", "aria-label": cfg.contato.rotulo }, ICON.contato + " " + esc(cfg.contato.rotulo)); b.onclick = () => run(cfg.contato.acao); nav.append(b); }
-  const aj = el("button", { class: "lc-chip lc-ic", type: "button", "aria-label": "Ajustes da cena", title: "Ajustes da cena" }, ICON.ajustes);
-  if (!acoes.ajustes) { aj.disabled = true; aj.title = "Ajustes · em breve"; } else aj.onclick = () => run(acoes.ajustes);
-  nav.append(aj);
+  const aj = chip("ajustes", "", { icon: "ajustes" });  // mesma lógica dos outros: função, seletor ou lista (painel suspenso)
+  aj.classList.add("lc-ic"); aj.setAttribute("aria-label", "Ajustes da cena"); aj.title = acoes.ajustes ? "Ajustes da cena" : "Ajustes · em breve";
+  const soon = aj.querySelector(".lc-soon"); if (soon) soon.remove();
 
   const casca = el("header", { class: "lc-casca", "aria-label": "Cabeçalho da apresentação" });
   const l = el("div", { class: "lc-l" }); l.append(brand, seg);

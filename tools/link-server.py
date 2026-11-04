@@ -26,6 +26,18 @@ PAINEL = ROOT / "painel"
 SEED = ROOT / "tools" / "seed"
 DB_PATH = pathlib.Path(os.environ.get("LC_DB") or ROOT / "dados" / "link-corretor.db")
 HOST = "127.0.0.1"
+# Segredos só em .env.local (modelo em .env.example). GOOGLE_MAPS_KEY: chave de navegador do Google Maps Platform (Map Tiles API,
+# Photorealistic 3D Tiles) — vai para a apresentação como window.LC_GOOGLE_KEY; sem ela a cena Cidade usa satélite + relevo.
+def _env_local():
+    out = {}
+    p = ROOT / ".env.local"
+    if p.is_file():
+        for ln in p.read_text(encoding="utf-8", errors="replace").splitlines():
+            ln = ln.strip()
+            if ln and not ln.startswith("#") and "=" in ln: k, v = ln.split("=", 1); out[k.strip()] = v.strip().strip('"').strip("'")
+    return out
+ENV_LOCAL = _env_local()
+GOOGLE_MAPS_KEY = os.environ.get("GOOGLE_MAPS_KEY") or ENV_LOCAL.get("GOOGLE_MAPS_KEY", "")
 SESSAO_DIAS = 30
 VISITANTE_DIAS = 365
 STATUS = ["novo", "contatado", "visita", "proposta", "fechado", "perdido"]
@@ -896,7 +908,8 @@ class H(BaseHTTPRequestHandler):
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
-            tag = '<script src="/painel/casca.js?v=1"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
+            tag = '<script src="/painel/casca.js?v=2"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
+            if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
             if injetar_code: tag += f'<script src="/painel/embed.js?v=9" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})

@@ -23,10 +23,19 @@
       var T = { Villa: 'Casa', Apartment: 'Apartamento', Lazer: 'Lazer' }
       window.LC_CASCA = {
         empresa: 'Villa Montemerano', cidade: 'Meia Praia · Itapema', titulo: 'Villa <i>Montemerano</i>', esconder: ['.topbar'],
-        visao: function () { return '3d' },
+        visao: function () { var s = S(); return s && s.mode === 'room' ? '3d' : '2d' },   // de cima = visão geral do apartamento; 3D = dentro de um ambiente
         acoes: {
-          v3d: function () { var s = S(); if (s) s.showOverview() },
+          v3d: function () { var s = S(); if (!s) return; var p = (window.LC_APP.properties || []).filter(function (x) { return x.id === s.propertyId })[0]; var r = p && (p.tour && p.tour[0] || p.rooms && p.rooms[0] && p.rooms[0].id); if (r) s.enterRoom(r) },
+          vcima: function () { var s = S(); if (s) s.showOverview() },
           geral: function () { var s = S(); if (s) s.showOverview() },
+          materiais: { lista: function () { return [
+            { rotulo: 'Planta baixa', sub: 'Apartamento', acao: function () { var s = S(); if (s) s.showOverview(); var b = document.querySelector('.plan-toggle'); if (b) b.click() } },
+            { rotulo: 'Imagens 360°', sub: 'Ambientes', acao: function () { location.href = '360/index.html' } },
+            { rotulo: 'Filme do empreendimento', sub: 'Vídeo', acao: function () { var s = S(); if (s) s.showFilm() } }] } },
+          ajustes: { lista: function () { var aberta = !!document.querySelector('[aria-label="Ocultar planta baixa"]'); return [
+            { rotulo: aberta ? 'Ocultar planta baixa' : 'Mostrar planta baixa', sub: 'Painel', acao: function () { var b = document.querySelector('[aria-label="Ocultar planta baixa"],.plan-toggle'); if (b) b.click() } },
+            { rotulo: 'Visão geral', sub: 'Câmera', acao: function () { var s = S(); if (s) s.showOverview() } },
+            { rotulo: 'Voltar ao filme', sub: 'Início', acao: function () { var s = S(); if (s) s.showFilm() } }] } },
           unidades: { lista: function () { var p = (window.LC_APP && window.LC_APP.properties || []).filter(function (x) { return x.id.indexOf('montemerano') === 0 })
             return p.map(function (x) { return { rotulo: x.shortName, sub: T[x.type] || x.type, ativo: function () { var s = S(); return !!s && s.propertyId === x.id }, acao: function () { var s = S(); if (s && s.propertyId !== x.id) s.selectProperty(x.id) } } }) } },
           experiencias: function () { location.href = '360/index.html' },
