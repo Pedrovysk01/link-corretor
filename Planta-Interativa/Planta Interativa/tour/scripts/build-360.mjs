@@ -63,11 +63,11 @@ for (const c of CENAS) {
   }
   const dir = join(OUT, c.id)
   await mkdir(dir, { recursive: true })
-  const pronto = await stat(join(dir, `${c.id}-${c.frames}.webp`)).then((s) => s.size > 0).catch(() => false)
+  const pronto = await stat(join(dir, `${c.id}-${c.frames}.webp`)).then((s) => s.size > 0 && s.size < 1_500_000).catch(() => false)
   if (!pronto || force) {
     const d = duracao(src)
     const fps = (c.frames / d).toFixed(4)
-    execFileSync(ffmpeg, ['-y', '-v', 'error', '-i', src, '-vf', `fps=${fps},scale='min(${WIDTH},iw)':-2`, '-frames:v', String(c.frames), '-quality', String(QUALITY), join(dir, `${c.id}-%d.webp`)], { stdio: 'inherit' })
+    execFileSync(ffmpeg, ['-y', '-v', 'error', '-i', src, '-vf', `fps=${fps},scale='min(${WIDTH},iw)':-2`, '-frames:v', String(c.frames), '-f', 'image2', '-c:v', 'libwebp', '-lossless', '0', '-quality', String(QUALITY), join(dir, `${c.id}-%d.webp`)], { stdio: 'inherit' })
     console.log(`✔ ${c.titulo}: ${c.frames} quadros de ${d.toFixed(1)} s`)
   } else console.log(`· ${c.titulo}: já existia`)
   cenas.push({ id: c.id, titulo: c.titulo, grupo: c.grupo, frames: c.frames, capa: c.capa })
