@@ -113,7 +113,7 @@ export function FloorPlan({ property }: { readonly property: Property }) {
   if (isCollapsed) {
     return (
       <button ref={focusAfterToggle} type="button" className="glass plan-toggle" onClick={() => toggle(false)} aria-expanded="false">
-        <MapIcon size={18} aria-hidden="true" /> Floor plan
+        <MapIcon size={18} aria-hidden="true" /> Planta baixa
       </button>
     )
   }

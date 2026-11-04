@@ -1,27 +1,29 @@
-/* Tokens follow design-system/aurelia-estates/MASTER.md, adapted for glass panels over a 3D scene. */
+/* Tokens do design system Link Corretor (padrão do Bossa, painel/design-system.html): tinta #16302e, papel #f3efe6, latão #c9944a como único acento;
+   Instrument Serif para títulos, Figtree para a interface, IBM Plex Mono para números; raios concêntricos 6 / 9 / 14. */
 :root {
-  --color-bg: #0b1514;
-  --color-surface: rgba(12, 18, 18, 0.72);
-  --color-surface-strong: #0f1d1c;
-  --color-field: rgba(244, 241, 234, 0.06);
-  --color-text: #f4f1ea;
-  --color-text-muted: #b9c4c1;
-  --color-primary: #0f766e;
-  --color-primary-hover: #0d9488;
-  --color-on-primary: #ffffff;
-  --color-accent: #2dd4bf;
-  --color-gold: #d4b67c;
-  --color-border: rgba(244, 241, 234, 0.12);
-  --color-danger: #fca5a5;
+  --color-bg: #0b1412;
+  --color-surface: rgba(11, 20, 18, 0.76);
+  --color-surface-strong: #16302e;
+  --color-field: rgba(243, 239, 230, 0.07);
+  --color-text: #f3efe6;
+  --color-text-muted: #c9cfc8;
+  --color-primary: #c9944a;
+  --color-primary-hover: #d9a65c;
+  --color-on-primary: #16302e;
+  --color-accent: #f0c27f;
+  --color-gold: #f0c27f;
+  --color-border: rgba(243, 239, 230, 0.16);
+  --color-danger: #f0a898;
 
-  --plan-room: rgba(244, 241, 234, 0.06);
+  --plan-room: rgba(243, 239, 230, 0.06);
   --plan-outdoor: rgba(127, 154, 104, 0.18);
-  --plan-visited: rgba(212, 182, 124, 0.16);
-  --plan-active: rgba(45, 212, 191, 0.32);
-  --plan-wall: #f4f1ea;
+  --plan-visited: rgba(240, 194, 127, 0.16);
+  --plan-active: rgba(240, 194, 127, 0.34);
+  --plan-wall: #f3efe6;
 
-  --font-display: 'Instrument Serif', 'Times New Roman', serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-display: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -29,8 +31,9 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --radius: 18px;
-  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-md: 9px;
+  --radius-sm: 6px;
   --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --gutter: 16px;
@@ -110,9 +113,9 @@ textarea {
 
 .eyebrow {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-gold);
 }
@@ -282,6 +285,7 @@ textarea {
 
 .switcher__option[aria-pressed='true'] {
   background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .switcher__type {
@@ -293,7 +297,7 @@ textarea {
 }
 
 .switcher__option[aria-pressed='true'] .switcher__type {
-  color: var(--color-text);
+  color: var(--color-on-primary);
 }
 
 /* ---------- Overlay panels ---------- */
@@ -392,7 +396,7 @@ textarea {
 .chip {
   padding: var(--space-1) var(--space-3);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: rgba(244, 241, 234, 0.04);
   font-size: 0.8rem;
 }
@@ -545,15 +549,36 @@ textarea {
 }
 
 .room-label {
-  flex-direction: column;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
   line-height: 1.25;
 }
 
 .room-label:hover,
 .hotspot:hover {
   background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* rótulo de ambiente no estilo do pin do Bossa: pílula escura com ponto de latão */
+.room-label {
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-strong);
+}
+.room-label::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(201, 148, 74, 0.35);
+  flex: none;
+}
+.room-label:hover::before {
+  background: var(--color-on-primary);
+  box-shadow: none;
 }
 
 .room-label__name {
@@ -989,4 +1014,13 @@ textarea {
   .media {
     aspect-ratio: 21 / 8;
   }
+}
+
+/* números em mono (padrão do Bossa) */
+.facts dd:not(.txt),
+.price,
+.film__counter {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0;
 }

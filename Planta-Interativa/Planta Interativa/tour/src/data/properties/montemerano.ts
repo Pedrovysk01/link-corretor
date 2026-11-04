@@ -8,7 +8,7 @@ import type { Property } from '../types'
  */
 export const montemerano01: Property = {
   id: 'montemerano-01',
-  name: 'Villa Montemerano · Apto 01',
+  name: 'Villa Montemerano · Apto 01',
   shortName: 'Montemerano 01',
   type: 'Apartment',
   tagline: 'Três suítes, living integrado de 50 m² e sacada gourmet de canto com vista para o mar.',

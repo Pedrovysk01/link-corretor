@@ -25,7 +25,7 @@ export function PropertyCard({ property }: { readonly property: Property }) {
         {facts.map((f) => (
           <div key={f.label} className="facts__item">
             <dt>{f.label}</dt>
-            <dd>{f.value}</dd>
+            <dd className={typeof f.value === 'number' || /^\d/.test(String(f.value)) ? undefined : 'txt'}>{f.value}</dd>
           </div>
         ))}
       </dl>
