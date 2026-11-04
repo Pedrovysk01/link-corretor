@@ -510,3 +510,5 @@ table.t .grip:active{cursor:grabbing}
 .chart .pt{stroke:var(--surface);stroke-width:1.5}
 .chart .seg{fill:none!important}
 .bg-in:focus,.bg-in:focus-visible{outline:0!important;box-shadow:none!important}
+
+.cartao-c{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.cartao-c .assin{width:min(260px,100%);height:auto;border-radius:var(--r-md);border:1px dashed var(--line);background:#fffdf9;padding:6px}

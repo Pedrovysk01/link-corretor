@@ -268,15 +268,28 @@ html.lc-casca-on .bar{top:calc(78px + env(safe-area-inset-top))}     /* barra de
 <script src="maps.js?v=6"></script>
 <script src="torre.js"></script>
 <script src="main.js"></script>
-<script>/* casca padrão do painel (painel/casca.js): o que cada botão faz aqui. Sem função = "em breve". */
+<script>/* Materiais padrão do painel (painel/materiais.js): galeria, planta com pontos e antes/depois. */
+window.LC_MATERIAIS = {
+  galeria: GALERIA.map(g => ({ src: "media/" + g[0] + ".jpg", alt: g[1] + " · imagem ilustrativa" })),
+  plantas: [{ id: "tipo", titulo: "Planta do pavimento tipo", src: "media/planta-tipo.jpg", alt: "Planta do pavimento tipo, com quatro apartamentos por andar", pontos: [
+    { id: "living", x: "58%", y: "15%", label: "Living", data: { title: "Living integrado", description: "Estar, jantar e cozinha num ambiente só, aberto para a sacada." } },
+    { id: "cozinha", x: "62%", y: "34%", label: "Cozinha", data: { title: "Cozinha com ilha", description: "Bancada em pedra e ilha para quatro lugares." } },
+    { id: "suite", x: "49%", y: "13%", label: "Suíte", data: { title: "Suíte", description: "Suíte com closet e banho privativo." } },
+    { id: "suite2", x: "75%", y: "13%", label: "Suíte 2", data: { title: "Suíte 02", description: "Segunda suíte, com janela para a frente." } },
+    { id: "elevador", x: "44%", y: "48%", label: "Elevadores", data: { title: "Hall e elevadores", description: "Dois elevadores e escada enclausurada no núcleo da torre." } }] }],
+  antesDepois: [{ titulo: "Dia e noite", antes: "media/hero-dia.jpg", depois: "media/hero-noite.jpg", rotulos: ["Dia", "Noite"] }]
+};
+/* casca padrão do painel (painel/casca.js): o que cada botão faz aqui. Sem função = "em breve". */
 window.LC_CASCA = {
   empresa: EMPRESA.nome, cidade: PROJ.cidade, titulo: "Felicità <i>402</i> Home Club", esconder: ["#brand"],
   visao: () => (/^#(cidade|futuro|vida)$/.test(location.hash) ? "2d" : "3d"),
+  legenda: () => { const u = Object.values(PROJ.units || {}); return { disp: u.filter((x) => x.status === "d").length, vend: u.filter((x) => x.status === "v").length }; },
+  info: ["Arraste para girar a torre e toque num andar para ver as unidades.", "O menu no topo leva à cidade, ao futuro do bairro e ao projeto.", "Toque no ✦ para perguntar à IA ou falar com o corretor."],
   acoes: {
     v3d: () => go("projeto"), vcima: () => go("cidade"), geral: () => go("projeto"),
     unidades: async () => { await go("projeto"); const b = document.querySelector("#floors button:not(.none)"); if (b) b.click(); },
     experiencias: async () => { await go("projeto"); document.getElementById("b-lazer").click(); },
-    materiais: async () => { await go("projeto"); document.getElementById("b-gal").click(); },
+    materiais: () => window.LC_MATERIAIS_API ? window.LC_MATERIAIS_API.abrir("galeria") : (go("projeto"), document.getElementById("b-gal").click()),
     apresentacao: () => go("intro"),
     ajustes: { lista: () => { const c = (sel) => async () => { await go("projeto"); const b = document.querySelector(sel); if (b) b.click(); };
       const on = (sel) => () => !!document.querySelector(sel + ".on");

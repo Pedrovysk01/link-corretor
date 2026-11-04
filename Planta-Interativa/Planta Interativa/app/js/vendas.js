@@ -5,7 +5,9 @@ import {AREAS,BOOK,FLOW,TYPES,UNITS,areaDist,avail,brl,num,reduceM} from "./data
 import {state} from "./state.js";
 import {mediaReply,mediaHTML,choicesHTML,downloadAll,shareText} from "./chatmedia.js";
 
-const BROKER={name:"Corretor(a) Bossa",creci:"CRECI-AL 00000 (exemplo)",initials:"CB"}; // shortcut: corretor fixo de exemplo; vem do login do corretor quando existir
+let BROKER={name:"Corretor(a) Bossa",creci:"CRECI-AL 00000 (exemplo)",initials:"CB"};
+document.addEventListener("lc:corretor",e=>{const c=e.detail||{};BROKER={...BROKER,name:c.nome||BROKER.name,creci:[c.telefone,c.email].filter(Boolean).join(" · ")||BROKER.creci,initials:(c.nome||"CB").split(/\s+/).slice(0,2).map(p=>p[0]).join("").toUpperCase(),sig:c.assinatura}});
+if(window.LC_CORRETOR)document.dispatchEvent(new CustomEvent("lc:corretor",{detail:window.LC_CORRETOR})); // shortcut: corretor fixo de exemplo; vem do login do corretor quando existir
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 

@@ -20,7 +20,7 @@
   "use strict";
   if (window.__lcCasca) return;
   window.__lcCasca = true;
-  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/casca.css?v=3"; document.head.append(css);
+  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/casca.css?v=4"; document.head.append(css);
   // Perfil: Corretor · Cliente · Construtora, logo abaixo de "Visão 3D". Aciona o embed (embed.js, window.LC_EMBED) quando ele existe;
   // na prévia do dono (/pre/) só "Construtora" tem efeito (abre o painel). O ativo acompanha o perfil escolhido.
   const papelSeg = () => {
@@ -89,6 +89,20 @@
   const r = el("div", { class: "lc-r" }); r.append(nav);
   casca.append(l, r);
   document.body.append(casca, painel);
+  // rodapé igual ao do Bossa: legenda de disponibilidade + "i" (como usar) à esquerda e ✦ (assistente de IA) à direita
+  const lg = typeof cfg.legenda === "function" ? cfg.legenda() : cfg.legenda;
+  const foot = el("div", { class: "lc-foot" });
+  const leg = el("div", { class: "lc-legend", "data-recurso": "unidades" });
+  if (lg && lg.texto) leg.append(el("span", { class: "lc-lt" }, esc(lg.texto)));
+  else leg.append(el("span", { class: "lc-dot disp" }), el("span", null, `<b>${lg && lg.disp != null ? lg.disp : "—"}</b> disponíveis`), el("span", { class: "lc-dot vend" }), el("span", null, `<b>${lg && lg.vend != null ? lg.vend : "—"}</b> vendidas`));
+  const info = el("button", { class: "lc-i", type: "button", "aria-label": "Como usar", "aria-expanded": "false" }, "<i>i</i>");
+  const pop = el("div", { class: "lc-pop", role: "dialog", "aria-label": "Como usar", hidden: "" }, "<b>Como usar</b>" + (cfg.info || ["Arraste para girar e explorar.", "Use o menu no topo para ir a cada parte da apresentação.", "Toque no ✦ para perguntar à IA ou falar com o corretor."]).map((s) => `<p>${esc(s)}</p>`).join(""));
+  info.onclick = () => { const a = pop.hidden; pop.hidden = !a; info.setAttribute("aria-expanded", String(a)); };
+  document.addEventListener("click", (e) => { if (!pop.hidden && !pop.contains(e.target) && !info.contains(e.target)) { pop.hidden = true; info.setAttribute("aria-expanded", "false"); } });
+  leg.append(info); foot.append(leg, pop);
+  const ia = el("button", { class: "lc-star", type: "button", "data-recurso": "ia", "aria-label": "Perguntar à IA ou falar com o corretor", title: "Perguntar à IA" }, "✦");
+  ia.onclick = () => { if (window.LC_EMBED && window.LC_EMBED.abrirIA) window.LC_EMBED.abrirIA(); else ia.title = "A IA funciona nos links dos corretores"; };
+  document.body.append(foot, ia);
   document.addEventListener("click", (e) => { if (!painel.hidden && !painel.contains(e.target) && !nav.contains(e.target)) fecharPainel(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharPainel(); });
   // saudação com o nome do cliente, quando o embed souber quem é (embed.js dispara lc:cliente)

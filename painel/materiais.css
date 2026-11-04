@@ -1,0 +1,30 @@
+/* Link Corretor — painel "Materiais" das apresentações (materiais.js): tela cheia sobre a apresentação, papel do Bossa, abas. */
+.lc-mat{position:fixed;inset:0;z-index:2147481900;display:flex;flex-direction:column;background:rgba(243,239,230,.96);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);color:#16302e;font:500 .8125rem/1.4 "Figtree","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.lc-mat[hidden]{display:none}
+html.lc-mat-on .lc-casca,html.lc-mat-on .lc-panel{display:none!important}  /* o cabeçalho padrão some enquanto os materiais estão abertos (o painel tem o seu fechar) */
+.lc-mat *{box-sizing:border-box}
+.lc-mat-topo{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 10px;flex-wrap:wrap}
+.lc-mat-abas{display:flex;gap:2px;padding:3px;border-radius:9px;background:rgba(22,48,46,.07)}
+.lc-mat-aba{font:500 .75rem/1 inherit;font-family:inherit;color:#16302e;background:transparent;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+.lc-mat-aba:hover{background:rgba(255,255,255,.55)}
+.lc-mat-aba[aria-selected="true"]{background:#16302e;color:#f3efe6}
+.lc-mat-aba:focus-visible,.lc-mat-x:focus-visible,.lc-mat-chip:focus-visible{outline:2px solid #a87a3c;outline-offset:2px}
+.lc-mat-sub{display:flex;gap:6px;flex-wrap:wrap}
+.lc-mat-chip{font:500 .75rem/1 inherit;font-family:inherit;color:#16302e;background:#fffdf9;border:1px solid rgba(22,48,46,.14);border-radius:999px;padding:8px 12px;cursor:pointer}
+.lc-mat-chip[aria-pressed="true"]{background:#16302e;color:#f3efe6;border-color:#16302e}
+.lc-mat-x{margin-left:auto;width:40px;height:40px;border-radius:50%;border:1px solid rgba(22,48,46,.14);background:#fffdf9;color:#16302e;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.lc-mat-x:hover{background:#fff}
+.lc-mat-corpo{flex:1;min-height:0;position:relative;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.lc-mat-pane{display:none;height:100%;min-height:0;flex-direction:column;gap:8px}
+.lc-mat-pane.on{display:flex}
+.lc-mat-galeria,.lc-mat-antes{flex:1;min-height:0;border-radius:14px;overflow:hidden;background:#0b1412}
+.lc-mat-planta{flex:1;min-height:0;display:grid;place-items:center;border-radius:14px;overflow:hidden;background:#fffdf9;border:1px solid rgba(22,48,46,.14)}
+.lc-mat-planta-in{max-width:100%}
+.lc-mat-planta-in img{display:block;width:100%;height:auto}
+.lc-mat-nota{margin:0;text-align:center;font-size:.6875rem;color:#4d6460}
+/* balão do ponto: o plugin posiciona mal dentro de uma área rolável/recortada; vira uma ficha centralizada na tela, igual no celular */
+.lc-mat-planta .ci-hotspot-popover{position:fixed!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:min(360px,calc(100vw - 32px))!important;max-height:min(80vh,560px);overflow:auto;z-index:5;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.lc-mat-planta .ci-hotspot-popover [class*="arrow"]{display:none!important}
+/* variáveis dos plugins: marcadores em latão, popover em papel */
+.lc-mat{--ci-hotspot-marker-bg:#c9944a;--ci-hotspot-marker-color:#16302e;--ci-hotspot-popover-bg:#fffdf9;--ci-hotspot-popover-color:#16302e;--ci-hotspot-popover-radius:14px}
+@media (max-width:720px){.lc-mat-topo{padding-left:12px;padding-right:12px;gap:8px}.lc-mat-corpo{padding:0 10px calc(env(safe-area-inset-bottom,0px) + 10px)}.lc-mat-aba{padding:8px 10px}}

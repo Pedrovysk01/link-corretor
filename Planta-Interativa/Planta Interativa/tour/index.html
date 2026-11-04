@@ -20,18 +20,56 @@
     <script>/* casca padrão do painel (painel/casca.js): o que cada botão faz aqui. Sem função = "em breve". window.LC_APP vem de main.tsx. */
     (function () {
       var S = function () { return window.LC_APP && window.LC_APP.store.getState() }
+      var sala = function (id) { return function () { var s = S(); if (s) { if (s.propertyId !== 'montemerano-01') s.selectProperty('montemerano-01'); s.enterRoom(id) } if (window.LC_MATERIAIS_API) window.LC_MATERIAIS_API.fechar() } }
+      var lazer = function (id) { return function () { var s = S(); if (s) { if (s.propertyId !== 'montemerano-lazer') s.selectProperty('montemerano-lazer'); s.enterRoom(id) } if (window.LC_MATERIAIS_API) window.LC_MATERIAIS_API.fechar() } }
+      var N = function (f, t) { return { src: 'img/' + f + '.webp', alt: t + ' · imagem ilustrativa' } }
+      /* Materiais padrão do painel (painel/materiais.js): galeria, plantas com pontos (clicar leva ao ambiente no 3D) e antes/depois */
+      window.LC_MATERIAIS = {
+        galeria: [N('externa-01', 'Fachada'), N('fachada', 'Fachada · detalhe'), N('externa-aerea', 'Vista aérea'), N('externa-noturna', 'Fachada à noite'), N('podio', 'Pódio'), N('living-estar', 'Living · estar'), N('living-jantar', 'Living · jantar'),
+          N('sacada', 'Sacada gourmet'), N('suite', 'Suíte'), N('piscina', 'Piscina'), N('academia', 'Academia'), N('salao-de-festas', 'Salão de festas'), N('sala-de-jogos', 'Sala de jogos'), N('gourmet-externo', 'Área gourmet'),
+          N('fireplace', 'Fire place'), N('playground', 'Playground'), N('brinquedoteca', 'Brinquedoteca'), N('petplace', 'Pet place')],
+        plantas: [
+          { id: 'apto', titulo: 'Apto 01 · 128,60 m²', src: 'img/planta-tipo-a.webp', alt: 'Planta do pavimento tipo: Apto 02 à esquerda e Apto 01 à direita', pontos: [
+            { id: 'master', x: '57%', y: '12%', label: 'Suíte master', data: { title: 'Suíte master · 14,75 m²', description: 'Cabeceira estofada, painel em boiserie e closet em vidro.', image: 'img/suite.webp' }, acao: sala('master') },
+            { id: 'bwc-master', x: '75%', y: '9%', label: 'Banho da master', data: { title: 'Banho da master · 3,73 m²', description: 'Bancada em pedra, box de vidro e ventilação natural.' }, acao: sala('bwc-master') },
+            { id: 'suite-2', x: '79%', y: '25%', label: 'Suíte 02', data: { title: 'Suíte 02 · 13,40 m²', description: 'Janela para o leste, armário embutido e banho privativo.', image: 'img/suite.webp' }, acao: sala('suite-2') },
+            { id: 'suite-1', x: '79%', y: '48%', label: 'Suíte 01', data: { title: 'Suíte 01 · 13,50 m²', description: 'Armário embutido e painel de TV, janela para o leste.', image: 'img/suite.webp' }, acao: sala('suite-1') },
+            { id: 'circ', x: '65%', y: '34%', label: 'Circulação', data: { title: 'Circulação íntima · 8,20 m²', description: 'Corredor que liga as três suítes ao living.' }, acao: sala('circ') },
+            { id: 'hall', x: '63%', y: '58%', label: 'Hall', data: { title: 'Hall de entrada', description: 'Hall privativo na chegada do elevador, aberto para o living.' }, acao: sala('hall') },
+            { id: 'lavabo', x: '61%', y: '67%', label: 'Lavabo', data: { title: 'Lavabo · 2,12 m²', description: 'Lavabo social junto ao hall.' }, acao: sala('lavabo') },
+            { id: 'servico', x: '59%', y: '74%', label: 'Área de serviço', data: { title: 'Área de serviço · 2,86 m²', description: 'Fechada, com tanque e máquina.' }, acao: sala('servico') },
+            { id: 'living', x: '80%', y: '65%', label: 'Living', data: { title: 'Living · 50,20 m²', description: 'Estar e jantar integrados, abertos para a sacada gourmet.', image: 'img/living-estar.webp' }, acao: sala('living') },
+            { id: 'kitchen', x: '64%', y: '84%', label: 'Cozinha', data: { title: 'Cozinha', description: 'Integrada ao living, ilha em mármore para quatro lugares e churrasqueira.', image: 'img/living-jantar.webp' }, acao: sala('kitchen') },
+            { id: 'sacada', x: '52%', y: '92%', label: 'Sacada gourmet', data: { title: 'Sacada gourmet', description: 'Churrasqueira e vista para o mar.', image: 'img/sacada.webp' }, acao: sala('sacada') }] },
+          { id: 'lazer', titulo: 'Área de lazer', src: 'img/planta-lazer.webp', alt: 'Planta da área de lazer', pontos: [
+            { id: 'quadra', x: '23%', y: '17%', label: 'Mini quadra', data: { title: 'Mini quadra poliesportiva' }, acao: lazer('quadra') },
+            { id: 'estar-deck', x: '45%', y: '17%', label: 'Estar do deck', data: { title: 'Estar do deck' }, acao: lazer('estar-deck') },
+            { id: 'piscina-inf', x: '64%', y: '17%', label: 'Piscina infantil', data: { title: 'Piscina infantil', image: 'img/piscina.webp' }, acao: lazer('piscina-inf') },
+            { id: 'piscina', x: '82%', y: '34%', label: 'Piscina adulto', data: { title: 'Piscina adulto', description: 'Aquecimento solar com apoio elétrico.', image: 'img/piscina.webp' }, acao: lazer('piscina') },
+            { id: 'pet', x: '19%', y: '28%', label: 'Pet place', data: { title: 'Pet place', image: 'img/petplace.webp' }, acao: lazer('pet') },
+            { id: 'playground', x: '19%', y: '38%', label: 'Playground', data: { title: 'Playground', image: 'img/playground.webp' }, acao: lazer('playground') },
+            { id: 'estar-2', x: '19%', y: '49%', label: 'Estar com redário', data: { title: 'Estar com redário' }, acao: lazer('estar-2') },
+            { id: 'fireplace', x: '19%', y: '63%', label: 'Fire place', data: { title: 'Fire place', image: 'img/fireplace.webp' }, acao: lazer('fireplace') },
+            { id: 'jogos', x: '38%', y: '32%', label: 'Sala de jogos', data: { title: 'Sala de jogos · 54,10 m²', image: 'img/sala-de-jogos.webp' }, acao: lazer('jogos') },
+            { id: 'academia', x: '62%', y: '34%', label: 'Academia', data: { title: 'Academia · 44,00 m²', image: 'img/academia.webp' } },
+            { id: 'brinquedoteca', x: '66%', y: '45%', label: 'Brinquedoteca', data: { title: 'Brinquedoteca · 13,30 m²', image: 'img/brinquedoteca.webp' } },
+            { id: 'festas', x: '45%', y: '64%', label: 'Salão de festas', data: { title: 'Salão de festas · 82,70 m²', image: 'img/salao-de-festas.webp' } },
+            { id: 'gourmet', x: '80%', y: '63%', label: 'Área gourmet', data: { title: 'Área gourmet', image: 'img/gourmet-externo.webp' } }] }],
+        antesDepois: [
+          { titulo: 'Terreno hoje × pronto', antes: 'img/entorno-satelite.jpg', depois: 'img/externa-aerea.webp', rotulos: ['Hoje', 'Pronto'] },
+          { titulo: 'Dia e noite', antes: 'img/externa-01.webp', depois: 'img/externa-noturna.webp', rotulos: ['Dia', 'Noite'] }]
+      }
       var T = { Villa: 'Casa', Apartment: 'Apartamento', Lazer: 'Lazer' }
       window.LC_CASCA = {
         empresa: 'Villa Montemerano', cidade: 'Meia Praia · Itapema', titulo: 'Villa <i>Montemerano</i>', esconder: ['.topbar'],
-        visao: function () { var s = S(); return s && s.mode === 'room' ? '3d' : '2d' },   // de cima = visão geral do apartamento; 3D = dentro de um ambiente
+        visao: function () { var s = S(); return s && s.mode === 'room' ? '3d' : '2d' },
+        legenda: { texto: '2 apartamentos por andar · 3 suítes' },
+        info: ['Clique num ambiente para entrar e arraste para olhar ao redor.', 'Troque entre Apartamento e Lazer no topo; use Materiais para ver renders e plantas.', 'Toque no ✦ para perguntar à IA ou falar com o corretor.'],   // de cima = visão geral do apartamento; 3D = dentro de um ambiente
         acoes: {
           v3d: function () { var s = S(); if (!s) return; var p = (window.LC_APP.properties || []).filter(function (x) { return x.id === s.propertyId })[0]; var r = p && (p.tour && p.tour[0] || p.rooms && p.rooms[0] && p.rooms[0].id); if (r) s.enterRoom(r) },
-          vcima: function () { var s = S(); if (s) s.showOverview() },
+          vcima: function () { var s = S(); if (s) s.showOverview(); if (window.LC_MATERIAIS_API) window.LC_MATERIAIS_API.abrir('plantas') },
           geral: function () { var s = S(); if (s) s.showOverview() },
-          materiais: { lista: function () { return [
-            { rotulo: 'Planta baixa', sub: 'Apartamento', acao: function () { var s = S(); if (s) s.showOverview(); var b = document.querySelector('.plan-toggle'); if (b) b.click() } },
-            { rotulo: 'Imagens 360°', sub: 'Ambientes', acao: function () { location.href = '360/index.html' } },
-            { rotulo: 'Filme do empreendimento', sub: 'Vídeo', acao: function () { var s = S(); if (s) s.showFilm() } }] } },
+          materiais: function () { if (window.LC_MATERIAIS_API) window.LC_MATERIAIS_API.abrir('galeria') },
           ajustes: { lista: function () { var aberta = !!document.querySelector('[aria-label="Ocultar planta baixa"]'); return [
             { rotulo: aberta ? 'Ocultar planta baixa' : 'Mostrar planta baixa', sub: 'Painel', acao: function () { var b = document.querySelector('[aria-label="Ocultar planta baixa"],.plan-toggle'); if (b) b.click() } },
             { rotulo: 'Visão geral', sub: 'Câmera', acao: function () { var s = S(); if (s) s.showOverview() } },

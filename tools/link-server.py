@@ -98,6 +98,10 @@ CREATE TABLE IF NOT EXISTS opens(
   ts TEXT NOT NULL DEFAULT (datetime('now')), last_seen TEXT NOT NULL DEFAULT (datetime('now')), device TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS opens_visitor ON opens(visitor_id, ts);
 CREATE INDEX IF NOT EXISTS opens_broker ON opens(broker_id, ts);
+CREATE TABLE IF NOT EXISTS broker_cards(
+  id INTEGER PRIMARY KEY, broker_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, link_id INTEGER, name TEXT NOT NULL,
+  phone TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '', signature TEXT NOT NULL DEFAULT '', created TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE INDEX IF NOT EXISTS broker_cards_b ON broker_cards(broker_id, id);
 CREATE TABLE IF NOT EXISTS ai_questions(
   id INTEGER PRIMARY KEY, link_id INTEGER REFERENCES links(id) ON DELETE SET NULL, property_id INTEGER NOT NULL,
   visitor_id INTEGER REFERENCES visitors(id) ON DELETE CASCADE,
@@ -624,6 +628,7 @@ def r_brokers(h, u, q_, b): return q(BROKER_SQL + " ORDER BY u.active DESC, clie
 def r_broker(h, u, q_, b, bid):
     r = q(BROKER_SQL + " AND u.id=?", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404)
     r["clientes_lista"] = lista_clientes(u, broker=r["id"]); r["links"] = [l for l in lista_links(u) if l["broker_id"] == r["id"]]
+    r["cartao"] = q("SELECT name, phone, email, signature, created FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (r["id"],), one=True)  # dados e assinatura para propostas
     return r
 
 
@@ -816,6 +821,20 @@ def r_pub_register(h, u, q_, b, code):
     return {"ok": True, "cliente": {"nome": v["name"], "id": v["id"]}, "corretor": dono_nome["name"], "whatsapp": dono_nome["phone"] or L["whatsapp"], "ja_era_cliente": v["broker_id"] != L["broker_id"]}
 
 
+def r_pub_corretor(h, u, q_, b, code):
+    """Corretor (perfil 'Corretor' da apresentação) deixa nome, telefone, e-mail e assinatura para propostas: ficam no painel da construtora."""
+    L = link_publico(code); need(L, "Link indisponível.", 404)
+    need(rate_ok(f"card:{h.client_address[0]}", 8, 600), "Muitos envios em pouco tempo. Aguarde alguns minutos.", 429)
+    nome = txt(b.get("nome"), 120, "o nome", True); need(len(nome) >= 2, "Informe seu nome.")
+    fone = so_digitos(b.get("telefone")); need(fone, "Informe seu telefone."); fone = fone_br(fone)
+    email = email_ok((b.get("email") or "").strip())
+    sig = str(b.get("assinatura") or "")
+    need(re.match(r"data:image/png;base64,[A-Za-z0-9+/=]+$", sig) is not None and len(sig) <= 300_000, "Faça a assinatura digital no quadro.")
+    need(b.get("consentimento") is True, "Marque a confirmação para continuar.")
+    run("INSERT INTO broker_cards(broker_id,link_id,name,phone,email,signature) VALUES(?,?,?,?,?,?)", (L["broker_id"], L["link_id"], nome, fone, email, sig))
+    return {"ok": True}
+
+
 def r_pub_heartbeat(h, u, q_, b, code):
     simular_se_demo(.25)  # demonstração: enquanto alguém usa a apresentação (batimento a cada 30 s), chegam cadastros simulados
     L = link_publico(code); v = visitante_do_cookie(h)
@@ -856,7 +875,7 @@ ROTAS = [
     ("GET", r"/api/links", r_links, ANY), ("POST", r"/api/links", r_link_new, ANY), ("PATCH", r"/api/links/(\d+)", r_link_edit, ANY),
     ("GET", r"/api/questions", r_questions, ANY),
     ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER), ("POST", r"/api/exemplo", r_exemplo, OWNER),
-    ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB),
+    ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB), ("POST", r"/api/p/([a-z0-9]+)/corretor", r_pub_corretor, PUB),
     ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB),
 ]
 ROTAS = [(m, re.compile("^" + p + "$"), f, r) for m, p, f, r in ROTAS]
@@ -920,9 +939,9 @@ class H(BaseHTTPRequestHandler):
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
-            tag = '<script src="/painel/casca.js?v=3"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
+            tag = '<script src="/painel/materiais.js?v=1"></script><script src="/painel/casca.js?v=4"></script>' + tag  # materiais (galeria, planta, antes/depois) + cabeçalho padrão  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
             if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=10" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=12" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200

@@ -58,3 +58,19 @@ header.bar .lc-papel{--lc-ink:#16302e;--lc-paper:#f3efe6;--lc-material:rgba(246,
   .lc-nav{width:100%}
   .lc-panel{left:12px;right:12px;max-width:none;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
 }
+
+/* rodapé padrão: legenda + "i" (esquerda) e ✦ da IA (direita), como no Bossa */
+.lc-foot{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:41;font:500 .75rem/1 "Figtree","Helvetica Neue",Arial,sans-serif;color:#16302e}
+.lc-legend{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-radius:999px;background:rgba(246,243,236,.74);-webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.lc-legend b{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:500}
+.lc-dot{width:10px;height:10px;border-radius:50%;flex:none}.lc-dot.disp{background:#c9944a;margin-left:2px}.lc-dot.vend{background:#8f8a80;margin-left:8px}
+.lc-lt{padding-right:6px;color:#4d6460}
+.lc-i{all:unset;box-sizing:border-box;width:36px;height:36px;margin-left:6px;border-radius:50%;display:grid;place-items:center;cursor:pointer;border:1px solid rgba(22,48,46,.14);background:rgba(255,255,255,.5);font:italic 1rem "Instrument Serif",Georgia,serif}
+.lc-i:hover{background:#fffdf9}.lc-i:focus-visible,.lc-star:focus-visible{outline:2px solid #a87a3c;outline-offset:2px}
+.lc-pop{position:absolute;left:0;bottom:calc(100% + 10px);width:min(300px,calc(100vw - 32px));padding:14px 16px;border-radius:14px;background:#f3efe6;border:1px solid rgba(22,48,46,.14);box-shadow:0 10px 30px rgba(0,0,0,.22);display:grid;gap:6px}
+.lc-pop[hidden]{display:none}.lc-pop b{font:400 1.25rem/1.1 "Instrument Serif",Georgia,serif}.lc-pop p{margin:0;font-size:.8125rem;line-height:1.4;color:#4d6460}
+.lc-star{all:unset;box-sizing:border-box;position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:41;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:1.4rem;color:#80592a;background:rgba(246,243,236,.86);-webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 10px 30px rgba(0,0,0,.22);transition:scale .2s cubic-bezier(.2,.8,.2,1)}
+.lc-star:hover{scale:1.05}.lc-star:active{scale:.95}
+@media (max-width:900px){.lc-foot,.lc-star{bottom:calc(env(safe-area-inset-bottom,0px) + var(--dockh,76px) + 22px)}}
+@media (max-width:640px){.lc-star{width:48px;height:48px}.lc-legend{padding-left:12px}}
+@media (prefers-reduced-motion:reduce){.lc-star{transition:none}.lc-star:hover,.lc-star:active{scale:1}}
