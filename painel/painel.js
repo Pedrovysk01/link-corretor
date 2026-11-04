@@ -3,6 +3,7 @@
 "use strict";
 
 const ICONES = {
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   dash: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
   building: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.3c2 .8 3.2 2.7 3.2 5.7"/>',
@@ -52,16 +53,35 @@ async function api(metodo, caminho, corpo) {
   return j;
 }
 // Aviso lateral de cliente novo: aparece depois do atraso configurado (padrão 5 min) e fica na tela até ser fechado ou aberto.
+// Avisos de cliente novo: no máximo 9 cartões na tela; todos ficam guardados no sino do topo (contador vermelho, "+9" acima de nove)
+// até a construtora abrir o cliente ou limpar. O sino só aparece quando há aviso pendente.
+const MAX_AVISOS = 9;
+const quandoMin = (m) => m < 1 ? "agora" : m === 1 ? "há 1 min" : `há ${m} min`;
+S.pendentes = [];
 function avisoCliente(l) {
-  const quando = l.minutos < 1 ? "agora" : l.minutos === 1 ? "há 1 min" : `há ${l.minutos} min`;
-  const a = h("div", { class: "aviso aviso-cliente", role: "status" },
+  if (!S.pendentes.some((x) => x.id === l.id)) S.pendentes.unshift(l);
+  pintarSino();
+  if ($("#avisos").querySelectorAll(".aviso-cliente").length >= MAX_AVISOS) return;  // os demais ficam só no sino
+  const a = h("div", { class: "aviso aviso-cliente", role: "status", "data-id": l.id },
     h("button", { class: "aviso-x", type: "button", "aria-label": "Fechar aviso", onclick: () => a.remove() }, "×"),
-    h("p", { class: "aviso-eyebrow" }, `Cliente abriu e se cadastrou · ${quando}`),
+    h("p", { class: "aviso-eyebrow" }, `Cliente abriu e se cadastrou · ${quandoMin(l.minutos)}`),
     h("b", null, l.name),
     h("span", null, l.empreendimento),
     h("small", null, dono() ? `Veio do corretor ${l.corretor}${l.canal ? " · " + l.canal : ""}` : "Veio do seu link"),
-    h("a", { class: "aviso-ver", href: `#/cliente/${l.id}`, onclick: () => a.remove() }, "Ver cliente"));
+    h("a", { class: "aviso-ver", href: `#/cliente/${l.id}`, onclick: () => { a.remove(); visto(l.id); } }, "Ver cliente"));
   $("#avisos").append(a); setTimeout(() => a.remove(), 60000);
+}
+function visto(id) { S.pendentes = S.pendentes.filter((x) => x.id !== id); pintarSino(); }
+function pintarSino() {
+  const b = $("#sino"); if (!b) return;
+  const n = S.pendentes.length; b.hidden = n === 0; b.setAttribute("aria-label", n ? `${n} cliente(s) novo(s) para ver` : "Sem avisos");
+  const bd = b.querySelector(".badge"); bd.textContent = n > MAX_AVISOS ? `+${MAX_AVISOS}` : String(n);
+  const p = $("#sino-painel"); if (p && !p.hidden) pintarSinoPainel();
+}
+function pintarSinoPainel() {
+  const p = $("#sino-painel"); if (!p) return;
+  p.replaceChildren(h("div", { class: "row between", style: "padding:4px 8px 8px" }, h("strong", null, `${S.pendentes.length} cliente(s) novo(s)`), h("button", { class: "btn ghost sm", type: "button", onclick: () => { S.pendentes = []; pintarSino(); p.hidden = true; } }, "Limpar")),
+    ...S.pendentes.map((l) => h("a", { class: "sino-item", href: `#/cliente/${l.id}`, onclick: () => { visto(l.id); p.hidden = true; } }, avatar(l.name, "sm"), h("div", { style: "min-width:0" }, h("b", { class: "wrap" }, l.name), h("span", { class: "muted small" }, `${l.empreendimento}${dono() ? " · " + l.corretor : ""} · ${quandoMin(l.minutos)}`)))));
 }
 function aviso(msg, erro) { const a = h("div", { class: "aviso" + (erro ? " erro" : ""), role: erro ? "alert" : "status" }, msg); $("#avisos").append(a); setTimeout(() => a.remove(), erro ? 6500 : 4500); }
 async function copiar(txt, ok = "Copiado.") {
@@ -199,11 +219,13 @@ function casca() {
       h("button", { class: "icon-btn", "aria-label": "Alternar menu lateral", "aria-controls": "menu-lateral", onclick: () => { if (window.innerWidth <= 1024) document.body.classList.toggle("sb-open"); else document.querySelector(".side .sb-hide")?.click(); } }, ic("menu")),
       h("a", { class: "brandbar", href: "#/" }, logoEmpresa("sm"), h("small", null, S.empresa || "Link Corretor"))),
     h("div", { class: "dir" },
+      h("button", { class: "icon-btn sino", id: "sino", type: "button", hidden: !S.pendentes.length, "aria-haspopup": "true", "aria-expanded": "false", "aria-label": "Avisos", title: "Clientes novos", onclick: (e) => { const p = $("#sino-painel"); p.hidden = !p.hidden; e.currentTarget.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("#avisos").querySelectorAll(".aviso-cliente").forEach((a) => a.remove()); pintarSinoPainel(); } } }, ic("bell"), h("span", { class: "badge", "aria-hidden": "true" }, "0")),  // abrir o sino recolhe os cartões: a lista tem todos
+      h("div", { class: "card sino-painel", id: "sino-painel", hidden: true, role: "dialog", "aria-label": "Clientes novos" }),
       h("a", { class: "user-btn", href: "#/conta", title: "Minha conta" }, avatar(S.me.name, "sm"), h("div", { style: "min-width:0" }, h("b", null, S.me.name), h("small", null, S.me.email))),
       h("button", { class: "icon-btn", "aria-label": "Sair", title: "Sair", onclick: sair }, ic("out"))));
   const scrim = h("div", { class: "scrim", onclick: () => document.body.classList.remove("sb-open") });
   const main = h("div", { class: "main" }, topo, h("main", { id: "conteudo", tabindex: "-1" }));
-  $("#raiz").replaceChildren(scrim, lateral, main);
+  $("#raiz").replaceChildren(scrim, lateral, main); pintarSino();
 }
 async function sair() { try { await api("POST", "/api/logout", {}); } catch { /* já saiu */ } S.me = null; entrada(); }
 
@@ -607,13 +629,13 @@ function blocoVisual() {
   pintar();
   // modo de cor: automático (segue o sistema), claro ou escuro — index.html aplica em data-modo; vale para o visual Novo
   const modos = h("div", { class: "chips", role: "group", "aria-label": "Modo de cor" });
-  const modoAtual = () => { try { return localStorage.getItem("lc.modo") || ""; } catch (e) { return ""; } };
-  const pintarModo = () => { const v = modoAtual(); modos.replaceChildren(...[["", "Automático"], ["light", "Claro"], ["dark", "Escuro"]].map(([k, t]) => h("button", { type: "button", class: "chip", "aria-pressed": String(v === k), onclick: () => {
-    try { if (k) localStorage.setItem("lc.modo", k); else localStorage.removeItem("lc.modo"); } catch (e) {}
+  const modoAtual = () => { try { return localStorage.getItem("lc.modo") || "light"; } catch (e) { return "light"; } };
+  const pintarModo = () => { const v = modoAtual(); modos.replaceChildren(...[["light", "Claro"], ["dark", "Escuro"], ["auto", "Automático"]].map(([k, t]) => h("button", { type: "button", class: "chip", "aria-pressed": String(v === k), onclick: () => {
+    try { localStorage.setItem("lc.modo", k); } catch (e) {}
     if (window.LC_APLICAR_MODO) window.LC_APLICAR_MODO(); pintarModo(); } }, t))); };
   pintarModo();
   return h("div", { class: "card stack" }, h("h2", null, "Visual do painel"), h("p", { class: "muted" }, "Novo: barra ardósia, acento esmeralda e cartões com borda. Clássico: verde-escuro e latão. A escolha vale só neste navegador."), chips,
-    h("div", { class: "lbl", style: "margin-top:4px" }, "Modo de cor"), h("p", { class: "muted small" }, "Automático segue o sistema. Claro e Escuro forçam o modo no visual Novo (o Clássico segue sempre o sistema)."), modos);
+    h("div", { class: "lbl", style: "margin-top:4px" }, "Modo de cor"), h("p", { class: "muted small" }, "Padrão: Claro. Automático segue o sistema. Vale para o visual Novo (o Clássico segue sempre o sistema)."), modos);
 }
 function blocoLogo(c) {
   const formas = [["round", "Redonda"], ["square", "Quadrada 1:1"], ["wide", "Horizontal"], ["tall", "Vertical"]];

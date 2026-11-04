@@ -153,9 +153,14 @@
     let papel = null; try { papel = sessionStorage.getItem(KEY); } catch { /* sem storage */ }
     if (papel !== "cliente" && papel !== "corretor") papel = null;
     if (info.cliente) papel = "cliente"; // ja cadastrado neste aparelho: abre direto
-    const escolher = (p) => { if (p === "construtora") { location.href = "/painel/"; return; } papel = p; try { sessionStorage.setItem(KEY, p); } catch { /* sem storage */ } toques = 0; render(); };
-    const trocar = () => { papel = null; try { sessionStorage.removeItem(KEY); } catch { /* sem storage */ } render(); };
     const rec = info.recursos || {};
+    // Cliente sem cadastro: além da 3ª interação, o popup aparece sozinho 30 s depois de escolher "Cliente" (ou de abrir já como cliente)
+    let relogio = null;
+    const armar = () => { clearTimeout(relogio); relogio = null; if (papel !== "cliente" || rec.cadastro === false || info.cliente) return; relogio = setTimeout(() => { if (papel === "cliente" && !gate && !info.cliente) { gate = true; render(); } }, 30000); };
+    const escolher = (p) => { if (p === "construtora") { location.href = "/painel/"; return; } if (p !== "cliente" && p !== "corretor") return; papel = p; try { sessionStorage.setItem(KEY, p); } catch { /* sem storage */ } toques = 0; render(); armar(); };
+    const trocar = () => { papel = null; try { sessionStorage.removeItem(KEY); } catch { /* sem storage */ } clearTimeout(relogio); render(); };
+    window.LC_EMBED = { escolher, trocar, papel: () => papel };  // usado pelos botões Corretor · Cliente · Construtora da casca (casca.js)
+    armar();
     const fone = rec.whatsapp === false ? "" : String(info.whatsapp || "").replace(/\D/g, "");
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));

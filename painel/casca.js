@@ -18,9 +18,21 @@
    (recursos.js, data-recurso) continuam valendo: os botões levam data-recurso="unidades" etc. */
 (() => {
   "use strict";
-  if (window.__lcCasca || document.querySelector("header.bar .brand")) return;
-  const cfg = window.LC_CASCA; if (!cfg) return;
+  if (window.__lcCasca) return;
   window.__lcCasca = true;
+  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/casca.css?v=3"; document.head.append(css);
+  // Perfil: Corretor · Cliente · Construtora, logo abaixo de "Visão 3D". Aciona o embed (embed.js, window.LC_EMBED) quando ele existe;
+  // na prévia do dono (/pre/) só "Construtora" tem efeito (abre o painel). O ativo acompanha o perfil escolhido.
+  const papelSeg = () => {
+    const seg = document.createElement("div"); seg.className = "lc-seg lc-papel"; seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Quem está vendo");
+    const bs = [["corretor", "Corretor"], ["cliente", "Cliente"], ["construtora", "Construtora"]].map(([k, t]) => { const b = document.createElement("button"); b.type = "button"; b.className = "lc-chip"; b.dataset.papel = k; b.textContent = t; b.setAttribute("aria-pressed", "false");
+      b.onclick = () => { if (window.LC_EMBED) window.LC_EMBED.escolher(k); else if (k === "construtora") location.href = "/painel/"; pintar(); }; seg.append(b); return b; });
+    const pintar = () => { const p = window.LC_EMBED ? window.LC_EMBED.papel() : null; bs.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.papel === p))); };
+    pintar(); setInterval(pintar, 800); return seg;
+  };
+  const nativo = document.querySelector("header.bar .brand");
+  if (nativo) { const vs = document.querySelector("header.bar .view-seg"); (vs ? vs.parentNode : nativo.parentNode).insertBefore(papelSeg(), vs ? vs.nextSibling : null); return; }  // Bossa: cabeçalho próprio, só ganha o seletor de perfil
+  const cfg = window.LC_CASCA; if (!cfg) return;
   const ICON = {
     materiais: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg>',
     apresentacao: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
@@ -30,7 +42,6 @@
   const el = (tag, attrs, html) => { const e = document.createElement(tag); for (const k in attrs || {}) if (attrs[k] != null) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; };
   const run = (a) => { if (typeof a === "function") return a(); if (typeof a === "string") { const b = document.querySelector(a); if (b) b.click(); } };
   const acoes = cfg.acoes || {};
-  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/casca.css?v=1"; document.head.append(css);
   document.documentElement.classList.add("lc-casca-on");
   if (cfg.esconder && cfg.esconder.length) { const st = el("style", null, cfg.esconder.map((s) => `${s}{display:none!important}`).join("")); document.head.append(st); }
 
@@ -74,7 +85,7 @@
   const soon = aj.querySelector(".lc-soon"); if (soon) soon.remove();
 
   const casca = el("header", { class: "lc-casca", "aria-label": "Cabeçalho da apresentação" });
-  const l = el("div", { class: "lc-l" }); l.append(brand, seg);
+  const l = el("div", { class: "lc-l" }); l.append(brand, seg, papelSeg());
   const r = el("div", { class: "lc-r" }); r.append(nav);
   casca.append(l, r);
   document.body.append(casca, painel);

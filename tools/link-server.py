@@ -436,9 +436,10 @@ CONVERSAS_EXEMPLO = [
      ("E o IPTU?", "Não tenho o valor do IPTU desta unidade. Vou deixar essa pergunta com o corretor, que te responde direto.")],
     [("Dá para visitar o decorado?", "Sim, o apartamento decorado recebe visitas de terça a sábado, das 9h às 18h, com agendamento. Quer que eu peça ao corretor para marcar?")],
 ]
-NOMES_SIMULADOS = ["Ana Clara Ribeiro", "Diego Fonseca", "Mariana Castro", "Lucas Andrade", "Isabela Moraes", "Felipe Tavares", "Carolina Pinto", "André Siqueira", "Natália Brito",
-                   "Vinícius Rocha", "Luana Machado", "Henrique Sales", "Camila Vieira", "Otávio Nogueira", "Priscila Amaral", "Rafaela Cunha", "Gabriel Lacerda", "Tatiane Xavier",
-                   "Leonardo Prado", "Bianca Monteiro", "Caio Figueiredo", "Sofia Bastos", "Murilo Campos", "Daniela Queiroz", "Pedro Henrique Lins", "Yasmin Correia"]
+PRENOMES_SIMULADOS = ["Ana Clara", "Diego", "Mariana", "Lucas", "Isabela", "Felipe", "Carolina", "André", "Natália", "Vinícius", "Luana", "Henrique", "Camila", "Otávio", "Priscila",
+                      "Rafaela", "Gabriel", "Tatiane", "Leonardo", "Bianca", "Caio", "Sofia", "Murilo", "Daniela", "Pedro Henrique", "Yasmin", "Rodrigo", "Letícia", "Bruno", "Amanda"]
+SOBRENOMES_SIMULADOS = ["Ribeiro", "Fonseca", "Castro", "Andrade", "Moraes", "Tavares", "Pinto", "Siqueira", "Brito", "Rocha", "Machado", "Sales", "Vieira", "Nogueira", "Amaral",
+                        "Cunha", "Lacerda", "Xavier", "Prado", "Monteiro", "Figueiredo", "Bastos", "Campos", "Queiroz", "Lins", "Correia", "Teixeira", "Barros", "Carvalho", "Schmitt"]
 
 
 def simular_cliente():
@@ -456,8 +457,11 @@ def simular_cliente():
         pid = rnd.choice(props); links = [{"id": run("INSERT INTO links(code,broker_id,property_id,channel) VALUES(?,?,?,?)", (novo_codigo(), b, pid, rnd.choice(CANAIS[:4]))), "property_id": pid}]
     l = rnd.choice(links)
     usados = {r["name"] for r in q("SELECT name FROM visitors")}
-    livres = [n for n in NOMES_SIMULADOS if n not in usados] or [f"{rnd.choice(NOMES_SIMULADOS)} {rnd.randint(2, 99)}"]
-    nome = rnd.choice(livres)
+    nome = None  # 900 combinações prenome + sobrenome; nunca repete enquanto houver nome livre
+    for _ in range(60):
+        cand = f"{rnd.choice(PRENOMES_SIMULADOS)} {rnd.choice(SOBRENOMES_SIMULADOS)}"
+        if cand not in usados: nome = cand; break
+    if not nome: nome = f"{rnd.choice(PRENOMES_SIMULADOS)} {rnd.choice(SOBRENOMES_SIMULADOS)} {rnd.choice(SOBRENOMES_SIMULADOS)}"
     fone = "5547" + str(rnd.randint(900000000, 999999999))
     atraso = max(0, min(120, int(setting("notify_min", 5) or 0))) + 1
     vid = run("INSERT INTO visitors(broker_id,first_link_id,property_id,name,phone,identity,token_hash,status,message,created) VALUES(?,?,?,?,?,?,?,?,?,datetime('now',?))",
@@ -471,6 +475,13 @@ def simular_cliente():
 
 
 def fluxo_simulado_ligado(): return setting("demo_fluxo", "1") != "0"
+
+
+def simular_se_demo(p):
+    """Chama simular_cliente() com probabilidade p quando há corretores de exemplo e o fluxo simulado está ligado (padrão: ligado)."""
+    try:
+        if fluxo_simulado_ligado() and random.random() < p and q("SELECT 1 FROM users WHERE demo=1", one=True): simular_cliente()
+    except Exception as e: print("simulação:", e)
 
 
 def remover_exemplo():
@@ -738,7 +749,7 @@ def r_notify(h, u, q_, b):
     if q_.get("init"): return out
     # Demonstração: enquanto o painel está aberto (este endpoint é consultado a cada 12 s), com corretores de exemplo e o fluxo
     # simulado ligado, cadastra-se um cliente fictício a cada ~1–2 min, para o painel nunca parar de receber gente.
-    if u["role"] == "owner" and fluxo_simulado_ligado() and random.random() < .14 and q("SELECT 1 FROM users WHERE demo=1", one=True): simular_cliente()
+    if u["role"] == "owner": simular_se_demo(.14)
     depois_v, depois_o = int(q_.get("v") or 0), int(q_.get("o") or 0)
     out["novos"] = q(f"SELECT v.id, v.name, v.created, CAST((julianday('now')-julianday(v.created))*1440 AS INTEGER) AS minutos, p.name AS empreendimento, u.name AS corretor, "
                      f"(SELECT l.channel FROM links l WHERE l.id=v.first_link_id) AS canal FROM visitors v JOIN properties p ON p.id=v.property_id JOIN users u ON u.id=v.broker_id "
@@ -806,6 +817,7 @@ def r_pub_register(h, u, q_, b, code):
 
 
 def r_pub_heartbeat(h, u, q_, b, code):
+    simular_se_demo(.25)  # demonstração: enquanto alguém usa a apresentação (batimento a cada 30 s), chegam cadastros simulados
     L = link_publico(code); v = visitante_do_cookie(h)
     if L and v: run("UPDATE opens SET last_seen=datetime('now') WHERE id=(SELECT id FROM opens WHERE visitor_id=? AND link_id=? ORDER BY id DESC LIMIT 1)", (v["id"], L["link_id"]))
     return {"ok": True}
@@ -908,9 +920,9 @@ class H(BaseHTTPRequestHandler):
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
-            tag = '<script src="/painel/casca.js?v=2"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
+            tag = '<script src="/painel/casca.js?v=3"></script>' + tag  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
             if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=9" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=10" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -950,6 +962,7 @@ class H(BaseHTTPRequestHandler):
         if alvo and alvo.is_dir(): alvo = alvo / "index.html"
         if not alvo or not alvo.is_file(): return self.pagina_erro(404, "Não encontrado", "Este arquivo não existe.")
         eh_entrada = alvo == (pasta / entrada).resolve()
+        if eh_entrada and recursos is not None: simular_se_demo(.5)  # demonstração: abrir uma apresentação também gera um cadastro simulado
         self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None)
 
     def apresentacao(self, code, rel):

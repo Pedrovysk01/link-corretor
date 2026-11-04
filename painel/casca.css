@@ -28,6 +28,9 @@
 .lc-chip:hover{background:var(--lc-thumb-hover)}
 .lc-chip[aria-pressed="true"],.lc-chip[aria-expanded="true"]{background:var(--lc-thumb);color:var(--lc-ink);box-shadow:var(--lc-sh-0)}
 .lc-seg .lc-chip{padding:7px 14px}
+/* seletor de perfil (Corretor · Cliente · Construtora) — também dentro do cabeçalho nativo do Bossa (.bar-l é grid: entra abaixo de Visão 3D) */
+header.bar .lc-papel{--lc-ink:#16302e;--lc-paper:#f3efe6;--lc-material:rgba(246,243,236,.74);--lc-edge:rgba(255,255,255,.6);--lc-blur:blur(22px) saturate(1.7);--lc-thumb:#fffdf9;--lc-thumb-hover:rgba(255,255,255,.55);--lc-sh-0:0 1px 2px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06);--lc-sh-1:0 4px 14px rgba(0,0,0,.25);--lc-body:"Figtree","Helvetica Neue",Arial,sans-serif;pointer-events:auto}
+.lc-papel .lc-chip[aria-pressed="true"]{background:var(--lc-ink);color:var(--lc-paper);box-shadow:none}
 .lc-seg .lc-chip[aria-pressed="true"]{background:var(--lc-ink);color:var(--lc-paper);box-shadow:none}
 .lc-chip svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .lc-chip.lc-ic{padding:7px 9px;margin-left:2px;border-left:1px solid var(--lc-line);border-radius:0 6px 6px 0}
