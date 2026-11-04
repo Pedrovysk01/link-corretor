@@ -216,8 +216,8 @@ function casca() {
       h("button", { type: "button", class: "sb-hide", "aria-label": mini ? "Mostrar barra" : "Ocultar barra", title: mini ? "Mostrar barra" : "Ocultar barra", onclick: () => { const on = !document.body.classList.contains("sb-mini"); document.body.classList.toggle("sb-mini", on); try { on ? localStorage.setItem("lc_sbmini", "1") : localStorage.removeItem("lc_sbmini"); } catch { /* sem storage */ } casca(); rotear(); } }, ic(mini ? "panelR" : "panelL"), h("span", null, mini ? "Mostrar barra" : "Ocultar barra"))));
   const topo = h("header", { class: "topo" },
     h("div", { class: "esq" },
-      h("button", { class: "icon-btn", "aria-label": "Alternar menu lateral", "aria-controls": "menu-lateral", onclick: () => { if (window.innerWidth <= 1024) document.body.classList.toggle("sb-open"); else document.querySelector(".side .sb-hide")?.click(); } }, ic("menu")),
-      h("a", { class: "brandbar", href: "#/" }, logoEmpresa("sm"), h("small", null, S.empresa || "Link Corretor"))),
+      h("button", { class: "icon-btn menu-mobile", "aria-label": "Abrir menu", "aria-controls": "menu-lateral", onclick: () => document.body.classList.toggle("sb-open") }, ic("menu")),
+      buscaGlobal()),
     h("div", { class: "dir" },
       h("button", { class: "icon-btn sino", id: "sino", type: "button", hidden: !S.pendentes.length, "aria-haspopup": "true", "aria-expanded": "false", "aria-label": "Avisos", title: "Clientes novos", onclick: (e) => { const p = $("#sino-painel"); p.hidden = !p.hidden; e.currentTarget.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("#avisos").querySelectorAll(".aviso-cliente").forEach((a) => a.remove()); pintarSinoPainel(); } } }, ic("bell"), h("span", { class: "badge", "aria-hidden": "true" }, "0")),  // abrir o sino recolhe os cartões: a lista tem todos
       h("div", { class: "card sino-painel", id: "sino-painel", hidden: true, role: "dialog", "aria-label": "Clientes novos" }),
@@ -228,6 +228,66 @@ function casca() {
   $("#raiz").replaceChildren(scrim, lateral, main); pintarSino();
 }
 async function sair() { try { await api("POST", "/api/logout", {}); } catch { /* já saiu */ } S.me = null; entrada(); }
+
+// ───────── busca global com sugestão e tags ─────────
+const TAGS = { cliente: "Cliente", corretor: "Corretor", empreendimento: "Empreendimento" };
+let _indice = null, _indiceTs = 0;
+async function carregarIndice() {
+  if (_indice && Date.now() - _indiceTs < 60000) return _indice;
+  const [cl, pr, bs] = await Promise.all([api("GET", "/api/clientes"), api("GET", "/api/properties"), dono() ? api("GET", "/api/brokers") : []]);
+  _indice = [
+    ...cl.map((c) => ({ tag: "cliente", id: c.id, t: c.name, s: [c.empreendimento, c.corretor].filter(Boolean).join(" · "), q: [c.name, c.phone, c.email, c.empreendimento, c.corretor].join(" ") })),
+    ...bs.map((b) => ({ tag: "corretor", id: b.id, t: b.name, s: b.email, q: [b.name, b.email, b.phone].join(" ") })),
+    ...pr.map((p) => ({ tag: "empreendimento", id: p.id, t: p.name, s: p.city, q: [p.name, p.city].join(" "), p })),
+  ]; _indiceTs = Date.now(); return _indice;
+}
+const semAcento = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function buscaGlobal() {
+  let tag = null, itens = [], ativo = -1;
+  const input = h("input", { type: "search", class: "bg-in", role: "combobox", "aria-expanded": "false", "aria-controls": "bg-lista", "aria-autocomplete": "list", autocomplete: "off", placeholder: dono() ? "Buscar cliente, corretor ou empreendimento…" : "Buscar cliente ou empreendimento…", "aria-label": "Busca" });
+  const chip = h("button", { type: "button", class: "bg-tag", hidden: true, "aria-label": "Remover filtro", onclick: () => { tag = null; render(); input.focus(); } });
+  const lista = h("div", { class: "bg-lista", id: "bg-lista", role: "listbox", hidden: true });
+  const caixa = h("div", { class: "bg", role: "search" }, ic("search"), chip, input, lista);
+  const abrir = (sim) => { lista.hidden = !sim; input.setAttribute("aria-expanded", String(sim)); };
+  const tagsDisp = () => Object.keys(TAGS).filter((k) => dono() || k !== "corretor");
+  function ir(it) {
+    abrir(false); input.value = ""; tag = null; chip.hidden = true;
+    if (it.tag === "cliente") location.hash = "#/cliente/" + it.id;
+    else if (it.tag === "corretor") location.hash = "#/corretor/" + it.id;
+    else { location.hash = "#/empreendimentos"; if (dono()) setTimeout(() => formProp(it.p), 350); }
+  }
+  async function render() {
+    chip.hidden = !tag; chip.textContent = tag ? TAGS[tag] + " ×" : "";
+    const q = semAcento(input.value.trim()); lista.replaceChildren(); itens = []; ativo = -1;
+    let dados = []; try { dados = await carregarIndice(); } catch { /* sem índice */ }
+    // 1) sugestões de tag: "cli" → [Cliente], "corr" → [Corretor]… (só sem tag escolhida)
+    const sugTags = tag ? [] : tagsDisp().filter((k) => !q || semAcento(TAGS[k]).startsWith(q) || (q.length > 1 && semAcento(TAGS[k]).includes(q)));
+    if (sugTags.length) {
+      lista.append(h("div", { class: "bg-sec" }, q ? "Filtrar por" : "Buscar em"));
+      sugTags.forEach((k) => { const el = h("button", { type: "button", role: "option", class: "bg-it tag", onmousedown: (e) => e.preventDefault(), onclick: () => { tag = k; input.value = ""; render(); input.focus(); } }, h("span", { class: "pill on" }, TAGS[k]), h("span", { class: "muted" }, `${dados.filter((d) => d.tag === k).length} cadastrados`)); lista.append(el); itens.push({ el, tagPick: k }); });
+    }
+    // 2) resultados: começa-com vale mais que contém; limite por tipo
+    if (q || tag) {
+      const casa = (d) => { if (tag && d.tag !== tag) return -1; if (!q) return 2; const t = semAcento(d.t), all = semAcento(d.q); return t.startsWith(q) ? 0 : t.split(/\s+/).some((p) => p.startsWith(q)) ? 1 : all.includes(q) ? 2 : -1; };
+      const res = dados.map((d) => ({ d, k: casa(d) })).filter((x) => x.k >= 0).sort((a, b) => a.k - b.k || a.d.t.localeCompare(b.d.t)).slice(0, 12).map((x) => x.d);
+      if (res.length) lista.append(h("div", { class: "bg-sec" }, "Resultados"));
+      res.forEach((d) => { const el = h("button", { type: "button", role: "option", class: "bg-it", onmousedown: (e) => e.preventDefault(), onclick: () => ir(d) }, h("span", { class: "pill " + (d.tag === "cliente" ? "on" : d.tag === "corretor" ? "warn" : "off") }, TAGS[d.tag]), h("span", { class: "bg-t wrap" }, d.t), d.s && h("span", { class: "muted bg-s wrap" }, d.s)); lista.append(el); itens.push({ el, it: d }); });
+      if (!res.length && !sugTags.length) lista.append(h("p", { class: "muted bg-vazio" }, "Nada encontrado."));
+    }
+    abrir(lista.children.length > 0);
+  }
+  const marcar = (i) => { itens.forEach((x, n) => { x.el.setAttribute("aria-selected", String(n === i)); x.el.classList.toggle("on", n === i); }); ativo = i; if (itens[i]) itens[i].el.scrollIntoView({ block: "nearest" }); };
+  input.addEventListener("input", render); input.addEventListener("focus", render);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) render(); marcar(Math.min(itens.length - 1, ativo + 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); marcar(Math.max(0, ativo - 1)); }
+    else if (e.key === "Enter") { const x = itens[ativo >= 0 ? ativo : (input.value.trim() ? itens.findIndex((y) => y.it) : -1)]; if (x) { e.preventDefault(); x.it ? ir(x.it) : (tag = x.tagPick, input.value = "", render()); } }
+    else if (e.key === "Backspace" && !input.value && tag) { tag = null; render(); }
+    else if (e.key === "Escape") { abrir(false); input.blur(); }
+  });
+  document.addEventListener("click", (e) => { if (!caixa.contains(e.target)) abrir(false); });
+  return caixa;
+}
 
 // ───────── entrada ─────────
 function entrada() {
@@ -343,13 +403,24 @@ function tabelaClientes(cs, { semCorretor } = {}) {
 
 // ───────── resumo ─────────
 function grafico(serie, chave, rotulo) {
-  const W = 600, H = 130, pad = 22, max = Math.max(1, ...serie.map((d) => d[chave])), n = serie.length, bw = (W - 8) / n;
+  // Linha ligando os dias; trecho que CHEGA a um dia baixo (menos da metade da média do período) muda de cor.
+  const W = 600, H = 130, pad = 22, top = 24, n = serie.length, max = Math.max(1, ...serie.map((d) => d[chave]));
+  const total = serie.reduce((a, d) => a + d[chave], 0), media = total / Math.max(1, n), limite = media * 0.5;
+  const baixo = (v) => media > 0 && v < limite;
+  const X = (i) => 8 + (n > 1 ? (i * (W - 16)) / (n - 1) : (W - 16) / 2), Y = (v) => H - (v / max) * (H - top);
+  const dia = (d) => d.dia.split("-").reverse().slice(0, 2).join("/");
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", `0 0 ${W} ${H + pad}`); svg.setAttribute("class", "chart"); svg.setAttribute("role", "img"); svg.setAttribute("aria-label", `${rotulo} por dia: total ${serie.reduce((a, d) => a + d[chave], 0)}`);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H + pad}`); svg.setAttribute("class", "chart"); svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `${rotulo} por dia: total ${total}, média ${media.toFixed(1).replace(".", ",")}; ${serie.filter((d) => baixo(d[chave])).length} dias abaixo da metade da média`);
   let s = `<line class="gl" x1="0" x2="${W}" y1="${H}" y2="${H}"/>`;
-  serie.forEach((d, i) => { const bh = Math.round((d[chave] / max) * (H - 14)), x = 4 + i * bw; s += `<rect class="b" x="${x + bw * .18}" y="${H - bh}" width="${bw * .64}" height="${Math.max(bh, d[chave] ? 2 : 0)}" rx="3"><title>${d.dia.split("-").reverse().slice(0, 2).join("/")}: ${d[chave]}</title></rect>`; });
-  const lab = (i, anc) => `<text class="ax" x="${4 + i * bw + bw / 2}" y="${H + 16}" text-anchor="${anc}">${serie[i].dia.split("-").reverse().slice(0, 2).join("/")}</text>`;
-  svg.innerHTML = s + lab(0, "start") + lab(n - 1, "end") + `<text class="ax" x="${W}" y="10" text-anchor="end">máx. ${max}</text>`; return svg;
+  s += `<polygon class="area" points="${X(0)},${H} ${serie.map((d, i) => `${X(i)},${Y(d[chave])}`).join(" ")} ${X(n - 1)},${H}"/>`;
+  if (media > 0) s += `<line class="avg" x1="0" x2="${W}" y1="${Y(media)}" y2="${Y(media)}"/><text class="ax" x="0" y="${Math.max(10, Y(media) - 4)}">média ${media.toFixed(1).replace(".", ",")}</text>`;
+  for (let i = 1; i < n; i++) s += `<line class="seg ${baixo(serie[i][chave]) ? "lo" : "ok"}" x1="${X(i - 1)}" y1="${Y(serie[i - 1][chave])}" x2="${X(i)}" y2="${Y(serie[i][chave])}"/>`;
+  serie.forEach((d, i) => { if (n <= 45 || baixo(d[chave])) s += `<circle class="pt ${baixo(d[chave]) ? "lo" : "ok"}" cx="${X(i)}" cy="${Y(d[chave])}" r="${n <= 45 ? 3.4 : 2.4}"><title>${dia(d)}: ${d[chave]}${baixo(d[chave]) ? " (baixo)" : ""}</title></circle>`; });
+  const lab = (i, anc) => `<text class="ax" x="${X(i)}" y="${H + 16}" text-anchor="${anc}">${dia(serie[i])}</text>`;
+  s += lab(0, "start") + lab(n - 1, "end");
+  s += `<g class="leg"><circle class="pt ok" cx="${W - 150}" cy="8" r="4"/><text class="ax" x="${W - 142}" y="12">normal</text><circle class="pt lo" cx="${W - 84}" cy="8" r="4"/><text class="ax" x="${W - 76}" y="12">baixo</text></g>`;
+  svg.innerHTML = s; return svg;
 }
 async function telaResumo() {
   const dias = Number(sessionStorage.getItem("lc_dias") || 30);
