@@ -1,0 +1,176 @@
+/* Link Corretor — tema do painel, segunda geração. Carregado DEPOIS de painel.css e vale por cima dele.
+   Inspiração: painel do Sábio Adv (React + Tailwind + shadcn/ui): fundo quase branco, texto ardósia-escuro, barra lateral
+   ardósia (#1e293b) com item ativo marinho, topo escuro em vidro com um fio esmeralda→lima, cartões brancos com borda de 1 px
+   e sombra mínima, raio 8 px, títulos em negrito com tracking fechado, cartões de métrica com fio esmeralda no topo,
+   etiquetas pequenas em mono. Fonte: Figtree (local; faz o papel da Geist do Sábio), IBM Plex Mono nos valores e etiquetas.
+   Modo escuro: neutro (#0e0e10 / #18181b), como manda o CLAUDE.md — nada de verde no fundo.
+   Os papéis (--bar-*, --accent*, --av-*) são os mesmos que painel.js preenche quando a conta tem logo com tema; sem tema, valem estes. */
+:root{
+  /* paleta base (ardósia + esmeralda) */
+  --ink:#0f172a; --ink-soft:#5f6f83; --paper:#f8fafc; --linen-2:#e2e8f0; --night:#0e0e10;
+  --brass:#10b981; --brass-deep:#059669; --brass-ink:#047857; --brass-hi:#6ee7b7;
+  --sold:#64748b; --reserved:#2563eb;
+  /* papéis do painel */
+  --bg:#f8fafc; --surface:#ffffff; --surface2:#f1f5f9; --surface3:#e2e8f0;
+  --text:#0f172a; --muted:#5f6f83; --line:#e2e8f0; --line-strong:#cbd5e1;
+  --accent:#0f172a; --accent-ink:#ffffff; --accent-text:#052e16;
+  --brass-soft:rgba(16,185,129,.12); --brass-line:rgba(16,185,129,.3);
+  --danger:#b91c1c; --danger-soft:rgba(220,38,38,.1); --warn-soft:rgba(245,158,11,.14); --warn-text:#92400e;
+  --ok-soft:rgba(16,185,129,.12); --ok-text:#047857;
+  --sh-0:0 1px 2px rgba(15,23,42,.06); --sh-1:0 4px 12px rgba(15,23,42,.1); --sh-2:0 10px 30px rgba(15,23,42,.14); --sh-3:0 24px 60px rgba(15,23,42,.24);
+  --float:0 1px 2px rgba(15,23,42,.05); --float-hi:0 1px 3px rgba(15,23,42,.08),0 8px 24px -8px rgba(15,23,42,.18);
+  --ring:0 0 0 3px rgba(16,185,129,.3);
+  --s-novo-bg:rgba(37,99,235,.1); --s-novo:#1d4ed8; --s-contatado-bg:#f1f5f9; --s-contatado:#334155;
+  --s-visita-bg:var(--warn-soft); --s-visita:#92400e; --s-proposta-bg:var(--ok-soft); --s-proposta:#047857;
+  --s-fechado-bg:#0f172a; --s-fechado:#ffffff; --s-perdido-bg:#f1f5f9; --s-perdido:#5b6b7f;
+  --r-sm:6px; --r-md:8px; --r-lg:12px;
+  --display:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* barra lateral e topo: ardósia escura também no modo claro, como no Sábio */
+  --bar-bg:#1e293b; --bar-text:#f8fafc; --bar-muted:#94a3b8; --bar-line:rgba(255,255,255,.1); --bar-fill:rgba(255,255,255,.07);
+  --bar-active:#0f172a; --bar-active-text:#ffffff; --bar-icon-active:#34d399;
+  --top-bg:rgba(15,23,42,.93); --top-line:rgba(255,255,255,.08);   /* .93: o texto apagado do topo (#94a3b8) fica ≥ 4,5:1 sobre o vidro */
+  --av-bg:#0f172a; --av-text:#ffffff; --logo-backing:rgba(255,255,255,.92);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0e0e10; --surface:#18181b; --surface2:rgba(255,255,255,.06); --surface3:rgba(255,255,255,.1);
+    --text:#f4f4f5; --muted:#a1a1aa; --line:#2c2c31; --line-strong:#3f3f46;
+    --accent:#f4f4f5; --accent-ink:#0e0e10;
+    --brass-ink:#6ee7b7; --brass-soft:rgba(110,231,183,.14); --brass-line:rgba(110,231,183,.3);
+    --danger:#fca5a5; --danger-soft:rgba(252,165,165,.12); --warn-soft:rgba(251,191,36,.14); --warn-text:#fcd34d;
+    --ok-soft:rgba(110,231,183,.14); --ok-text:#6ee7b7;
+    --sh-0:0 1px 2px rgba(0,0,0,.4); --sh-1:0 4px 12px rgba(0,0,0,.5); --sh-2:0 10px 30px rgba(0,0,0,.55); --sh-3:0 24px 60px rgba(0,0,0,.7);
+    --float:0 1px 2px rgba(0,0,0,.4); --float-hi:0 1px 3px rgba(0,0,0,.5),0 8px 24px -8px rgba(0,0,0,.6);
+    --s-novo-bg:rgba(147,197,253,.14); --s-novo:#bfdbfe; --s-contatado-bg:rgba(255,255,255,.08); --s-contatado:#e4e4e7;
+    --s-visita:#fcd34d; --s-proposta:#6ee7b7; --s-fechado-bg:#f4f4f5; --s-fechado:#0e0e10; --s-perdido-bg:rgba(255,255,255,.08); --s-perdido:#a1a1aa;
+    --bar-bg:#18181b; --bar-text:#f4f4f5; --bar-muted:#a1a1aa; --bar-line:#2c2c31; --bar-fill:rgba(255,255,255,.06);
+    --bar-active:rgba(110,231,183,.14); --bar-active-text:#6ee7b7; --bar-icon-active:#6ee7b7;
+    --top-bg:rgba(14,14,16,.82); --top-line:#2c2c31;
+    --av-bg:#27272a; --av-text:#f4f4f5; --logo-backing:rgba(255,255,255,.92);
+  }
+}
+
+/* ───────── tipografia: títulos em negrito com tracking fechado (text-3xl font-bold tracking-tight) ───────── */
+h1,h2,h3{font-weight:700;letter-spacing:-.025em}
+h1{font-size:1.875rem;line-height:1.2} h2{font-size:1.25rem;letter-spacing:-.02em} h3{font-size:1.0625rem;letter-spacing:-.01em}
+.page-h .sub{font-size:var(--fs-base);margin-top:4px}
+.eyebrow,.side .nav-label,.aviso-cliente .aviso-eyebrow{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.kpi .n,.pessoa-r .big,.prop .stats b,.corretor .stats b{font-family:var(--display);font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+a{color:var(--brass-ink)}
+
+/* ───────── superfícies: borda de 1 px, raio 12, sombra mínima (shadcn Card) ───────── */
+.card,.side .quem,.side .sb-hide,.icon-btn,.kpi,.corretor,.prop,.linkbox,.qr,.senha,.alerta-card,dialog.modal{border:1px solid var(--line)!important;box-shadow:var(--sh-0)}
+.card{border-radius:var(--r-lg);padding:20px 22px}
+a.card:hover,.corretor:hover,a.kpi:hover{transform:translateY(-2px);box-shadow:var(--float-hi);border-color:var(--line-strong)!important}
+.linkbox,.senha{border-color:transparent!important;box-shadow:none}
+dialog.modal{border-radius:var(--r-lg);box-shadow:var(--sh-3)}
+.alerta-card{border-color:rgba(245,158,11,.3)!important}
+.origem{border-left:3px solid var(--brass)!important}
+
+/* cartão de métrica (MetricCard do Sábio): fio esmeralda→verde no topo, valor grande, rótulo discreto */
+.kpi{position:relative;overflow:hidden;gap:6px;padding:18px 20px 20px}
+.kpi::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#059669,#22c55e);pointer-events:none}
+.kpi .n{font-size:1.875rem;line-height:1.1;margin-top:2px}
+.kpi .l{font-size:var(--fs-sm);font-weight:500;color:var(--muted)}
+a.kpi:hover{border-color:rgba(16,185,129,.4)!important}
+@media (prefers-color-scheme:dark){.kpi::before{background:linear-gradient(90deg,#10b981,#84cc16)}}
+
+/* ───────── botões (shadcn Button): primário marinho, secundário branco com borda, raio 8, 40 px ───────── */
+.btn{min-height:40px;padding:0 16px;border-radius:var(--r-md);font-weight:500;font-size:var(--fs-base);border:1px solid var(--line)!important;background:var(--surface);box-shadow:var(--sh-0);transition:background-color var(--t-fast),border-color var(--t-fast),scale var(--t-fast) var(--ease)}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent)!important;color:var(--accent-ink);box-shadow:none}
+.btn.primary:hover{filter:none;background:color-mix(in srgb,var(--accent) 88%,var(--surface))}
+.btn.ghost{border-color:transparent!important;background:transparent;box-shadow:none}
+.btn.ghost:hover{background:var(--surface2)}
+.btn.danger{color:var(--danger)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:var(--fs-sm)}
+.btn.icon{border-radius:50%}
+.icon-btn{border-radius:var(--r-md)}
+
+/* campos (shadcn Input): 40 px, borda clara, foco com anel */
+input[type=text],input[type=email],input[type=tel],input[type=password],input[type=number],select,textarea{min-height:40px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);box-shadow:var(--sh-0)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--brass);box-shadow:var(--ring)}
+.busca{border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-0)}
+.busca:focus-within{border-color:var(--brass);box-shadow:var(--ring)}
+.busca input{min-height:40px}
+.field>label,.lbl{font-size:var(--fs-sm);font-weight:500}
+.check input{accent-color:var(--brass-deep)}
+
+/* etiquetas (shadcn Badge) e filtros em pílula (Tabs) */
+.pill{font-weight:600;letter-spacing:.02em;text-transform:none;font-size:11px;padding:2px 10px;border:1px solid transparent}
+.chip{border:1px solid var(--line);background:var(--surface);box-shadow:none;font-weight:500;color:var(--text)}
+.chip:hover{background:var(--surface2)}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.bar{background:var(--surface3)} .bar>i{background:linear-gradient(90deg,#059669,#22c55e)}
+
+/* tabelas (shadcn Table): cabeçalho discreto, linhas com divisória suave */
+table.t th{font-size:var(--fs-sm);font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);padding:10px 12px}
+table.t td{padding:12px}
+table.t tr.exp:hover td,table.t tr.exp.on td,.pessoa:hover,.pessoa.on{background:var(--surface2)}
+.pessoa{border-radius:var(--r-md)}
+.pessoa-n{font-weight:600}
+.cell-main{font-weight:600}
+
+/* avatares: marinho no claro, grafite no escuro; na barra, esmeralda como no selo do Sábio */
+.av{font-weight:600}
+.side .av,.logo .ic-box{background:var(--brass);color:var(--accent-text)}
+.ic-box{background:var(--brass-soft);color:var(--brass-ink)}
+.passo.ok .n,.tl-dot{background:var(--brass)}
+.passo.ok .n{color:var(--accent-text)}
+.tl-dot.warn{background:var(--reserved)}
+
+/* ───────── barra lateral (sidebar do Sábio): ardósia, item ativo marinho com ícone esmeralda ───────── */
+.side{background:var(--bar-bg);color:var(--bar-text);padding:22px 16px 16px;gap:2px;border-right:1px solid var(--bar-line)}
+.side::after{display:none}
+.side .brand{padding:0 6px 20px}
+.side .brand span{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.side .brand .av{background:var(--brass);color:var(--accent-text)}
+.side .nav-label{color:var(--bar-muted);padding:12px 10px 6px}
+.side .nav{gap:2px}
+.side .nav a{min-height:38px;padding:8px 12px;border-radius:var(--r-md);font-size:13.5px;font-weight:500;color:var(--bar-text);transition:background-color var(--t-fast),color var(--t-fast)}
+.side .nav a .ic{color:var(--bar-muted);width:18px;height:18px}
+.side .nav a:hover{background:var(--bar-fill);color:var(--bar-text)}
+.side .nav a:hover .ic{color:var(--bar-text)}
+.side .nav a[aria-current=page]{background:var(--bar-active);color:var(--bar-active-text);box-shadow:none}
+.side .nav a[aria-current=page] .ic{color:var(--bar-icon-active)}
+.side .foot{border-top:1px solid var(--bar-line);padding-top:12px}
+.side .quem{background:var(--bar-fill);border-color:var(--bar-line)!important;box-shadow:none;border-radius:var(--r-md);color:var(--bar-text)}
+.side .quem strong{color:var(--bar-text)} .side .quem .muted{color:var(--bar-muted)}
+.side .sb-hide{background:transparent;border-color:var(--bar-line)!important;color:var(--bar-text);box-shadow:none;border-radius:var(--r-md);font-weight:500}
+.side .sb-hide:hover{background:var(--bar-fill)}
+@media (min-width:1025px){body.sb-mini .side .nav a{border-radius:var(--r-md);width:44px;height:44px;min-height:44px}body.sb-mini .side .quem{border-radius:var(--r-md)}}
+
+/* ───────── topo (TopBar do Sábio): vidro escuro, fio esmeralda→lima no alto ───────── */
+.topo{background:var(--top-bg);color:var(--bar-text);border-bottom:1px solid var(--top-line);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);box-shadow:none}
+.topo::after{top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(16,185,129,.45),rgba(163,230,53,.6),rgba(16,185,129,.45),transparent)}
+.topo .icon-btn{background:var(--bar-fill);border-color:var(--bar-line)!important;color:var(--bar-text);box-shadow:none}
+.topo .icon-btn:hover{background:rgba(255,255,255,.12)}
+.brandbar,.user-btn,.user-btn b{color:var(--bar-text)}
+.brandbar small{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;color:var(--bar-muted)}
+.user-btn small{color:var(--bar-muted)} .user-btn:hover{background:var(--bar-fill)}
+.user-btn{border-radius:var(--r-md)}
+.topo .av{background:var(--brass);color:var(--accent-text)}
+@media (max-width:1024px){.side{border-right:0}body.sb-open .side{box-shadow:var(--sh-2)}}
+
+/* conteúdo: respiro e largura como o Sábio (max-w-7xl) */
+#conteudo{padding:28px 32px 56px;max-width:1280px}
+@media (max-width:899px){#conteudo{padding:16px 16px 40px}}
+
+/* ───────── entrada (login): marinho com cartão branco ───────── */
+.entrada{background:#0f172a;background-image:radial-gradient(60% 50% at 50% 0%,rgba(16,185,129,.18),transparent 70%)}
+.entrada .card{background:#fff;color:#0f172a;border-radius:var(--r-lg);box-shadow:var(--sh-3);--text:#0f172a;--muted:#5f6f83;--surface:#fff;--line:#e2e8f0;--line-strong:#cbd5e1;--accent:#0f172a;--accent-ink:#fff;--brass-ink:#047857;--danger:#b91c1c}
+.entrada .logo{color:#0f172a}
+.entrada .logo .ic-box{background:var(--brass);color:#052e16}
+
+/* avisos: marinho com fio esmeralda */
+.aviso{background:#0f172a;color:#f8fafc;border-left:3px solid var(--brass);border-radius:var(--r-md);box-shadow:var(--sh-2)}
+.aviso.erro{background:#7f1d1d;border-left-color:#fca5a5}
+.aviso-cliente .aviso-eyebrow,.aviso-cliente small{color:#6ee7b7}
+.aviso-cliente .aviso-ver{background:#fff;color:#0f172a}
+.aviso-cliente span{color:rgba(248,250,252,.85)}
+@media (prefers-color-scheme:dark){.aviso{background:#27272a;border-left-color:#6ee7b7}.aviso.erro{background:#450a0a}}
+
+/* foco e seleção */
+:focus-visible{outline:2px solid var(--brass-deep);outline-offset:2px}
+::selection{background:rgba(16,185,129,.25)}
+.sw-btn:hover .sw{box-shadow:0 0 0 3px var(--brass-soft),inset 0 0 0 1px rgba(0,0,0,.08)}
