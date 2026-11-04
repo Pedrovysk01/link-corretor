@@ -43,6 +43,14 @@ Em `montemerano.ts` (ou `montemerano-lazer.ts`), adicione um item em `rooms`:
 
 Depois acrescente o `id` em `tour: [...]` (ordem do tour guiado) e as paredes/aberturas em `walls`. Peças disponíveis: `sofa, armchair, bed, desk, wardrobe, island, kitchenRun, diningTable, pool, lounger, plant, artwork, pendant, slatPanel, accentWall, glassCloset…` (lista em `src/data/types.ts`).
 
+## 2b. Adicionar uma cena ao 360°
+
+As cenas "giráveis" (`public/360/`) vêm dos takes de vídeo. Para incluir um take novo:
+
+1. Coloque o `.mp4` na pasta dos takes.
+2. Adicione uma linha em `CENAS` no arquivo `scripts/build-360.mjs` (arquivo, id, título, grupo, nº de quadros — 36 para takes de 5 s, 72 para giros longos).
+3. Rode `npm run 360 -- "C:/caminho/dos/takes"`. Os quadros ficam em `public/360/<id>/` e a página `360/index.html` lê `cenas.json`.
+
 ## 3. Trocar texto, preço, entrega
 
 No mesmo arquivo: `tagline`, `location`, `priceFrom` (0 = esconde o preço), `completion`. Textos do filme de abertura: `src/data/film.ts`. Os vídeos ficam em `public/film/` (um por capítulo, sem áudio, 1600 px, ≤ 8 s).
