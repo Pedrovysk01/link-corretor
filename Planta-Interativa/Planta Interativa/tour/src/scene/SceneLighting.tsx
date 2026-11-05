@@ -8,7 +8,7 @@ const SUN_DISTANCE = 40
 const SHADOW_MAP: Record<Quality, number> = { high: 4096, low: 2048, minimal: 1024 }
 const GARDEN_HAZE: [number, number] = [160, 900]
 const SKYLINE_HAZE: [number, number] = [140, 700]
-const CIDADE_HAZE: [number, number] = [1800, 7000]
+const CIDADE_HAZE: [number, number] = [900, 2300] // o chão (±1360 m) some na cor de fundo antes da borda
 
 interface SceneLightingProps {
   readonly bounds: Rect
@@ -26,18 +26,23 @@ const sunDirection = (): [number, number, number] => {
  * A real photographed sky (Poly Haven HDRI) provides the background, reflections and soft fill.
  * A directional light placed exactly where that sky's sun is adds crisp shadows that agree with it.
  */
+const SKY_CIDADE = '#0b1412' // = --night do Bossa
+
 export function SceneLighting({ bounds, surroundings, quality }: SceneLightingProps) {
   const cx = bounds.x + bounds.w / 2
   const cz = bounds.z + bounds.d / 2
   const [dx, dy, dz] = sunDirection()
   const sun: [number, number, number] = [cx + dx * SUN_DISTANCE, dy * SUN_DISTANCE, cz + dz * SUN_DISTANCE]
   const extent = Math.max(bounds.w, bounds.d) * 0.85
+  const CIDADE = surroundings === 'cidade'
   const [near, far] = surroundings === 'cidade' ? CIDADE_HAZE : surroundings === 'skyline' ? SKYLINE_HAZE : GARDEN_HAZE
 
   return (
     <>
-      <Environment files={HDRI_URL} background environmentIntensity={0.9} backgroundIntensity={1} />
-      <fog attach="fog" args={[HDRI_HORIZON, near, far]} />
+      <Environment files={HDRI_URL} environmentIntensity={0.9} />
+      {/* fundo liso, como o Bossa (--night): onde não há cidade, é cor, não imagem; a névoa funde o chão nessa mesma cor */}
+      <color attach="background" args={[CIDADE ? SKY_CIDADE : HDRI_HORIZON]} />
+      <fog attach="fog" args={[CIDADE ? SKY_CIDADE : HDRI_HORIZON, near, far]} />
       <directionalLight
         position={sun}
         color="#fff4e6"

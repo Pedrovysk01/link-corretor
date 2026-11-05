@@ -1,21 +1,18 @@
 import { useTexture } from '@react-three/drei'
 import { useLayoutEffect, useMemo, useRef } from 'react'
-import { BackSide, CanvasTexture, Group, MeshBasicMaterial, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, Vector3, type Texture } from 'three'
+import { CanvasTexture, Group, MeshBasicMaterial, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, Vector3, type Texture } from 'three'
 import type { Rect } from '../data/types'
 import { ENTORNO } from './entorno.generated'
 import { MATERIALS } from './materials'
 
 /** Entorno real do empreendimento: a torre com o render da fachada, o pódio, o chão em imagem de satélite (um mosaico largo
- *  e outro de detalhe ao redor do lote) e um panorama cilíndrico feito dos quadros do drone. Sem prédios genéricos.
+ *  e outro de detalhe ao redor do lote) sobre fundo liso (cor do Bossa). Sem prédios genéricos.
  *  A coordenada do lote vem de scripts/build-satelite.py (entorno.generated.ts): troque por a exata e rode de novo. */
 
 export const STOREY = 3
 /** Pavimentos que a textura da fachada mostra (render "Externa 01"); a repetição vertical mantém 3 m por andar. */
 const FACADE_FLOORS = 22
 const PODIUM_FLOORS = 3
-const PANO_RADIUS = 1150
-/** entorno-pano.jpg tem 4096×345: a altura do cilindro segue a proporção para não esticar. */
-const PANO_HEIGHT = (2 * Math.PI * PANO_RADIUS * 345) / 4096
 
 /** Altura (y) do chão: abaixo do corte, descendo os pavimentos e o pódio. */
 export const cidadeGroundY = (floorsBelow: number) => -Math.max(1, floorsBelow) * STOREY - PODIUM_FLOORS * STOREY
@@ -62,12 +59,11 @@ interface CidadeProps {
 }
 
 export function Cidade({ bounds, floorsBelow }: CidadeProps) {
-  const [facade, podium, sat, satPerto, pano, aereo] = useTexture([
+  const [facade, podium, sat, satPerto, aereo] = useTexture([
     `${BASE}img/fachada.webp`,
     `${BASE}img/podio.webp`,
     `${BASE}img/entorno-satelite.webp`,
     `${BASE}img/entorno-satelite-perto.webp`,
-    `${BASE}img/entorno-pano.webp`,
     `${BASE}img/externa-aerea.webp`,
   ])
   const aereoOn = chaoAereo()
@@ -87,10 +83,9 @@ export function Cidade({ bounds, floorsBelow }: CidadeProps) {
       podium: [p, p, cap, cap, p, p],
       largo: new MeshBasicMaterial({ map: prep(sat) }),
       perto: new MeshBasicMaterial({ map: prep(satPerto), alphaMap: bordaSuave(), transparent: true, depthWrite: false }),
-      pano: new MeshBasicMaterial({ map: prep(pano), side: BackSide, fog: false }),
       aereo: new MeshBasicMaterial({ map: prep(aereo), fog: false }),
     }
-  }, [facade, podium, sat, satPerto, pano, aereo, floorsBelow])
+  }, [facade, podium, sat, satPerto, aereo, floorsBelow])
 
   const aW = AEREO.w / AEREO.pxPorMetro
   const aH = AEREO.h / AEREO.pxPorMetro
@@ -125,10 +120,6 @@ export function Cidade({ bounds, floorsBelow }: CidadeProps) {
           </mesh>
         </group>
       )}
-      {/* horizonte: faixa do drone (morros, cidade, mar) em volta de tudo; o céu acima é o HDRI */}
-      <mesh position={[cx, groundY + PANO_HEIGHT / 2 - 40, cz]} material={mats.pano}>
-        <cylinderGeometry args={[PANO_RADIUS, PANO_RADIUS, PANO_HEIGHT, 96, 1, true]} />
-      </mesh>
     </group>
   )
 }
