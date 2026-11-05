@@ -1,0 +1,815 @@
+[
+ {
+  "id": "bossa",
+  "arquivos": 37,
+  "modulos": 727,
+  "deps": [
+   [
+    "file:",
+    14
+   ],
+   [
+    "three",
+    13
+   ],
+   [
+    "node:fs",
+    9
+   ],
+   [
+    "node:path",
+    8
+   ],
+   [
+    "node:url",
+    8
+   ],
+   [
+    "",
+    5
+   ]
+  ],
+  "nucleo": [
+   [
+    "js/data.js",
+    11
+   ],
+   [
+    "js/state.js",
+    7
+   ],
+   [
+    "js/ficha.js",
+    6
+   ],
+   [
+    "js/icons.js",
+    6
+   ]
+  ],
+  "funcoes": [
+   [
+    "vendor/three/three.module.min.js",
+    2477
+   ],
+   [
+    "js/ficha.js",
+    78
+   ],
+   [
+    "js/vendas.js",
+    71
+   ],
+   [
+    "js/materiais.js",
+    69
+   ]
+  ]
+ },
+ {
+  "id": "felicita",
+  "arquivos": 6,
+  "modulos": 6,
+  "deps": [],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "torre.js",
+    93
+   ],
+   [
+    "core.js",
+    80
+   ],
+   [
+    "maps.js",
+    68
+   ],
+   [
+    "main.js",
+    22
+   ]
+  ]
+ },
+ {
+  "id": "montemerano-tour",
+  "arquivos": 84,
+  "modulos": 780,
+  "deps": [
+   [
+    "react",
+    65
+   ],
+   [
+    "vitest",
+    53
+   ],
+   [
+    "three",
+    52
+   ],
+   [
+    "lucide-react",
+    27
+   ],
+   [
+    "@react-three/drei",
+    19
+   ],
+   [
+    "@react-three/fiber",
+    10
+   ]
+  ],
+  "nucleo": [
+   [
+    "state/store.ts",
+    17
+   ],
+   [
+    "scene/materials.ts",
+    15
+   ],
+   [
+    "lib/geometry.ts",
+    13
+   ],
+   [
+    "data/properties/index.ts",
+    10
+   ]
+  ],
+  "funcoes": [
+   [
+    "lib/geometry.ts",
+    32
+   ],
+   [
+    "data/properties/properties.test.ts",
+    30
+   ],
+   [
+    "ui/FloorPlan.tsx",
+    28
+   ],
+   [
+    "scene/CameraRig.tsx",
+    28
+   ]
+  ]
+ },
+ {
+  "id": "painel",
+  "arquivos": 11,
+  "modulos": 108,
+  "deps": [],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "painel.js",
+    385
+   ],
+   [
+    "vendor/cloudimage/hotspot.min.js",
+    279
+   ],
+   [
+    "vendor/cloudimage/before-after.min.js",
+    222
+   ],
+   [
+    "vendor/cloudimage/carousel.min.js",
+    174
+   ]
+  ]
+ },
+ {
+  "id": "real-estate-virtual-tour",
+  "arquivos": 76,
+  "modulos": 709,
+  "deps": [
+   [
+    "react",
+    58
+   ],
+   [
+    "vitest",
+    53
+   ],
+   [
+    "three",
+    45
+   ],
+   [
+    "lucide-react",
+    22
+   ],
+   [
+    "@react-three/drei",
+    17
+   ],
+   [
+    "@react-three/fiber",
+    10
+   ]
+  ],
+  "nucleo": [
+   [
+    "state/store.ts",
+    17
+   ],
+   [
+    "scene/materials.ts",
+    13
+   ],
+   [
+    "lib/geometry.ts",
+    12
+   ],
+   [
+    "data/properties/index.ts",
+    9
+   ]
+  ],
+  "funcoes": [
+   [
+    "lib/geometry.ts",
+    31
+   ],
+   [
+    "data/properties/properties.test.ts",
+    28
+   ],
+   [
+    "ui/FloorPlan.tsx",
+    28
+   ],
+   [
+    "lib/geometry.test.ts",
+    26
+   ]
+  ]
+ },
+ {
+  "id": "wilsouza",
+  "arquivos": 24,
+  "modulos": 311,
+  "deps": [
+   [
+    "react",
+    33
+   ],
+   [
+    "@/store",
+    32
+   ],
+   [
+    "@/config",
+    23
+   ],
+   [
+    "three",
+    22
+   ],
+   [
+    "@/lib",
+    21
+   ],
+   [
+    "@/ui",
+    16
+   ]
+  ],
+  "nucleo": [
+   [
+    "three/materials.ts",
+    5
+   ],
+   [
+    "ui/bits.tsx",
+    4
+   ],
+   [
+    "three/buildingGeometry.ts",
+    2
+   ],
+   [
+    "three/vegetation.ts",
+    2
+   ]
+  ],
+  "funcoes": [
+   [
+    "three/buildingGeometry.ts",
+    33
+   ],
+   [
+    "three/Building.tsx",
+    30
+   ],
+   [
+    "ui/Overlays.tsx",
+    27
+   ],
+   [
+    "ui/UnitTable.tsx",
+    26
+   ]
+  ]
+ },
+ {
+  "id": "sunlight-simulator",
+  "arquivos": 8,
+  "modulos": 22,
+  "deps": [],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "editor.js",
+    209
+   ],
+   [
+    "viewer.js",
+    200
+   ],
+   [
+    "utils.js",
+    65
+   ],
+   [
+    "sunlight-worker.js",
+    18
+   ]
+  ]
+ },
+ {
+  "id": "easy-house",
+  "arquivos": 20,
+  "modulos": 64,
+  "deps": [
+   [
+    "svg-easy-tree",
+    2
+   ]
+  ],
+  "nucleo": [
+   [
+    "plugins.js",
+    6
+   ],
+   [
+    "utils.js",
+    6
+   ],
+   [
+    "colors.js",
+    4
+   ],
+   [
+    "scene.js",
+    3
+   ]
+  ],
+  "funcoes": [
+   [
+    "resolve.js",
+    66
+   ],
+   [
+    "layout.js",
+    49
+   ],
+   [
+    "plugins/text.js",
+    37
+   ],
+   [
+    "scene.js",
+    37
+   ]
+  ]
+ },
+ {
+  "id": "roam-3d",
+  "arquivos": 7,
+  "modulos": 25,
+  "deps": [
+   [
+    "three",
+    10
+   ]
+  ],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "ui.js",
+    46
+   ],
+   [
+    "buildWorld.js",
+    28
+   ],
+   [
+    "hud.js",
+    15
+   ],
+   [
+    "player.js",
+    12
+   ]
+  ]
+ },
+ {
+  "id": "apartment3d",
+  "arquivos": 1,
+  "modulos": 6,
+  "deps": [
+   [
+    "three",
+    2
+   ]
+  ],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "app.js",
+    271
+   ]
+  ]
+ },
+ {
+  "id": "3d-real-estate-viewer",
+  "arquivos": 41,
+  "modulos": 279,
+  "deps": [
+   [
+    "@mui/material",
+    90
+   ],
+   [
+    "@/shared",
+    28
+   ],
+   [
+    "@/app",
+    24
+   ],
+   [
+    "react",
+    20
+   ],
+   [
+    "react-router-dom",
+    13
+   ],
+   [
+    "@/entities",
+    13
+   ]
+  ],
+  "nucleo": [
+   [
+    "widgets/property-viewer/ui/scene/SceneCanvas.tsx",
+    1
+   ],
+   [
+    "widgets/property-viewer/ui/scene/models/GlbApartmentModel.tsx",
+    1
+   ],
+   [
+    "widgets/property-viewer/ui/scene/models/Wall.tsx",
+    1
+   ],
+   [
+    "widgets/property-viewer/ui/photos/PhotoGallery.tsx",
+    1
+   ]
+  ],
+  "funcoes": [
+   [
+    "pages/property-viewer/ui/PropertyViewerPage.tsx",
+    8
+   ],
+   [
+    "widgets/property-viewer/ui/scene/models/RoomMesh.tsx",
+    7
+   ],
+   [
+    "app/store/viewerStore.ts",
+    6
+   ],
+   [
+    "entities/property/model/useProperty.ts",
+    6
+   ]
+  ]
+ },
+ {
+  "id": "scrollspire",
+  "arquivos": 30,
+  "modulos": 204,
+  "deps": [
+   [
+    "react",
+    106
+   ],
+   [
+    "gsap",
+    34
+   ],
+   [
+    "@react-three/fiber",
+    14
+   ],
+   [
+    "three",
+    12
+   ],
+   [
+    "@react-three/drei",
+    6
+   ],
+   [
+    "@react-three/postprocessing",
+    5
+   ]
+  ],
+  "nucleo": [
+   [
+    "lib/scroll.js",
+    12
+   ],
+   [
+    "data/property.js",
+    11
+   ],
+   [
+    "lib/splitChars.jsx",
+    6
+   ],
+   [
+    "components/MagneticButton.jsx",
+    2
+   ]
+  ],
+  "funcoes": [
+   [
+    "components/BuildingModel.jsx",
+    19
+   ],
+   [
+    "components/HeroCanvas.jsx",
+    16
+   ],
+   [
+    "components/sections/AmenitiesSection.jsx",
+    15
+   ],
+   [
+    "App.jsx",
+    14
+   ]
+  ]
+ },
+ {
+  "id": "arven",
+  "arquivos": 16,
+  "modulos": 56,
+  "deps": [
+   [
+    "gsap",
+    6
+   ],
+   [
+    "lenis",
+    2
+   ],
+   [
+    "three",
+    2
+   ]
+  ],
+  "nucleo": [
+   [
+    "lib/env.js",
+    7
+   ],
+   [
+    "lib/i18n.js",
+    6
+   ],
+   [
+    "lib/text.js",
+    2
+   ],
+   [
+    "config/images.js",
+    2
+   ]
+  ],
+  "funcoes": [
+   [
+    "modules/v3-experience.js",
+    42
+   ],
+   [
+    "modules/scroll.js",
+    22
+   ],
+   [
+    "modules/nav.js",
+    14
+   ],
+   [
+    "modules/gl.js",
+    7
+   ]
+  ]
+ },
+ {
+  "id": "serica",
+  "arquivos": 1,
+  "modulos": 9,
+  "deps": [
+   [
+    "three",
+    6
+   ]
+  ],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "main.js",
+    26
+   ]
+  ]
+ },
+ {
+  "id": "reflexion",
+  "arquivos": 6,
+  "modulos": 69,
+  "deps": [
+   [
+    "react",
+    12
+   ],
+   [
+    "@react-three/drei",
+    8
+   ],
+   [
+    "@react-three/fiber",
+    5
+   ],
+   [
+    "three",
+    4
+   ],
+   [
+    "react-dom",
+    2
+   ],
+   [
+    "@google/genai",
+    2
+   ]
+  ],
+  "nucleo": [
+   [
+    "types.ts",
+    4
+   ],
+   [
+    "constants.ts",
+    2
+   ],
+   [
+    "services/geminiService.ts",
+    1
+   ],
+   [
+    "App.tsx",
+    1
+   ]
+  ],
+  "funcoes": [
+   [
+    "App.tsx",
+    20
+   ],
+   [
+    "components/Unit.tsx",
+    10
+   ],
+   [
+    "services/geminiService.ts",
+    2
+   ]
+  ]
+ },
+ {
+  "id": "3destate",
+  "arquivos": 8,
+  "modulos": 67,
+  "deps": [
+   [
+    "@/components",
+    16
+   ],
+   [
+    "react",
+    6
+   ],
+   [
+    "@/lib",
+    6
+   ],
+   [
+    "lucide-react",
+    3
+   ],
+   [
+    "clsx",
+    2
+   ],
+   [
+    "tailwind-merge",
+    2
+   ]
+  ],
+  "nucleo": [],
+  "funcoes": [
+   [
+    "components/ui/carousel.jsx",
+    13
+   ],
+   [
+    "components/ui/card.jsx",
+    7
+   ],
+   [
+    "app/page.js",
+    3
+   ],
+   [
+    "lib/utils.js",
+    1
+   ]
+  ]
+ },
+ {
+  "id": "cloudimage-360",
+  "arquivos": 70,
+  "modulos": 412,
+  "deps": [
+   [
+    "react",
+    16
+   ],
+   [
+    "@popperjs/core",
+    2
+   ],
+   [
+    "lodash.throttle",
+    2
+   ]
+  ],
+  "nucleo": [
+   [
+    "utils/constants.js",
+    11
+   ],
+   [
+    "utils/index.js",
+    5
+   ],
+   [
+    "utils/image-src/generate-cdn-path.js",
+    3
+   ],
+   [
+    "react/useCI360.ts",
+    2
+   ]
+  ],
+  "funcoes": [
+   [
+    "ci360.service.js",
+    129
+   ],
+   [
+    "hotspots.js",
+    43
+   ],
+   [
+    "utils/zoom/zoom-pan.js",
+    30
+   ],
+   [
+    "ci360.js",
+    22
+   ]
+  ]
+ }
+]
