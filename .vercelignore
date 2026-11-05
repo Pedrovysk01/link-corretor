@@ -1,13 +1,5 @@
-# na Vercel só o necessário para o build (tools/build-site.mjs gera dist/ a partir de site/ e app/)
-.env*
-.cache
-supabase
-tests
-docs
-dist
-*.htm
-favecard-*
-tools/i18n
-tools/__pycache__
-tools/*.py
-_framer_tmp
+# Só a apresentação (apresentacao-montemerano/) vai para a Vercel. O painel e a API (tools/link-server.py) precisam de servidor Python.
+*
+!apresentacao-montemerano/
+!apresentacao-montemerano/**
+!vercel.json
