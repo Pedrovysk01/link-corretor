@@ -1,16 +1,18 @@
-import { ArrowLeft, ArrowRight, LayoutGrid, Mail } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Box, LayoutGrid, Mail, RotateCw } from 'lucide-react'
 import type { Property, Room } from '../data/types'
 import { formatArea } from '../lib/format'
 import { roomArea } from '../lib/geometry'
 import { tourStep } from '../lib/tour'
-import { tourStore } from '../state/store'
+import { tourStore, useTour } from '../state/store'
 import { RoomImage } from './RoomImage'
+import { falarComCorretor } from '../lib/embed'
 
 /** Inside a room: what you are looking at, and the guided-tour controls that end at the inquiry form. */
 export function RoomPanel({ property, room }: { readonly property: Property; readonly room: Room }) {
   const step = tourStep(property.tour, room.id)
   const { enterRoom, showOverview, openInquiry } = tourStore.getState()
   const isLastStop = step.index === step.total - 1
+  const pano360 = useTour((s) => s.pano360)
 
   return (
     <section className="glass panel panel--room" aria-labelledby="room-name">
@@ -24,6 +26,16 @@ export function RoomPanel({ property, room }: { readonly property: Property; rea
       <h1 id="room-name" className="panel__title">
         {room.name}
       </h1>
+      {room.pano && (
+        <div className="seg360" role="group" aria-label="Modo de visualização">
+          <button type="button" className="seg360__opt" aria-pressed={pano360} onClick={() => tourStore.getState().setPano360(true)}>
+            <RotateCw size={14} aria-hidden="true" /> 360°
+          </button>
+          <button type="button" className="seg360__opt" aria-pressed={!pano360} onClick={() => tourStore.getState().setPano360(false)}>
+            <Box size={14} aria-hidden="true" /> 3D
+          </button>
+        </div>
+      )}
       <p className="panel__lead">{room.description}</p>
       <ul className="chips" aria-label="Destaques">
         {room.features.map((f) => (
@@ -45,7 +57,7 @@ export function RoomPanel({ property, room }: { readonly property: Property; rea
           <ArrowLeft size={18} aria-hidden="true" /> Anterior
         </button>
         {isLastStop ? (
-          <button type="button" className="button button--primary" onClick={openInquiry}>
+          <button type="button" className="button button--primary" onClick={() => falarComCorretor(openInquiry)}>
             Pedir informações <Mail size={18} aria-hidden="true" />
           </button>
         ) : (

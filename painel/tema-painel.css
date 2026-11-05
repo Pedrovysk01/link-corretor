@@ -214,3 +214,27 @@ table.t tr.exp:hover td,table.t tr.exp.on td,.pessoa:hover,.pessoa.on{background
 :root[data-modo] .side,:root[data-modo] .topo,:root[data-modo] .main{background:var(--bar-bg)!important;border:0!important;box-shadow:none!important}
 :root .side::after,:root[data-modo] .side::after{display:none!important}
 :root .topo::after,:root[data-modo] .topo::after{display:none!important}
+
+/* caixas saltadas da tela: sombra suave em duas camadas (contato + ambiente) */
+:root{--sh-box:0 1px 2px rgba(15,23,42,.06),0 6px 18px -6px rgba(15,23,42,.16),0 14px 36px -14px rgba(15,23,42,.14)}
+:root[data-theme="dark"],.dark{--sh-box:0 1px 2px rgba(0,0,0,.45),0 8px 22px -6px rgba(0,0,0,.55)}
+.card,.kpi,.corretor,.prop,.qr,.alerta-card,.busca,table.t,.side .quem{box-shadow:var(--sh-box)!important}
+table.t{border-radius:var(--r-lg);overflow:hidden}
+a.card:hover,.corretor:hover,a.kpi:hover,.prop:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(15,23,42,.08),0 16px 40px -10px rgba(15,23,42,.24)!important}
+/* logo da empresa em destaque na barra lateral e no topo */
+.side .brand{display:flex;align-items:center;gap:12px;padding:14px 12px;margin:6px 8px 12px;border-radius:var(--r-lg);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);box-shadow:0 8px 24px -10px rgba(0,0,0,.6)}
+.side .brand .logo-img{background:#fff;padding:5px;border-radius:12px}
+.side .brand span{color:#fff}
+.side .brand .logo-img{width:48px;height:48px;object-fit:contain}
+.side .brand span{font-weight:600;font-size:1.05rem;letter-spacing:.01em}
+.topo .brand-topo{display:inline-flex;align-items:center;gap:10px}
+.topo .brand-topo img{height:32px;width:auto;object-fit:contain}
+
+/* logo horizontal (formato "wide"): sem recorte redondo, ocupa a largura do cartão */
+.side .brand .logo-img.shape-wide{width:100%;height:auto;max-height:64px;border-radius:0;background:transparent;padding:4px 2px;object-fit:contain}
+.side .brand:has(.shape-wide){flex-direction:column;align-items:stretch;gap:6px;padding:14px}
+.side .brand:has(.shape-wide) span{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);text-align:center}
+body.sb-mini .side .brand .logo-img.shape-wide{max-height:44px}
+.brandbar .logo-img.shape-wide{width:auto;height:30px;border-radius:0;object-fit:contain}
+.logo-entrada img{height:56px;width:auto;margin:0 auto 6px;display:block}
+.logo-prev.shape-wide{width:220px;height:auto;border-radius:0;object-fit:contain;background:#fff;padding:10px;border:1px solid var(--line)}

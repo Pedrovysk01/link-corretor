@@ -120,6 +120,12 @@ textarea {
   color: var(--color-gold);
 }
 
+a.button,
+a.button:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
 .button {
   font-size: 0.9rem;
   display: inline-flex;
@@ -1115,3 +1121,16 @@ body.intro-on .hint {
   -webkit-backdrop-filter: blur(22px) saturate(1.7);
 }
 .glass .media figcaption { color: #f3efe6; }
+
+.loader__pct {
+  margin: 14px 0 0;
+  font: 500 1.6rem/1 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* alternância 360° / 3D dentro do ambiente */
+.seg360 { display: inline-flex; gap: 4px; padding: 3px; margin: 2px 0 10px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface-strong); }
+.seg360__opt { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--color-text); font: 600 0.78rem/1 inherit; cursor: pointer; }
+.seg360__opt[aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }

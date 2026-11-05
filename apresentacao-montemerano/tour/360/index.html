@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Villa Montemerano · 360°</title>
+<meta name="description" content="Gire a fachada, o apartamento e cada área de lazer do Villa Montemerano arrastando a imagem.">
+<meta name="theme-color" content="#0b1412">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="360-view.min.js"></script>
+<style>
+  /* Tokens do design system Link Corretor (tinta, papel, latão; raios 6/9/14) */
+  :root{--ink:#16302e;--ink-soft:#4d6460;--paper:#f3efe6;--linen:#e7e1d3;--night:#0b1412;--brass:#c9944a;--brass-ink:#80592a;--brass-hi:#f0c27f;--line:rgba(243,239,230,.16);--glass:rgba(11,20,18,.76);
+    --display:"Instrument Serif",Georgia,serif;--body:"Figtree","Helvetica Neue",Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;--r-sm:6px;--r-md:9px;--r-lg:14px;--ease:cubic-bezier(.2,.8,.2,1);
+    --ci360-button-bg:rgba(22,48,46,.9);--ci360-button-bg-hover:#16302e;--ci360-icon-color:#f0c27f;--ci360-icon-color-hover:#fff;--ci360-initial-icon-bg:rgba(22,48,46,.85);--ci360-initial-icon-color:#f0c27f;
+    --ci360-zoom-controls-bg:rgba(22,48,46,.9);--ci360-zoom-controls-color:#f3efe6;--ci360-hints-bg:rgba(22,48,46,.85);--ci360-hints-color:#f3efe6;--ci360-fullscreen-bg:#0b1412;--ci360-overlay-bg:#0b1412;--ci360-spinner-color:#f0c27f;--ci360-focus-color:#f0c27f;--ci360-button-border-radius:6px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--night);color:var(--paper);font:15px/1.5 var(--body);-webkit-tap-highlight-color:transparent}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
+  header img{height:52px}
+  header nav{display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--paper);text-decoration:none;font-weight:600;font-size:.85rem;transition:background-color .2s var(--ease),scale .2s var(--ease)}
+  .btn:hover{background:#16302e}.btn:active{scale:.96}.btn:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}
+  .btn.primary{background:var(--brass);color:var(--ink);border-color:var(--brass)}
+  main{max-width:1180px;margin:0 auto;padding:8px 16px 48px}
+  .hero{display:grid;gap:4px;margin:8px 0 20px}
+  .eyebrow{margin:0;font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-hi);font-weight:600}
+  h1{margin:0;font:400 clamp(2rem,5vw,3rem)/1.05 var(--display);letter-spacing:-.01em}h1 em{color:var(--brass-hi);font-style:italic}
+  .lead{margin:0;color:#c9cfc8;max-width:60ch}
+  .stage{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#000;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+  .cloudimage-360{width:100%;aspect-ratio:16/9;display:block}
+  .stage .cap{position:absolute;left:14px;bottom:12px;z-index:5;display:flex;gap:8px;align-items:center;padding:6px 12px;border-radius:999px;background:var(--glass);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;pointer-events:none}
+  .stage .cap b{font-family:var(--mono);font-weight:500;color:var(--brass-hi);letter-spacing:0}
+  .grupo{margin:28px 0 10px;display:flex;align-items:baseline;gap:12px}
+  .grupo h2{margin:0;font:400 1.5rem/1.1 var(--display)}
+  .grupo small{color:#c9cfc8;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
+  .cenas{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .cena{position:relative;padding:0;border:2px solid transparent;border-radius:var(--r-md);overflow:hidden;background:#16302e;cursor:pointer;aspect-ratio:4/3;transition:translate .2s var(--ease),border-color .2s}
+  .cena img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+  .cena span{position:absolute;left:0;right:0;bottom:0;padding:18px 10px 8px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.75));color:var(--paper);font-size:.8rem;font-weight:600;text-align:left}
+  .cena:hover{translate:0 -2px}.cena[aria-pressed="true"]{border-color:var(--brass)}.cena:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}
+  footer{margin-top:28px;font-size:.75rem;color:#c9cfc8}
+  @media (max-width:640px){header img{height:40px}.btn span{display:none}.btn{padding:0 12px}.cenas{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+  @media (prefers-reduced-motion:reduce){.btn,.cena{transition:none}.btn:active{scale:1}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../?view=tour&property=montemerano-01&embed=1&intro=0"><img src="../logo-branca.svg" alt="Villa Montemerano"></a>
+  <nav>
+    <a class="btn" href="../?view=tour&property=montemerano-01&embed=1&intro=0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Tour 3D</span></a>
+    <a class="btn primary" href="../?view=tour&property=montemerano-01&embed=1&intro=0" id="cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg><span>Fale conosco</span></a>
+  </nav>
+</header>
+<main>
+  <div class="hero">
+    <p class="eyebrow">Villa Montemerano · Perequê, Porto Belo</p>
+    <h1>Gire o <em>empreendimento</em></h1>
+    <p class="lead">Arraste a imagem para girar. Cada cena vem das filmagens reais do projeto; use os miniaturas para trocar de ambiente.</p>
+  </div>
+  <div class="stage">
+    <div id="viewer" class="cloudimage-360 ci360-theme-dark"></div>
+    <div class="cap" aria-live="polite"><span id="cap-t">Carregando…</span><b id="cap-n"></b></div>
+  </div>
+  <div id="lista"></div>
+  <footer>Imagens ilustrativas do empreendimento. 360° por <a href="https://github.com/scaleflex/cloudimage-360-view" style="color:var(--brass-hi)">Cloudimage 360 View</a> (MIT).</footer>
+</main>
+<script>
+(async () => {
+  const cenas = await fetch('cenas.json').then((r) => r.json());
+  const lista = document.getElementById('lista'), capT = document.getElementById('cap-t'), capN = document.getElementById('cap-n');
+  const ci = typeof window.CI360 === 'function' ? new window.CI360() : window.CI360; let atual = null, view = null;
+  const mobile = matchMedia('(max-width: 640px)').matches;
+  const grupos = [...new Set(cenas.map((c) => c.grupo))];
+  for (const g of grupos) {
+    const h = document.createElement('div'); h.className = 'grupo'; h.innerHTML = `<h2>${g}</h2><small>${cenas.filter((c) => c.grupo === g).length} cenas</small>`; lista.append(h);
+    const grid = document.createElement('div'); grid.className = 'cenas'; lista.append(grid);
+    for (const c of cenas.filter((c) => c.grupo === g)) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'cena'; b.dataset.id = c.id; b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = `<img src="../${c.capa}" alt="" loading="lazy"><span>${c.titulo}</span>`; b.onclick = () => abrir(c, true); grid.append(b);
+    }
+  }
+  function abrir(c, rolar) {
+    if (atual === c.id) return; atual = c.id;
+    document.querySelectorAll('.cena').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === c.id)));
+    if (view) { try { view.destroy(); } catch (e) {} }
+    const el = document.getElementById('viewer'); el.innerHTML = '';
+    capT.textContent = c.titulo; capN.textContent = '';
+    ci.init(el, { folder: `${c.id}/`, filenameX: `${c.id}-{index}.webp`, amountX: c.frames, aspectRatio: '16/9', autoplay: !matchMedia('(prefers-reduced-motion: reduce)').matches, playOnce: true, speed: 90,
+      inertia: true, dragSpeed: mobile ? 120 : 160, stopAtEdges: true, keys: true, fullscreen: true, zoomMax: mobile ? 2 : 3, zoomControlsPosition: 'top-right', theme: 'dark', hints: false,
+      onSpin: (e) => { capN.textContent = `${String(e.activeImageX + 1).padStart(2, '0')} / ${e.amountX}`; } });
+    view = ci.getViewById(el.id) || ci.getViews()[0];
+    history.replaceState(null, '', `#${c.id}`);
+    if (rolar) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  abrir(cenas.find((c) => c.id === location.hash.slice(1)) || cenas[0], false);
+})();
+</script>
+</body>
+</html>

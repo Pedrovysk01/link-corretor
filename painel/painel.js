@@ -151,7 +151,7 @@ function menu() {
 }
 const partes = () => location.hash.replace(/^#\/?/, "").split("?")[0].split("/");
 const rotaAtual = () => partes()[0] || "";
-const logoEmpresa = (cls) => S.logo ? h("img", { class: "logo-img shape-" + (S.logoShape || "round"), src: S.logo, alt: "" }) : h("span", { class: "av " + (cls || ""), "aria-hidden": "true" }, ini(S.empresa || "LC"));
+const logoEmpresa = (cls) => S.logo ? h("img", { class: "logo-img shape-" + (S.logoShape || "round"), src: S.logoShape === "wide" && S.logo.endsWith("logo-justus.png") && cls !== "claro" ? S.logo.replace("logo-justus.png", "logo-justus-branca.png") : S.logo, alt: S.empresa || "" }) : h("span", { class: "av " + (cls || ""), "aria-hidden": "true" }, ini(S.empresa || "LC"));
 
 // ───────── tema a partir da logo ─────────
 const hex2rgb = (x) => [1, 3, 5].map((i) => parseInt(x.slice(i, i + 2), 16));
@@ -311,19 +311,18 @@ function telaLogin() {
   const erro = h("p", { class: "err", role: "alert" });
   return h("div", { class: "entrada" }, h("form", { class: "card", novalidate: true, onsubmit: async (e) => { e.preventDefault(); erro.textContent = ""; const f = new FormData(e.target);
     try { const r = await api("POST", "/api/login", { email: f.get("email"), senha: f.get("senha") }); S.me = r.user; iniciar(); } catch (x) { erro.textContent = x.message; } } },
-    h("div", { class: "logo" }, LOGO(), "Link Corretor"), h("div", null, h("h1", null, "Entrar"), h("p", { class: "muted" }, S.empresa || "Clientes por corretor")),
+    h("div", { class: "logo logo-entrada" }, h("img", { src: "/painel/logo-justus.png", alt: "Justus Incorporadora", class: "logo-img shape-wide" })), h("div", null, h("h1", null, "Entrar"), h("p", { class: "muted" }, S.empresa || "Clientes por corretor")),
     campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campo("Senha", h("input", { type: "password", name: "senha", autocomplete: "current-password", required: true })),
     erro, h("button", { class: "btn primary", type: "submit" }, "Entrar")));
 }
 function telaSetup() {
   const erro = h("p", { class: "err", role: "alert" });
   return h("div", { class: "entrada" }, h("form", { class: "card", novalidate: true, onsubmit: async (e) => { e.preventDefault(); erro.textContent = ""; const f = new FormData(e.target);
-    try { const r = await api("POST", "/api/setup", { empresa: f.get("empresa"), nome: f.get("nome"), email: f.get("email"), senha: f.get("senha"), exemplo: f.get("exemplo") === "on" });
-      const m = await api("GET", "/api/me"); S.me = m.user; S.empresa = m.empresa; S.logo = m.logo || ""; S.logoShape = m.logo_shape || "round"; S.theme = temaValido(m.theme) ? m.theme : null; aplicarTema(S.theme); iniciar(); if (r.exemplo) aviso("Dados de exemplo carregados. Os corretores fictícios entram com a senha corretor123."); } catch (x) { erro.textContent = x.message; } } },
+    try { const r = await api("POST", "/api/setup", { empresa: f.get("empresa"), nome: f.get("nome"), email: f.get("email"), senha: f.get("senha") });
+      const m = await api("GET", "/api/me"); S.me = m.user; S.empresa = m.empresa; S.logo = m.logo || ""; S.logoShape = m.logo_shape || "round"; S.theme = temaValido(m.theme) ? m.theme : null; aplicarTema(S.theme); iniciar(); } catch (x) { erro.textContent = x.message; } } },
     h("div", { class: "logo" }, LOGO(), "Link Corretor"), h("div", null, h("h1", null, "Vamos começar"), h("p", { class: "muted" }, "Crie a conta do dono da construtora ou imobiliária. Leva um minuto.")),
     campo("Nome da empresa", h("input", { type: "text", name: "empresa", autocomplete: "organization", required: true })), campo("Seu nome", h("input", { type: "text", name: "nome", autocomplete: "name", required: true })),
     campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campo("Senha", h("input", { type: "password", name: "senha", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
-    caixa("Preencher com dados de exemplo (corretores, clientes e aberturas fictícios). Dá para apagar depois em Configurações.", true, "exemplo"),
     erro, h("button", { class: "btn primary", type: "submit" }, "Criar conta e entrar")));
 }
 
@@ -559,7 +558,7 @@ async function telaCorretores() {
   }
   const abrirCorretor = (b) => (e) => { if (e.target.closest("a,button")) return; if (e.type === "keydown" && e.key !== "Enter") return; location.hash = "#/corretor/" + b.id; };
   el.append(h("div", { class: "props" }, bs.map((b) => h("div", { class: "card corretor" + (b.active ? "" : " off"), role: "link", tabindex: "0", "aria-label": "Abrir " + b.name, onclick: abrirCorretor(b), onkeydown: abrirCorretor(b) },
-    h("div", { class: "row", style: "gap:12px;flex-wrap:nowrap" }, avatar(b.name, "foto-c", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0;flex:1" }, h("h2", { class: "wrap", style: "margin:0" }, b.name, b.demo ? [" ", pill("exemplo")] : null), h("div", { class: "contato-c muted small", title: b.email }, b.email), b.phone && h("div", { class: "contato-c muted small" }, fone(b.phone))), !b.active && pill("Desativado", "off"),
+    h("div", { class: "row", style: "gap:12px;flex-wrap:nowrap" }, avatar(b.name, "foto-c", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0;flex:1" }, h("h2", { class: "wrap", style: "margin:0" }, b.name), h("div", { class: "contato-c muted small", title: b.email }, b.email), b.phone && h("div", { class: "contato-c muted small" }, fone(b.phone))), !b.active && pill("Desativado", "off"),
       (b.whatsapp || b.phone) && h("a", { class: "btn-wa", href: wa(b.whatsapp || b.phone, `Olá ${b.name.split(" ")[0]}, tudo bem?`), target: "_blank", rel: "noopener", title: "Chamar " + b.name + " no WhatsApp", "aria-label": "Chamar " + b.name + " no WhatsApp" }, icWa())),
     h("div", { class: "stats" }, h("div", null, h("b", null, fmtN(b.clientes)), h("span", null, "clientes")), h("div", null, h("b", null, fmtN(b.novos)), h("span", null, "novos")), h("div", null, h("b", null, fmtN(b.aberturas)), h("span", null, "aberturas")), h("div", null, h("b", null, fmtN(b.fechados)), h("span", null, "fechados"))),
     h("div", { class: "muted small" }, "Última abertura " + quando(b.ultima))))));
@@ -645,7 +644,7 @@ async function telaProps() {
 }
 async function formProp(p) {
   const novo = !p; p = p || { name: "", city: "", facts: "", whatsapp: "", ai_on: 1, form_on: 1, active: 1, languages: ["pt-BR"], source_dir: "", external_url: "", recursos: {} };
-  const REC = [["sol", "Posição solar"], ["mapa", "Mapa com distâncias"], ["selo", "Selo do corretor que atende"], ["proposta", "Simulador de proposta"], ["unidades", "Tabela de unidades"], ["whatsapp", "WhatsApp do corretor"], ["ia", "Perguntas à IA"], ["cadastro", "Cadastro do cliente (3ª interação)"]];
+  const REC = [["selo", "Selo do corretor que atende"], ["whatsapp", "WhatsApp do corretor"], ["ia", "Perguntas à IA"], ["cadastro", "Cadastro do cliente (popup após 30 s)"]];
   const rec = p.recursos || {};
   let fontes = []; try { fontes = await api("GET", "/api/sources"); } catch { /* segue */ }
   if (p.source_dir && !fontes.includes(p.source_dir)) fontes.unshift(p.source_dir);
@@ -655,11 +654,10 @@ async function formProp(p) {
     campo("WhatsApp do empreendimento", h("input", { type: "tel", name: "whatsapp", value: p.whatsapp ? fone(p.whatsapp) : "", placeholder: "(47) 99999-9999" }), "Usado quando o corretor não tem WhatsApp cadastrado."),
     h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "caixas cols3" }, IDIOMAS_IA.map(([c, pais, t]) => caixa(h("span", { class: "idioma" }, bandeira(pais), t), p.languages.includes(c), "lang-" + c))), h("small", { class: "help" }, "Os 9 idiomas mais falados. A IA responde no idioma do navegador do cliente, se estiver ligado aqui.")),
     h("div", { class: "field" }, h("span", { class: "lbl" }, "Recursos na apresentação"), h("div", { class: "caixas" }, REC.map(([k, t]) => caixa(t, rec[k] !== false, "rec-" + k))), h("small", { class: "help" }, "Tudo ligado por padrão. Desligue o que não quiser mostrar neste empreendimento; vale para todos os links dele.")),
-    blocoCidade((p.recursos && p.recursos.cidade) || []),
     h("div", { class: "field" }, caixa("Empreendimento ativo (links funcionam)", p.active, "active")),
     campo("O que a IA sabe", h("textarea", { name: "facts", rows: 10, placeholder: "Tipologias, metragens, preços, condições de pagamento, áreas comuns, localização…" }, p.facts || ""), "Única fonte da IA: responde só com isso e manda falar com o corretor quando não souber. Mantenha preços e disponibilidade em dia.")];
   dialogo(novo ? "Novo empreendimento" : "Editar empreendimento", corpo, [btnFechar(), btnOk("Salvar")], { onSubmit: async (f, fechar) => {
-    const corpoApi = { cidade_cards: lerCidade(f), name: f.get("name"), city: f.get("city"), whatsapp: f.get("whatsapp"), languages: IDIOMAS_IA.map(([c]) => c).filter((c) => f.get("lang-" + c)), recursos: Object.fromEntries(REC.map(([k]) => [k, f.get("rec-" + k) === "on"])), ai_on: f.get("rec-ia") === "on", form_on: f.get("rec-cadastro") === "on", active: f.get("active") === "on", facts: f.get("facts"), source_dir: f.get("source_dir"), external_url: f.get("external_url") };
+    const corpoApi = { name: f.get("name"), city: f.get("city"), whatsapp: f.get("whatsapp"), languages: IDIOMAS_IA.map(([c]) => c).filter((c) => f.get("lang-" + c)), recursos: Object.fromEntries(REC.map(([k]) => [k, f.get("rec-" + k) === "on"])), ai_on: f.get("rec-ia") === "on", form_on: f.get("rec-cadastro") === "on", active: f.get("active") === "on", facts: f.get("facts"), source_dir: f.get("source_dir"), external_url: f.get("external_url") };
     await (novo ? api("POST", "/api/properties", corpoApi) : api("PATCH", `/api/properties/${p.id}`, corpoApi)); fechar(); aviso("Empreendimento salvo."); rotear(); } });
 }
 
@@ -733,12 +731,7 @@ async function telaConfig() {
       !c.claude_cli && h("p", { class: "err", style: "display:block" }, "O Claude Code não foi encontrado neste computador: as perguntas à IA ficam sem resposta."), h("div", null, h("button", { class: "btn primary", type: "submit" }, "Salvar"))),
     blocoVisual(),
     h("div", { class: "card stack" }, h("h2", null, "Regra da comissão"), h("p", { class: "muted" }, "O cliente pertence ao primeiro corretor por quem se identificou. Se abrir o link de outro corretor, a abertura é registrada no nome dele, mas a origem não muda. Só o dono transfere um cliente, na página do cliente.")),
-    h("div", { class: "card stack" }, h("h2", null, "Dados de exemplo"), h("p", { class: "muted" }, c.exemplo ? "Há corretores, clientes e aberturas fictícios no painel (marcados como “exemplo”)." : "Carregue corretores, clientes e aberturas fictícios para ver o painel cheio."),
-      c.exemplo && h("label", { class: "check" }, h("input", { type: "checkbox", checked: c.fluxo, onchange: async (e) => { const r = await api("POST", "/api/exemplo", { fluxo: e.target.checked }); aviso(r.fluxo ? "Cadastros simulados ligados: enquanto o painel estiver aberto, chega um cliente novo a cada 1–2 minutos." : "Cadastros simulados desligados."); } }),
-        h("span", null, "Simular cadastros enquanto o painel está aberto", h("span", { class: "hint", style: "display:block" }, "Só demonstração: a cada 1–2 minutos um cliente fictício abre, se cadastra por um corretor de exemplo e, às vezes, conversa com a IA. O aviso aparece aqui no painel."))),
-      c.exemplo && h("div", null, h("button", { class: "btn sm", onclick: async () => { const r = await api("POST", "/api/exemplo", { cliente: true }); aviso(r.cliente ? `${r.cliente.nome} acabou de se cadastrar (simulação).` : "Nenhum corretor de exemplo disponível."); } }, "Simular um cadastro agora")),
-      h("div", null, c.exemplo ? h("button", { class: "btn danger", onclick: async () => { if (!confirm("Apagar os corretores de exemplo e tudo que veio com eles?")) return; const r = await api("POST", "/api/exemplo", { remover: true }); aviso(`${r.removidos} corretor(es) de exemplo removido(s).`); rotear(); } }, "Apagar dados de exemplo")
-        : h("button", { class: "btn", onclick: async () => { const r = await api("POST", "/api/exemplo", {}); aviso(`${r.criados} corretores de exemplo criados. Senha: corretor123.`); rotear(); } }, "Carregar dados de exemplo"))));
+)
 }
 // Visual do painel: "novo" (tema-painel.css, inspirado no Sábio) ou "classico" (só painel.css). Fica no navegador (localStorage lc.visual); index.html lê antes de pintar.
 function visualAtual() { try { return localStorage.getItem("lc.visual") === "classico" ? "classico" : "novo"; } catch (e) { return "novo"; } }

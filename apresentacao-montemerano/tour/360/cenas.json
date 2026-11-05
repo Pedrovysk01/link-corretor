@@ -1,0 +1,114 @@
+[
+ {
+  "id": "externa",
+  "titulo": "Fachada · giro aéreo",
+  "grupo": "Empreendimento",
+  "frames": 72,
+  "capa": "img/externa-01.webp"
+ },
+ {
+  "id": "noturna",
+  "titulo": "Fachada · noturna",
+  "grupo": "Empreendimento",
+  "frames": 40,
+  "capa": "img/externa-noturna.webp"
+ },
+ {
+  "id": "subida",
+  "titulo": "Subida pela torre",
+  "grupo": "Empreendimento",
+  "frames": 48,
+  "capa": "img/externa-aerea.webp"
+ },
+ {
+  "id": "living",
+  "titulo": "Living · estar",
+  "grupo": "Apartamento",
+  "frames": 36,
+  "capa": "img/living-estar.webp"
+ },
+ {
+  "id": "jantar",
+  "titulo": "Living · jantar",
+  "grupo": "Apartamento",
+  "frames": 36,
+  "capa": "img/living-jantar.webp"
+ },
+ {
+  "id": "sacada",
+  "titulo": "Sacada gourmet",
+  "grupo": "Apartamento",
+  "frames": 36,
+  "capa": "img/sacada.webp"
+ },
+ {
+  "id": "suite",
+  "titulo": "Suíte master",
+  "grupo": "Apartamento",
+  "frames": 36,
+  "capa": "img/suite.webp"
+ },
+ {
+  "id": "piscina",
+  "titulo": "Piscinas",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/piscina.webp"
+ },
+ {
+  "id": "gourmet",
+  "titulo": "Área gourmet",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/gourmet-externo.webp"
+ },
+ {
+  "id": "fireplace",
+  "titulo": "Fire place",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/fireplace.webp"
+ },
+ {
+  "id": "salao",
+  "titulo": "Salão de festas",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/salao-de-festas.webp"
+ },
+ {
+  "id": "jogos",
+  "titulo": "Sala de jogos & pub",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/sala-de-jogos.webp"
+ },
+ {
+  "id": "academia",
+  "titulo": "Academia",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/academia.webp"
+ },
+ {
+  "id": "brinquedoteca",
+  "titulo": "Brinquedoteca",
+  "grupo": "Lazer",
+  "frames": 30,
+  "capa": "img/brinquedoteca.webp"
+ },
+ {
+  "id": "playground",
+  "titulo": "Playground",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/playground.webp"
+ },
+ {
+  "id": "pet",
+  "titulo": "Pet place e quadra",
+  "grupo": "Lazer",
+  "frames": 36,
+  "capa": "img/petplace.webp"
+ }
+]

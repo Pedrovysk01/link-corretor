@@ -16,7 +16,7 @@ const TourCanvas = lazy(() => import('../scene/TourCanvas').then((m) => ({ defau
 function SceneFallback() {
   return (
     <div className="scene-fallback" role="status">
-      <p>Your browser can’t display 3D here, but you can still explore the floor plan and enquire.</p>
+      <p>Seu navegador não consegue exibir o 3D aqui, mas você ainda pode explorar a planta e falar com o corretor.</p>
     </div>
   )
 }

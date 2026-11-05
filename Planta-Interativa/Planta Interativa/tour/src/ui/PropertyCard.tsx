@@ -4,6 +4,7 @@ import { formatArea, formatPrice } from '../lib/format'
 import { interiorArea } from '../lib/geometry'
 import { tourStore } from '../state/store'
 import { RoomImage } from './RoomImage'
+import { falarComCorretor } from '../lib/embed'
 
 /** Overview panel: the headline facts and a way into the guided tour. */
 export function PropertyCard({ property }: { readonly property: Property }) {
@@ -38,7 +39,7 @@ export function PropertyCard({ property }: { readonly property: Property }) {
         <button type="button" className="button button--primary" onClick={() => tourStore.getState().enterRoom(property.tour[0])}>
           Iniciar tour guiado <ArrowRight size={18} aria-hidden="true" />
         </button>
-        <button type="button" className="button button--ghost" onClick={() => tourStore.getState().openInquiry()}>
+        <button type="button" className="button button--ghost" onClick={() => falarComCorretor(tourStore.getState().openInquiry)}>
           Solicitar catálogo
         </button>
       </div>

@@ -28,6 +28,7 @@ export const apto01: Property = {
     {
       id: 'master',
       image: 'img/suite.webp',
+      pano: '360/pano/suite-master-360.webp',
       name: 'Suíte master',
       kind: 'bedroom',
       rect: { x: 0, z: 0, w: 3.3, d: 4.4 },
@@ -174,6 +175,7 @@ export const apto01: Property = {
     {
       id: 'kitchen',
       image: 'img/living-jantar.webp',
+      pano: '360/pano/living-jantar-360.webp',
       name: 'Cozinha',
       kind: 'kitchen',
       rect: { x: 0, z: 16.9, w: 2.3, d: 4.5 },
@@ -190,7 +192,8 @@ export const apto01: Property = {
     },
     {
       id: 'living',
-      images: ['img/living-estar.webp', 'img/living-jantar.webp'],  // catálogo: Living · Estar e Living · Jantar
+      images: ['img/living-integrado.webp', 'img/living-estar.webp', 'img/living-jantar.webp'],  // living integrado à cozinha + catálogo
+      pano: '360/pano/living-estar-360.webp',  // panorama 360° do estar (o jantar entra na cozinha integrada)
       name: 'Living',
       kind: 'living',
       rect: { x: 2.3, z: 12.0, w: 4.3, d: 7.6 },
@@ -215,6 +218,7 @@ export const apto01: Property = {
     {
       id: 'sacada',
       image: 'img/sacada.webp',
+      pano: '360/pano/sacada-360.webp',
       name: 'Sacada gourmet',
       kind: 'living',
       rect: { x: 2.3, z: 19.6, w: 4.3, d: 1.8 },

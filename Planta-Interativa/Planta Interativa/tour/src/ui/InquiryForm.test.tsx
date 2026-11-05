@@ -57,15 +57,6 @@ describe('InquiryForm', () => {
     )
   })
 
-  test('labels demo-mode submissions so nobody mistakes them for real leads', async () => {
-    const { user } = setup({ ok: true, mode: 'demo' })
-    await fillValidForm(user)
-
-    await user.click(screen.getByRole('button', { name: /send inquiry/i }))
-
-    expect(await screen.findByText(/demo mode/i)).toBeInTheDocument()
-  })
-
   test('keeps what the visitor typed and explains a failed send', async () => {
     const { user } = setup({ ok: false, error: 'We couldn’t reach our team.' })
     await fillValidForm(user)

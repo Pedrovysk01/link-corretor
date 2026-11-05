@@ -1,0 +1,21 @@
+/* Tour 3D por dentro: camada cheia sobre o mapa e a chamada "Ver por dentro" nas fichas. Usa os tokens de base.css. */
+#tourov{position:fixed;inset:0;z-index:100000;background:var(--night)}
+#tourov[hidden]{display:none}
+#tourov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--night)}
+body.tour-on{overflow:hidden}
+
+.tour-cta{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:12px;width:100%;margin-top:14px;padding:12px 14px;text-align:left;cursor:pointer;
+  color:var(--paper);background:var(--ink);border:1px solid var(--ink);border-radius:var(--r-md);box-shadow:var(--sh-0);
+  transition:background-color var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease),scale var(--t-fast) var(--ease)}
+.tour-cta:hover{background:#1f433f;box-shadow:var(--sh-1)}
+.tour-cta:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.tour-cta .tour-ic{grid-row:span 2;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--brass);color:var(--ink)}
+.tour-cta .tour-ic svg{width:16px;height:16px;fill:currentColor;margin-left:2px}
+.tour-cta b{font:400 var(--fs-lg)/1.1 var(--display);letter-spacing:var(--tr-tight)}
+.tour-cta small{font:500 var(--fs-md)/1.3 var(--body);color:var(--on-dark)}
+@media (prefers-reduced-motion:reduce){.tour-cta{transition:none}}
+
+body.tour-on [data-lc-voltar]{display:none}
+
+/* celular: alvos de toque de pelo menos 40 px nos controles do mapa */
+@media (max-width:720px){.view-seg .chip,.dock .chip{min-height:40px}#card .close{width:40px;height:40px}}

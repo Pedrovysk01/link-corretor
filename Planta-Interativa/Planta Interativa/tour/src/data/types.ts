@@ -85,6 +85,8 @@ export interface Room {
   readonly image?: string
   /** Vários renders do MESMO ambiente (carrossel no painel). Se existir, vale no lugar de `image`. */
   readonly images?: readonly string[]
+  /** Panorama 360° equirretangular (2:1) do ambiente, relativo a public/ (ex.: '360/pano/living.jpg'). Ao entrar, envolve a câmera. */
+  readonly pano?: string
   readonly description: string
   readonly features: readonly string[]
   readonly furniture: readonly FurnitureItem[]

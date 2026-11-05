@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Villa Montemerano · Escolha pelo andar</title>
+<meta name="description" content="Toque num andar da torre para ver a planta, os apartamentos e a vista daquela altura.">
+<meta name="theme-color" content="#0b1412">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Tokens do design system Link Corretor (tinta, papel, latão; raios 6/9/14) */
+:root{--ink:#16302e;--ink-soft:#4d6460;--paper:#f3efe6;--night:#0b1412;--brass:#c9944a;--brass-deep:#a87a3c;--brass-ink:#80592a;--brass-hi:#f0c27f;--line:rgba(243,239,230,.16);--line-d:rgba(22,48,46,.14);
+  --glass:rgba(11,20,18,.78);--display:"Instrument Serif",Georgia,serif;--body:"Figtree","Helvetica Neue",Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r-sm:6px;--r-md:9px;--r-lg:14px;--ease:cubic-bezier(.2,.8,.2,1);--sheet-w:420px}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--paper);font:500 14px/1.4 var(--body);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--brass-hi);outline-offset:2px}
+#view{position:fixed;inset:0;overflow:hidden;touch-action:none;cursor:grab;background:radial-gradient(120% 90% at 50% 20%,#1d3f5f,#0b1412)}
+#view.drag{cursor:grabbing}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#stage.anim{transition:transform .9s var(--ease)}
+#stage img{display:block;width:100%;height:100%;user-select:none;-webkit-user-drag:none}
+#ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#ov polygon{fill:transparent;stroke:transparent;stroke-width:3;vector-effect:non-scaling-stroke;pointer-events:none;transition:fill .2s,stroke .2s}
+#ov polygon.fh{fill:rgba(240,194,127,.22);stroke:rgba(255,255,255,.85)}
+#ov polygon.fs{fill:rgba(201,148,74,.34);stroke:#fff;stroke-width:3.5}
+#ov polygon.fn{fill:rgba(255,255,255,.07);stroke:rgba(255,255,255,.35);stroke-width:1.2}
+/* barra do topo */
+.bar{position:fixed;left:0;right:0;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;pointer-events:none;background:linear-gradient(180deg,rgba(11,20,18,.7),rgba(11,20,18,0))}
+.bar>*{pointer-events:auto}
+.bar img{height:48px;display:block}
+.bar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--paper);text-decoration:none;font-weight:600;font-size:.8125rem;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:background-color .2s var(--ease),scale .2s var(--ease)}
+.chip:hover{background:#16302e}.chip:active{scale:.96}
+.chip.on{background:var(--brass);color:var(--ink);border-color:var(--brass)}
+.chip svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* instrução + legenda */
+#dica{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:15;padding:9px 16px;border-radius:999px;background:var(--glass);border:1px solid var(--line);font-size:.75rem;white-space:nowrap;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:opacity .4s}
+body.sheet-open #dica{opacity:0;pointer-events:none}
+/* lista de andares */
+#floors{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:18;display:grid;gap:3px;max-height:78vh;overflow:auto;padding:6px;border-radius:var(--r-lg);background:var(--glass);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);scrollbar-width:none}
+#floors::-webkit-scrollbar{display:none}
+#floors button{all:unset;box-sizing:border-box;min-width:44px;min-height:26px;padding:3px 8px;border-radius:var(--r-sm);text-align:center;font:500 .75rem var(--mono);cursor:pointer;color:var(--paper)}
+#floors button:hover{background:rgba(243,239,230,.14)}
+#floors button.on{background:var(--brass);color:var(--ink);font-weight:700}
+#floors button:focus-visible{outline:2px solid var(--brass-hi)}
+#floors small{display:block;text-align:center;font-size:.625rem;letter-spacing:.14em;text-transform:uppercase;color:#c9cfc8;padding:2px 0 4px}
+/* dica ao passar o mouse */
+#tip{position:fixed;z-index:30;pointer-events:none;padding:6px 11px;border-radius:999px;background:var(--ink);color:var(--paper);font-size:.75rem;font-weight:600;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.35);white-space:nowrap}
+#tip[hidden]{display:none}
+/* folha: andar, planta e apartamentos */
+#sheet{position:fixed;z-index:25;right:16px;top:76px;bottom:16px;width:var(--sheet-w);max-width:calc(100vw - 32px);display:flex;flex-direction:column;border-radius:var(--r-lg);background:var(--paper);color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.5);transform:translateX(calc(100% + 24px));transition:transform .5s var(--ease)}
+body.sheet-open #sheet{transform:none}
+#sheet .x{position:absolute;right:10px;top:10px;z-index:2;width:34px;height:34px;border-radius:50%;border:1px solid var(--line-d);background:#fffdf9;font-size:1.2rem;line-height:1;color:var(--ink)}
+#sbody{overflow:auto;padding:18px 18px 22px;flex:1}
+.eyebrow{margin:0;font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-ink);font-weight:600}
+#sheet h3{margin:2px 0 6px;font:400 2rem/1.05 var(--display);letter-spacing:-.01em}
+.dim{color:var(--ink-soft);font-size:.8125rem}
+.nav2{display:flex;gap:8px;margin:10px 0 12px}
+.nav2 button{flex:1;min-height:38px;border-radius:var(--r-sm);border:1px solid var(--line-d);background:#fffdf9;color:var(--ink);font-weight:600;font-size:.8125rem}
+.nav2 button:hover:not(:disabled){background:#fff}.nav2 button:disabled{opacity:.4;cursor:not-allowed}
+.plan{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--line-d);background:#fffdf9}
+.plan img{display:block;width:100%;height:auto}
+.plan button{position:absolute;border:2px solid transparent;border-radius:6px;background:transparent;transition:background-color .2s,border-color .2s}
+.plan button span{position:absolute;left:50%;top:6px;transform:translateX(-50%);padding:3px 9px;border-radius:999px;background:var(--ink);color:var(--paper);font-size:.6875rem;font-weight:600;white-space:nowrap}
+.plan button:hover{background:rgba(201,148,74,.18)}
+.plan button.sel{border-color:var(--brass);background:rgba(201,148,74,.26)}
+.ficha{margin-top:18px;padding-top:16px;border-top:1px solid var(--line-d)}
+.ficha h4{margin:2px 0 4px;font:400 1.75rem/1.1 var(--display)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:.6875rem;font-weight:600;background:rgba(168,122,60,.14);color:var(--brass-ink)}
+.big{margin:10px 0 2px;font:500 1.5rem/1.1 var(--mono);color:var(--ink)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.facts div{padding:8px 10px;border-radius:var(--r-md);background:rgba(22,48,46,.06)}
+.facts b{display:block;font:500 1rem var(--mono)}.facts span{font-size:.6875rem;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:8px;padding:0 14px;border-radius:var(--r-md);border:1px solid var(--ink);background:var(--ink);color:var(--paper);font-weight:600;font-size:.875rem;text-decoration:none;transition:background-color .2s,scale .2s var(--ease)}
+.btn:hover{background:#1f433f}.btn:active{scale:.98}
+.btn.alt{background:var(--brass);border-color:var(--brass);color:var(--ink)}.btn.alt:hover{background:#d9a65c}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-d)}.btn.ghost:hover{background:#fff}
+.nota{margin:14px 0 0;font-size:.75rem;color:var(--ink-soft)}
+/* vista da altura do andar */
+#vista{position:fixed;inset:0;z-index:40;background:#000;opacity:0;pointer-events:none;transition:opacity .5s}
+#vista.on{opacity:1;pointer-events:auto}
+#vista img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#vista .top{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 40px;background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,0));display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+#vista .cap{padding:12px 16px;border-radius:var(--r-lg);background:var(--glass);border:1px solid var(--line);max-width:min(460px,70vw);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+#vista .cap b{display:block;font:400 1.5rem/1.1 var(--display)}#vista .cap span{font-size:.75rem;color:#c9cfc8}
+#vslide{position:absolute;right:18px;top:50%;transform:translateY(-50%);height:min(56vh,420px);display:flex;flex-direction:column;align-items:center;gap:10px}
+#vslide input{writing-mode:vertical-lr;direction:rtl;height:100%;width:34px;accent-color:#c9944a;cursor:grab}
+#vslide span{padding:4px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--line);font:500 .75rem var(--mono)}
+@media (max-width:900px){
+  #floors{display:none}
+  #sheet{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-width:none;max-height:58vh;transform:translateY(calc(100% + 24px))}
+  .bar img{height:38px}.chip span{display:none}.chip{padding:0 12px}
+  #dica{white-space:normal;text-align:center;width:calc(100% - 32px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+}
+@media (prefers-reduced-motion:reduce){#stage.anim,#sheet,#vista,#tip{transition:none}.chip,.btn{transition:none}.chip:active,.btn:active{scale:1}}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a href="../"><img src="../logo-branca.svg" alt="Villa Montemerano"></a>
+  <span class="sp"></span>
+  <a class="chip" href="../?property=montemerano-01&view=tour" id="a3d"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Tour 3D</span></a>
+  <a class="chip" href="../360/index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg><span>360°</span></a>
+</header>
+
+<div id="view"><div id="stage"><img id="img" src="../img/externa-01.webp" alt="Render da fachada do Villa Montemerano" draggable="false"><svg id="ov" viewBox="0 0 1600 2682" preserveAspectRatio="none" aria-hidden="true"></svg></div></div>
+<nav id="floors" aria-label="Andares"></nav>
+<div id="tip" hidden></div>
+<p id="dica">Toque em um andar da torre para ver a planta, os apartamentos e a vista daquela altura</p>
+
+<aside id="sheet" aria-live="polite"><button class="x" id="sx" aria-label="Fechar">×</button><div id="sbody"></div></aside>
+
+<section id="vista" aria-label="Vista na altura do andar">
+  <img id="vimg" alt="Vista aérea na altura do andar" draggable="false">
+  <div class="top"><div class="cap"><b id="vt">Vista</b><span>Imagem aérea ilustrativa, na altura do andar, com o mar à frente.</span></div><button class="chip" id="vx">Fechar</button></div>
+  <div id="vslide"><span id="vf">—</span><input id="vr" type="range" orient="vertical" aria-label="Subir ou descer de andar"></div>
+</section>
+
+<script>
+(() => {
+  "use strict";
+  /* ───────── dados (confirme com a incorporadora) ───────── */
+  const PAV_INI = 5;                      // 1º pavimento tipo (acima do pódio comercial e do lazer): suposição, ajuste aqui
+  const IMGW = 1600, IMGH = 2682, ASPECT = IMGW / IMGH;
+  const POLYS = [[[554.2,1886.6],[862.3,1969.8],[1079.8,2037.2],[1082.9,2144.0],[861.9,2075.4],[545.5,1990]],[[562.8,1786.2],[862.8,1867.2],[1076.8,1933.6],[1079.8,2037.2],[862.3,1969.8],[554.2,1886.6]],[[571.1,1688.7],[863.2,1767.5],[1073.9,1832.8],[1076.8,1933.6],[862.8,1867.2],[562.8,1786.2]],[[579.1,1593.9],[863.6,1670.7],[1071.0,1735.0],[1073.9,1832.8],[863.2,1767.5],[571.1,1688.7]],[[587.0,1501.8],[864.1,1576.6],[1068.3,1639.9],[1071.0,1735.0],[863.6,1670.7],[579.1,1593.9]],[[594.6,1412.3],[864.5,1485.1],[1065.6,1547.5],[1068.3,1639.9],[864.1,1576.6],[587.0,1501.8]],[[601.9,1325.3],[864.9,1396.3],[1063.0,1457.7],[1065.6,1547.5],[864.5,1485.1],[594.6,1412.3]],[[609.1,1240.8],[865.2,1310.0],[1060.4,1370.5],[1063.0,1457.7],[864.9,1396.3],[601.9,1325.3]],[[616.1,1158.8],[865.6,1226.1],[1058.0,1285.8],[1060.4,1370.5],[865.2,1310.0],[609.1,1240.8]],[[622.9,1079.0],[866.0,1144.7],[1055.6,1203.4],[1058.0,1285.8],[865.6,1226.1],[616.1,1158.8]],[[629.5,1001.5],[866.3,1065.5],[1053.2,1123.4],[1055.6,1203.4],[866.0,1144.7],[622.9,1079.0]],[[635.9,926.3],[866.7,988.6],[1051.0,1045.7],[1053.2,1123.4],[866.3,1065.5],[629.5,1001.5]],[[642.1,853.1],[867.0,913.8],[1048.8,970.2],[1051.0,1045.7],[866.7,988.6],[635.9,926.3]],[[648.1,782.0],[867.3,841.2],[1046.7,896.8],[1048.8,970.2],[867.0,913.8],[642.1,853.1]],[[654.0,713.0],[867.6,770.7],[1044.6,825.5],[1046.7,896.8],[867.3,841.2],[648.1,782.0]],[[659.7,645.9],[867.9,702.1],[1042.6,756.3],[1044.6,825.5],[867.6,770.7],[654.0,713.0]],[[665.2,580.7],[868.2,635.5],[1040.6,689.0],[1042.6,756.3],[867.9,702.1],[659.7,645.9]],[[670.6,517.4],[868.5,570.8],[1038.7,623.6],[1040.6,689.0],[868.2,635.5],[665.2,580.7]],[[675.9,455.9],[868.8,508.0],[1036.9,560.1],[1038.7,623.6],[868.5,570.8],[670.6,517.4]],[[680.9,396.1],[869.0,446.9],[1035.1,498.3],[1036.9,560.1],[868.8,508.0],[675.9,455.9]],[[685.9,338.0],[869.3,387.5],[1033.3,438.4],[1035.1,498.3],[869.0,446.9],[680.9,396.1]]];                // 21 faixas calibradas sobre o render (coordenadas do JPG 1600×2682)
+  const N = POLYS.length;
+  const FRAMES = { ini: 10, fim: 46 };    // quadros da "Subida" (drone) que correspondem ao 1º e ao último andar
+  const UNID = {
+    "01": { nome: "Apto 01", area: 128.6, suites: 3, living: 50.2, box: { l: 60.2, t: 5, w: 30.4, h: 88.5 } },
+    "02": { nome: "Apto 02", area: 116.57, suites: 3, living: 45.56, box: { l: 11.2, t: 5, w: 37.8, h: 88.5 } }
+  };
+  const STATUS = { c: "Consulte a disponibilidade" };       // quando houver tabela de vendas: d / r / v como no Felicità
+  const unidade = (f, t) => ({ status: "c", ...((window.LC_UNIDADES || {})[f + "-" + t] || {}) });
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const ord = (f) => f + "º", clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const brl = (n) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const num = (n, d = 2) => n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const S = { floor: null, tipo: "01", hover: null, s: 1, min: 1, tx: 0, ty: 0, w0: 0, h0: 0, L0: 0, T0: 0 };
+  const stage = $("#stage"), view = $("#view"), ov = $("#ov"), tip = $("#tip");
+
+  /* ───────── geometria ───────── */
+  const pts = (p) => p.map((q) => q.join(",")).join(" ");
+  const inPoly = (x, y, p) => { let c = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if (((p[i][1] > y) !== (p[j][1] > y)) && (x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0])) c = !c; return c; };
+  const floorAt = (u, v) => { for (let k = 0; k < N; k++) if (inPoly(u, v, POLYS[k])) return PAV_INI + k; return null; };
+  const centro = (f) => { const p = POLYS[f - PAV_INI]; return [p.reduce((a, q) => a + q[0], 0) / p.length, p.reduce((a, q) => a + q[1], 0) / p.length]; };
+
+  /* ───────── câmera (zoom e arraste) ───────── */
+  function layout() {
+    const vw = innerWidth, vh = innerHeight; let h0 = vh, w0 = h0 * ASPECT; if (w0 > vw * 1.0 && vw < 900) { w0 = vw; h0 = w0 / ASPECT; }
+    S.w0 = w0; S.h0 = h0; S.L0 = (vw - w0) / 2; S.T0 = (vh - h0) / 2; S.min = h0 < vh ? 1 : Math.max(1, vh / h0);
+    stage.style.width = w0 + "px"; stage.style.height = h0 + "px"; stage.style.left = S.L0 + "px"; stage.style.top = S.T0 + "px";
+    clampView(); apply();
+  }
+  function bounds(s) { const vw = innerWidth, vh = innerHeight, w = S.w0 * s, h = S.h0 * s;
+    return { x: w <= vw ? [vw / 2 - S.L0 - w / 2, vw / 2 - S.L0 - w / 2] : [vw - S.L0 - w, -S.L0], y: h <= vh ? [vh / 2 - S.T0 - h / 2, vh / 2 - S.T0 - h / 2] : [vh - S.T0 - h, -S.T0] }; }
+  function clampView() { const b = bounds(S.s); S.tx = clamp(S.tx, ...b.x); S.ty = clamp(S.ty, ...b.y); }
+  function apply() { stage.style.transform = `translate(${S.tx}px,${S.ty}px) scale(${S.s})`; }
+  function flyTo(s, tx, ty) { s = clamp(s, S.min, 4.5); const b = bounds(s); S.s = s; S.tx = clamp(tx, ...b.x); S.ty = clamp(ty, ...b.y);
+    if (REDUCED) return apply(); stage.classList.add("anim"); apply(); clearTimeout(flyTo.t); flyTo.t = setTimeout(() => stage.classList.remove("anim"), 950); }
+  function focusFloor(f) {
+    const [u, v] = centro(f), s = innerWidth > 900 ? 2.8 : 2.4, sx = S.w0 / IMGW, sy = S.h0 / IMGH;
+    const cx = innerWidth > 900 ? (innerWidth - 420 - 16) * .5 : innerWidth / 2, cy = innerWidth > 900 ? innerHeight / 2 : innerHeight * .28;
+    flyTo(s, cx - S.L0 - s * u * sx, cy - S.T0 - s * v * sy);
+  }
+  function reset() { const b = bounds(S.min); flyTo(S.min, b.x[0], b.y[0]); }
+  const toImg = (cx, cy) => { const r = stage.getBoundingClientRect(); return [(cx - r.left) / r.width * IMGW, (cy - r.top) / r.height * IMGH]; };
+
+  /* ───────── sobreposição dos andares ───────── */
+  function paint() {
+    let h = "";
+    for (let k = 0; k < N; k++) { const f = PAV_INI + k; const cls = f === S.floor ? "fs" : f === S.hover ? "fh" : ""; if (cls) h += `<polygon class="${cls}" points="${pts(POLYS[k])}"/>`; }
+    ov.innerHTML = h;
+    $$("#floors button").forEach((b) => b.classList.toggle("on", +b.dataset.f === S.floor));
+  }
+
+  /* ───────── folha: andar, planta e apartamentos ───────── */
+  function sheet() {
+    const f = S.floor, t = S.tipo, u = UNID[t], un = unidade(f, t);
+    const alto = f < PAV_INI + N - 1, baixo = f > PAV_INI;
+    $("#sbody").innerHTML = `<p class="eyebrow">${ord(f)} pavimento · 2 apartamentos por andar</p><h3>${ord(f)} andar</h3>
+      <div class="dim">Toque num apartamento da planta. A vista é a da altura deste andar.</div>
+      <div class="nav2"><button id="up" ${alto ? "" : "disabled"} aria-label="Andar de cima">▲ ${alto ? ord(f + 1) : "—"}</button><button id="dn" ${baixo ? "" : "disabled"} aria-label="Andar de baixo">▼ ${baixo ? ord(f - 1) : "—"}</button></div>
+      <div class="plan" id="plan"><img src="../img/planta-tipo-a.webp" alt="Planta do pavimento tipo">${Object.entries(UNID).map(([k, v]) => `<button data-t="${k}" class="${k === t ? "sel" : ""}" style="left:${v.box.l}%;top:${v.box.t}%;width:${v.box.w}%;height:${v.box.h}%" aria-label="${v.nome}"><span>${v.nome}</span></button>`).join("")}</div>
+      <div class="ficha"><p class="eyebrow">Final ${t}</p><h4>${u.nome} · ${ord(f)} andar</h4>
+        <div class="row"><span class="badge">${STATUS[un.status] || STATUS.c}</span></div>
+        <div class="big">${un.price ? brl(un.price) : "Valor sob consulta"}</div><div class="dim">Valores e disponibilidade atualizados pelo corretor.</div>
+        <div class="facts"><div><b>${num(u.area)}</b><span>m² privativos</span></div><div><b>${u.suites}</b><span>suítes</span></div><div><b>${num(u.living)}</b><span>m² de living</span></div></div>
+        <a class="btn alt" id="b3d" href="../?property=montemerano-${t}&view=tour">Ver o apartamento em 3D</a>
+        <button class="btn" id="bv" type="button">Ver a vista deste andar</button>
+        <a class="btn ghost" href="../360/index.html">Girar a fachada e o lazer em 360°</a>
+        <p class="nota">Plantas e imagens ilustrativas. Medidas e acabamentos sujeitos ao memorial descritivo.</p></div>`;
+    $$("#plan button").forEach((b) => (b.onclick = () => { S.tipo = b.dataset.t; sheet(); }));
+    $("#up").onclick = () => select(f + 1); $("#dn").onclick = () => select(f - 1); $("#bv").onclick = () => openVista(f);
+  }
+  function select(f) {
+    f = clamp(f, PAV_INI, PAV_INI + N - 1); S.floor = f; paint(); focusFloor(f); sheet();
+    document.body.classList.add("sheet-open"); $("#sbody").scrollTop = 0; history.replaceState(null, "", `?andar=${f}&apto=${S.tipo}`);
+    $("#a3d").href = `../?property=montemerano-${S.tipo}&view=tour`;
+  }
+  function closeSheet() { document.body.classList.remove("sheet-open"); S.floor = null; paint(); reset(); history.replaceState(null, "", location.pathname); }
+
+  /* ───────── vista da altura do andar ───────── */
+  const vr = $("#vr"); vr.min = PAV_INI; vr.max = PAV_INI + N - 1; vr.step = 1;
+  const quadro = (f) => Math.round(FRAMES.ini + ((f - PAV_INI) / (N - 1)) * (FRAMES.fim - FRAMES.ini));
+  function showFrame(f) { $("#vimg").src = `../360/subida/subida-${quadro(f)}.webp`; $("#vt").textContent = `Vista na altura do ${ord(f)} andar`; $("#vf").textContent = ord(f); vr.value = f; }
+  function openVista(f) { showFrame(f); $("#vista").classList.add("on"); S.vf = f; vr.focus({ preventScroll: true }); }
+  vr.addEventListener("input", () => { S.vf = +vr.value; showFrame(S.vf); });
+  $("#vx").onclick = () => { $("#vista").classList.remove("on"); if (S.vf && S.vf !== S.floor) select(S.vf); };
+  addEventListener("keydown", (e) => { if (e.key === "Escape") { if ($("#vista").classList.contains("on")) $("#vx").click(); else if (S.floor) closeSheet(); } });
+
+  /* ───────── entrada do usuário ───────── */
+  let down = null;
+  view.addEventListener("pointerdown", (e) => { if (e.target.closest("#tip")) return; down = { x: e.clientX, y: e.clientY, tx: S.tx, ty: S.ty, moved: false, id: e.pointerId }; view.setPointerCapture(e.pointerId); });
+  view.addEventListener("pointermove", (e) => {
+    if (down) { const dx = e.clientX - down.x, dy = e.clientY - down.y; if (!down.moved && Math.hypot(dx, dy) > 6) { down.moved = true; view.classList.add("drag"); tip.hidden = true; }
+      if (down.moved && S.s > 1.001) { S.tx = down.tx + dx; S.ty = down.ty + dy; clampView(); apply(); } return; }
+    if (e.pointerType === "touch") return;
+    const [u, v] = toImg(e.clientX, e.clientY), f = floorAt(u, v);
+    if (f !== S.hover) { S.hover = f; paint(); }
+    if (f) { tip.hidden = false; tip.textContent = `${ord(f)} andar · 2 apartamentos`; tip.style.left = e.clientX + 14 + "px"; tip.style.top = e.clientY + 16 + "px"; view.style.cursor = "pointer"; } else { tip.hidden = true; view.style.cursor = ""; }
+  });
+  const up = (e) => { if (!down) return; const moved = down.moved; down = null; view.classList.remove("drag");
+    if (!moved) { const [u, v] = toImg(e.clientX, e.clientY), f = floorAt(u, v); if (f) select(f); else if (S.floor && !e.target.closest("#sheet")) closeSheet(); } };
+  view.addEventListener("pointerup", up); view.addEventListener("pointercancel", () => { down = null; view.classList.remove("drag"); });
+  view.addEventListener("pointerleave", () => { S.hover = null; tip.hidden = true; paint(); });
+  view.addEventListener("wheel", (e) => { e.preventDefault(); const ns = clamp(S.s * (e.deltaY < 0 ? 1.12 : 1 / 1.12), S.min, 4.5), k = ns / S.s, r = stage.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
+    S.tx -= ox * (k - 1); S.ty -= oy * (k - 1); S.s = ns; clampView(); apply(); }, { passive: false });
+  view.addEventListener("dblclick", () => { if (!S.floor) reset(); });
+  $("#sx").onclick = closeSheet;
+  $("#floors").innerHTML = `<small>Andar</small>` + Array.from({ length: N }, (_, i) => PAV_INI + N - 1 - i).map((f) => `<button data-f="${f}" title="${ord(f)} andar">${f}</button>`).join("");
+  $$("#floors button").forEach((b) => (b.onclick = () => select(+b.dataset.f)));
+  addEventListener("resize", () => { layout(); if (S.floor) focusFloor(S.floor); });
+
+  /* ───────── início ───────── */
+  layout(); paint();
+  const q = new URLSearchParams(location.search); if (q.get("apto") && UNID[q.get("apto")]) S.tipo = q.get("apto");
+  const f0 = +(q.get("andar") || location.hash.slice(1)); if (f0 >= PAV_INI && f0 < PAV_INI + N) setTimeout(() => select(f0), 400);
+  if (q.get("vista")) setTimeout(() => openVista(+q.get("vista")), 900);
+})();
+</script>
+</body>
+</html>

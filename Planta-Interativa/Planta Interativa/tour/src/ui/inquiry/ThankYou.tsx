@@ -8,7 +8,7 @@ interface ThankYouProps {
 }
 
 /** Confirmation that replaces the form; it takes focus so screen readers announce it. */
-export function ThankYou({ firstName, mode, onClose }: ThankYouProps) {
+export function ThankYou({ firstName, onClose }: ThankYouProps) {
   const headingRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => headingRef.current?.focus(), [])
 
@@ -21,11 +21,6 @@ export function ThankYou({ firstName, mode, onClose }: ThankYouProps) {
       <p className="panel__lead">
         Um consultor entrará em contato em até um dia útil com o catálogo, as plantas e a disponibilidade atual.
       </p>
-      {mode === 'demo' && (
-        <p className="notice">
-          Modo demonstração: este contato foi salvo apenas neste navegador. Configure <code>VITE_INQUIRY_ENDPOINT</code> para enviar os leads.
-        </p>
-      )}
       <button type="button" className="button button--primary" onClick={onClose}>
         Voltar ao tour
       </button>

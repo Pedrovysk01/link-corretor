@@ -1,6 +1,7 @@
-/* Link Corretor — widget do cliente dentro da apresentação (injetado em /p/<código>/).
-   Faixa permanente "Você está sendo atendido por <corretor>" (prova de origem para a comissão), IA e contato.
-   Shadow DOM: não herda nem vaza estilo. O cadastro já aconteceu antes (gate), então aqui só há cliente identificado. */
+/* Link Corretor — widget da apresentação (injetado em /p/<código>/).
+   Não há tela de perfil: quem abre o link é CLIENTE (faixa "atendido por <corretor>", IA, contato e cadastro depois de 30 s ou na 3ª interação).
+   Quem está logado no painel é EQUIPE e vê só o seu papel: o corretor apresenta (sem coleta; cartão com assinatura uma única vez e "Enviar ao cliente"),
+   a construtora só olha (aba "← Painel" do voltar.js). Shadow DOM: não herda nem vaza estilo. */
 (() => {
   "use strict";
   const sc = document.currentScript, code = sc && sc.dataset.code;
@@ -10,7 +11,7 @@
   const T = {
     "pt-BR": { served: "Atendimento por", open: "Dúvidas ou contato", ask: "Pergunte à IA", contact: "Falar com", close: "Fechar", lang: "Idioma",
       hello: (c, n) => `Oi${n ? ", " + n.split(" ")[0] : ""}! Sou o assistente do empreendimento. Pergunte o que quiser; se eu não souber, ${c} responde você.`,
-      ph: "Escreva sua pergunta…", send: "Enviar", thinking: "Pensando…", note: "Respostas geradas por IA a partir das informações do empreendimento. Confirme valores e disponibilidade com o corretor.",
+      ph: "Escreva sua pergunta…", send: "Enviar", thinking: "Pensando…", note: "Respostas geradas por IA a partir das informações do empreendimento.",
       fail: "Não consegui responder agora. Fale direto com o corretor.", limit: "A IA atingiu o limite de respostas por enquanto. Fale direto com o corretor.",
       sug: ["Quais opções estão disponíveis?", "Quais as formas de pagamento?", "O que tem de lazer?"],
       msg: "Deixe um recado", msg_ph: "Ex.: quero visitar no sábado de manhã", msg_ok: "Recado enviado. {c} vai falar com você.", wa: "Chamar no WhatsApp",
@@ -20,7 +21,7 @@
       wa_text: (e) => `Olá! Estou vendo a apresentação do ${e} e gostaria de mais informações.`, other: (o) => `Você já é atendido por outro corretor. Este link é de ${o}; seu atendimento continua com quem começou.`, net: "Sem conexão. Tente de novo." },
     en: { served: "Served by", open: "Questions or contact", ask: "Ask the AI", contact: "Talk to", close: "Close", lang: "Language",
       hello: (c, n) => `Hi${n ? ", " + n.split(" ")[0] : ""}! I'm this development's assistant. Ask anything; if I don't know, ${c} will answer you.`,
-      ph: "Type your question…", send: "Send", thinking: "Thinking…", note: "AI-generated answers based on the development's information. Please confirm prices and availability with the broker.",
+      ph: "Type your question…", send: "Send", thinking: "Thinking…", note: "AI-generated answers based on the development's information.",
       fail: "I couldn't answer right now. Please talk to the broker.", limit: "The AI reached its answer limit for now. Please talk to the broker.",
       sug: ["What is available?", "What are the payment terms?", "What amenities are there?"],
       msg: "Leave a message", msg_ph: "e.g. I'd like to visit on Saturday morning", msg_ok: "Message sent. {c} will be in touch.", wa: "Chat on WhatsApp",
@@ -30,7 +31,7 @@
       wa_text: (e) => `Hi! I'm viewing the ${e} presentation and would like more information.`, other: (o) => `You are already served by another broker. This link belongs to ${o}; your service continues with the first one.`, net: "No connection. Try again." },
     es: { served: "Atendido por", open: "Dudas o contacto", ask: "Pregunta a la IA", contact: "Hablar con", close: "Cerrar", lang: "Idioma",
       hello: (c, n) => `¡Hola${n ? ", " + n.split(" ")[0] : ""}! Soy el asistente del proyecto. Pregunta lo que quieras; si no lo sé, ${c} te responde.`,
-      ph: "Escribe tu pregunta…", send: "Enviar", thinking: "Pensando…", note: "Respuestas generadas por IA con la información del proyecto. Confirma valores y disponibilidad con el corredor.",
+      ph: "Escribe tu pregunta…", send: "Enviar", thinking: "Pensando…", note: "Respuestas generadas por IA con la información del proyecto.",
       fail: "No pude responder ahora. Habla directo con el corredor.", limit: "La IA alcanzó su límite por ahora. Habla directo con el corredor.",
       sug: ["¿Qué opciones hay disponibles?", "¿Cuáles son las formas de pago?", "¿Qué áreas de ocio tiene?"],
       msg: "Deja un mensaje", msg_ph: "Ej.: quiero visitar el sábado por la mañana", msg_ok: "Mensaje enviado. {c} te hablará.", wa: "Escribir por WhatsApp",
@@ -43,22 +44,24 @@
   const CSS = `
   :host{all:initial}
   *{box-sizing:border-box;font-family:"Figtree","Helvetica Neue",Arial,sans-serif}
-  .badge{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));translate:-50% 0;z-index:2147483000;display:inline-flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);
+  .badge{position:fixed;left:16px;top:calc(92px + env(safe-area-inset-top));z-index:2147483000;display:inline-flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);
     padding:6px 14px 6px 6px;border-radius:999px;background:rgba(22,48,46,.92);color:#f3efe6;border:1px solid rgba(243,239,230,.25);box-shadow:0 4px 14px rgba(0,0,0,.25);
     -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font-size:13px;line-height:1.2;white-space:nowrap;cursor:pointer;animation:down .64s cubic-bezier(.2,.8,.2,1) both}
-  @keyframes down{from{opacity:0;translate:-50% -10px}}
+  @keyframes down{from{opacity:0;translate:0 -10px}}
   .badge .av{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#c9944a;color:#16302e;font-weight:700;font-size:12px;flex:none}
   .badge .t{overflow:hidden;text-overflow:ellipsis}.badge .t small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
   .badge .t b{font-weight:600}
-  .fab{position:fixed;right:14px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:2147483000;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 18px 0 14px;border:1px solid rgba(243,239,230,.35);border-radius:999px;
+  .fab{position:fixed;left:16px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:2147483000;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 18px 0 14px;border:1px solid rgba(243,239,230,.35);border-radius:999px;
     background:#16302e;color:#f3efe6;font:600 15px/1 "Figtree",sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.45);transition:scale .2s cubic-bezier(.2,.8,.2,1)}
   .fab:active{scale:.96;transition-duration:0s}
   .fab:focus-visible,.badge:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #c9944a;outline-offset:2px}
   .ic{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
-  .panel{position:fixed;right:14px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:2147483001;width:min(390px,calc(100vw - 28px));height:min(620px,calc(100dvh - 120px));display:flex;flex-direction:column;
+  .panel{position:fixed;left:16px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:2147483001;width:min(390px,calc(100vw - 28px));height:min(620px,calc(100dvh - 120px));display:flex;flex-direction:column;
     background:#f3efe6;color:#16302e;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden;animation:pop .36s cubic-bezier(.2,.8,.2,1) both}
   @keyframes pop{from{opacity:0;transform:scale(.96) translateY(8px)}}
   .panel[hidden],.fab[hidden]{display:none}
+  :host([data-tour]) .badge,:host([data-tour]) .fab{display:none}
+  @media (max-width:900px){:host([data-card]) .fab{display:none}}
   .hd{display:flex;align-items:center;gap:10px;padding:14px 12px 12px 16px;border-bottom:1px solid rgba(22,48,46,.14);background:#16302e;color:#f3efe6}
   .hd .av{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#c9944a;color:#16302e;font-weight:700;font-size:15px;flex:none}
   .hd .who{flex:1;min-width:0}.hd b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
@@ -103,42 +106,18 @@
   .gate .ck{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:13px;line-height:1.4;color:#4d6460}.gate .ck input{width:20px;height:20px;margin:1px 0 0;accent-color:#c9944a;flex:none}
   .gate .etapa2{display:grid;gap:12px;animation:pop .3s cubic-bezier(.2,.8,.2,1)}.gate .etapa2[hidden]{display:none}
   .gate .fine{margin:0;font-size:12px;color:#4d6460;line-height:1.4}
+  @media (max-width:900px){.fab{left:12px;bottom:calc(var(--dockh,76px) + 64px + env(safe-area-inset-bottom))}.badge{left:12px;top:calc(76px + env(safe-area-inset-top))}}
   @media (max-width:520px){.gate{align-items:end;padding:0}.gate form{border-radius:14px 14px 0 0;max-height:92dvh}.panel{right:8px;left:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom));height:min(80dvh,660px)}.badge{font-size:12px}}
-    .portal{position:fixed;inset:0;z-index:2147483003;display:grid;place-items:center;padding:16px;background:rgba(10,18,15,.62);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);font-family:"Figtree",system-ui,sans-serif}
-  .portal .box{width:min(760px,100%);background:#f3efe6;color:#16302e;border-radius:14px;padding:28px 26px 22px;box-shadow:0 30px 80px rgba(0,0,0,.4);display:grid;gap:16px;animation:pop .35s cubic-bezier(.2,.8,.2,1)}
-  .portal .eyebrow{margin:0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#80592a;font-weight:600}
-  .portal h2{margin:6px 0 4px;font:400 2rem/1.05 "Instrument Serif",Georgia,serif;letter-spacing:-.01em}
-  .portal .lead{margin:0;color:#4d6460;font-size:14px;line-height:1.45}
-  .portal .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .portal .opt{display:grid;gap:6px;justify-items:start;text-align:left;padding:16px 14px;min-height:132px;border-radius:9px;border:1px solid rgba(22,48,46,.18);background:#fffdf9;color:#16302e;cursor:pointer;font:inherit;transition:translate .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s,scale .2s}
-  .portal .opt:hover{translate:0 -2px;box-shadow:0 10px 24px rgba(0,0,0,.14);border-color:#c9944a}
-  .portal .opt:active{scale:.97}.portal .opt:focus-visible{outline:2px solid #c9944a;outline-offset:2px}
-  .portal .opt .ic{width:26px;height:26px;stroke:#80592a;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-  .portal .opt b{font:400 1.45rem/1 "Instrument Serif",Georgia,serif}
-  .portal .opt small{color:#4d6460;font-size:12px;line-height:1.35}
-  .portal .opt.main{background:#16302e;color:#f3efe6;border-color:#16302e}.portal .opt.main small{color:rgba(243,239,230,.8)}.portal .opt.main .ic{stroke:#f0c27f}
-  .modo{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483001;display:flex;gap:8px;align-items:center;padding:7px 12px;border-radius:999px;background:rgba(22,48,46,.9);color:#f3efe6;font:500 12px "Figtree",system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .modo{position:fixed;left:50%;translate:-50% 0;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483001;display:flex;gap:8px;align-items:center;padding:7px 12px;border-radius:999px;background:rgba(22,48,46,.9);color:#f3efe6;font:500 12px "Figtree",system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}
   .modo button{all:unset;cursor:pointer;color:#f0c27f;text-decoration:underline;text-underline-offset:2px}.modo button:focus-visible{outline:2px solid #f0c27f;outline-offset:2px;border-radius:4px}
-  @media (max-width:640px){.portal{align-items:end;padding:0}.portal .box{border-radius:14px 14px 0 0;padding:22px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:94dvh;overflow:auto}.portal .opts{grid-template-columns:1fr}.portal .opt{min-height:0;grid-template-columns:auto 1fr;column-gap:12px;align-items:center}.portal .opt .ic{grid-row:span 2}}
     .sig-w{display:grid;gap:6px}.sig{width:100%;height:120px;border-radius:9px;border:1px dashed rgba(22,48,46,.4);background:#fffdf9;touch-action:none;cursor:crosshair;display:block}
   .sig-w .row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#4d6460;font-weight:400}.sig-w .row button{all:unset;cursor:pointer;color:#80592a;text-decoration:underline;font-weight:600}
   .gate form.ct{max-height:94dvh;overflow:auto}.gate .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gate .btn.alt2{background:transparent;color:#16302e;border:1px solid rgba(22,48,46,.3)}
   .modo{flex-wrap:wrap;max-width:calc(100vw - 24px)}@media (max-width:900px){.modo{bottom:calc(env(safe-area-inset-bottom,0px) + var(--dockh,76px) + 84px)}}.modo button.sep{margin-left:4px;padding-left:10px;border-left:1px solid rgba(243,239,230,.3)}
-  @media (prefers-reduced-motion:reduce){.portal .box{animation:none}.portal .opt{transition:none}.portal .opt:active{scale:1}}
   @media (prefers-reduced-motion:reduce){.badge,.panel{animation:none}.fab:active,.btn:active{scale:1}}`;
   const ICON = { chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
     wa: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>' };
-  Object.assign(ICON, { obra: '<path d="M4 21V5l9-2v18"/><path d="M13 9h7v12"/><path d="M8 8h1M8 12h1M8 16h1M16 13h1M16 17h1"/>', corretor: '<circle cx="12" cy="7" r="3.2"/><path d="M5 21v-1.5A5.5 5.5 0 0 1 10.5 14h3A5.5 5.5 0 0 1 19 19.5V21"/><path d="M12 14v4"/>', cliente: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>' });
-  const P = {
-    "pt-BR": { h: "Escolha seu perfil", lead: (e) => `Apresentação de ${e}. Cada perfil abre de um jeito.`,
-      c1: "Construtora", d1: "Abrir o painel de gestão: clientes, corretores e avisos.", c2: "Corretor", d2: "Apresentar o empreendimento. Nenhum dado é coletado.", c3: "Cliente", d3: "Conhecer o empreendimento e falar com o corretor.",
-      modo: "Modo corretor · sem coleta de dados", trocar: "Trocar perfil" },
-    en: { h: "Choose your profile", lead: (e) => `${e} presentation. Each profile opens differently.`,
-      c1: "Developer", d1: "Open the management panel: clients, brokers and alerts.", c2: "Broker", d2: "Present the development. No data is collected.", c3: "Client", d3: "Explore the development and talk to the broker.",
-      modo: "Broker mode · no data collection", trocar: "Switch profile" },
-    es: { h: "Elige tu perfil", lead: (e) => `Presentación de ${e}. Cada perfil abre distinto.`,
-      c1: "Constructora", d1: "Abrir el panel de gestión: clientes, corredores y avisos.", c2: "Corredor", d2: "Presentar el proyecto. No se recopilan datos.", c3: "Cliente", d3: "Conocer el proyecto y hablar con el corredor.",
-      modo: "Modo corredor · sin recopilación de datos", trocar: "Cambiar perfil" } };
+  const MODO = { "pt-BR": "Modo corretor · sem coleta de dados", en: "Broker mode · no data collection", es: "Modo corredor · sin recopilación de datos" };
   const svg = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ini = (n) => String(n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
@@ -153,29 +132,25 @@
     let lang = idiomas.find((l) => nav.startsWith(l.toLowerCase().split("-")[0])) || idiomas[0];
     let t = T[lang] || T["pt-BR"], aba = info.ia ? "ia" : "contato", ocupado = false, aberto = false, msgs = null, gate = false, toques = 0, ultimo = 0;
     const LIMITE = 3;
-    // Perfil escolhido na tela inicial: construtora abre o painel; corretor ve a apresentacao sem coleta; cliente segue o fluxo (cadastro na 3a interacao).
-    const KEY = "lc_perfil_" + code;
-    let papel = null; try { papel = sessionStorage.getItem(KEY); } catch { /* sem storage */ }
-    if (papel !== "cliente" && papel !== "corretor") papel = null;
-    if (info.cliente) papel = "cliente"; // ja cadastrado neste aparelho: abre direto
+    // Papel pelo login (resolvido no fim): "cliente" (ninguém logado), "corretor" (corretor logado) ou "equipe" (dono logado: só olha).
+    let papel = null;
     const rec = info.recursos || {};
-    // Cliente sem cadastro: além da 3ª interação, o popup aparece sozinho 30 s depois de escolher "Cliente" (ou de abrir já como cliente)
+    // Cliente sem cadastro: além da 3ª interação, o popup aparece sozinho 30 s depois de abrir a apresentação
     let relogio = null;
     const armar = () => { clearTimeout(relogio); relogio = null; if (papel !== "cliente" || rec.cadastro === false || info.cliente) return; relogio = setTimeout(() => { if (papel === "cliente" && !gate && !info.cliente) { gate = true; render(); } }, 30000); };
-    const escolher = (p) => { if (p === "construtora") { location.href = "/painel/"; return; } if (p !== "cliente" && p !== "corretor") return; papel = p; try { sessionStorage.setItem(KEY, p); } catch { /* sem storage */ } toques = 0; cartaoAberto = p === "corretor" && !cartaoOk(); enviarAberto = false; render(); armar(); };
-    const trocar = () => { papel = null; try { sessionStorage.removeItem(KEY); } catch { /* sem storage */ } clearTimeout(relogio); render(); };
-    window.LC_EMBED = { escolher, trocar, papel: () => papel, abrirIA: () => { if (papel !== "cliente") escolher("cliente"); aba = info.ia ? "ia" : "contato"; if (pedirCadastro()) return; aberto = true; render(); } };  // usado pelos botões Corretor · Cliente · Construtora da casca (casca.js)
-    armar();
+    window.LC_EMBED = { papel: () => papel, abrirIA: () => { if (papel !== "cliente") return; aba = info.ia ? "ia" : "contato"; if (pedirCadastro()) return; aberto = true; render(); } };  // o tour 3D (iframe) chama abrirIA() no "Fale conosco"
     const fone = rec.whatsapp === false ? "" : String(info.whatsapp || "").replace(/\D/g, "");
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
+    const marcarTour = () => { host.toggleAttribute("data-tour", document.body.classList.contains("tour-on")); host.toggleAttribute("data-card", document.body.classList.contains("cardopen")); };
+    new MutationObserver(marcarTour).observe(document.body, { attributes: true, attributeFilter: ["class"] }); marcarTour();
     // conta interações na apresentação (não no widget); na terceira, pede o cadastro
     const interagiu = (e) => { if (papel !== "cliente" || rec.cadastro === false || info.cliente || gate || e.composedPath().includes(host)) return; const agora = Date.now(); if (agora - ultimo < 400) return; ultimo = agora; if (++toques >= LIMITE) { gate = true; render(); } };
     // 3ª interação: no celular conta o toque (pointerdown de dedo/caneta); no computador conta o CLIQUE completo do mouse (não tecla, não arrasto)
     document.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" || e.pointerType === "pen") interagiu(e); }, true);
     document.addEventListener("click", (e) => { if (e.pointerType === "mouse" || (!e.pointerType && !("ontouchstart" in window))) interagiu(e); }, true);
-    setInterval(() => { if (papel !== "corretor" && !document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
+    setInterval(() => { if (papel === "cliente" && !document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
 
     const cadastro = () => `<div class="gate" ${gate ? "" : "hidden"} role="dialog" aria-modal="true" aria-labelledby="lc-reg-t"><form class="reg" novalidate>
       <p class="eyebrow">${esc(info.empresa || info.empreendimento)}</p><h2 id="lc-reg-t">${esc(t.reg_t)}</h2><p class="lead">${esc(t.reg_s(info.corretor))}</p>
@@ -195,7 +170,7 @@
 
     // ───── Corretor: dados para proposta (nome, telefone, e-mail, assinatura digital) → ficam no painel da construtora ─────
     const CK = "lc_corretor_card", SK = "lc_cartao_" + code;
-    let cartaoAberto = false, enviarAberto = false;
+    let cartaoAberto = false, enviarAberto = false, adiado = false;
     const lerCartao = () => { try { return JSON.parse(localStorage.getItem(CK) || "null"); } catch { return null; } };
     const cartaoOk = () => !!info.cartao;  // vem do servidor: uma vez cadastrado (pela construtora ou pelo corretor), o popup não abre mais
     const publicar = (c) => { window.LC_CORRETOR = c; document.dispatchEvent(new CustomEvent("lc:corretor", { detail: c })); };
@@ -210,7 +185,7 @@
       <div class="sig-w"><span style="font-weight:600;font-size:13px">Assinatura digital</span><canvas class="sig" width="720" height="240" aria-label="Quadro de assinatura: desenhe com o dedo ou o mouse"></canvas>
       <div class="row"><span>Desenhe com o dedo ou o mouse.</span><button type="button" data-limpar>Limpar</button></div></div>
       <label class="ck"><input name="ok" type="checkbox"><span>Confirmo que sou o corretor responsável por este atendimento e autorizo o uso dos meus dados e da assinatura nas propostas.</span></label>
-      <p class="er" role="alert"></p><button class="btn" type="submit">Salvar e continuar</button><button class="btn alt2" type="button" data-nao>Não sou o corretor</button></form></div>`; };
+      <p class="er" role="alert"></p><button class="btn" type="submit">Salvar e continuar</button><button class="btn alt2" type="button" data-nao>Agora não</button></form></div>`; };
     const enviarForm = () => { const c = window.LC_CORRETOR || dadosCorretor(); return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-en-t"><form class="reg ct" novalidate>
       <p class="eyebrow">${esc(info.empreendimento)}</p><h2 id="lc-en-t">Enviar ao cliente</h2>
       <p class="lead">Mensagem com o link da apresentação e a sua assinatura (${esc(c.nome || "corretor")}).</p>
@@ -218,10 +193,10 @@
       <div class="two"><label>WhatsApp do cliente<input class="t" name="ct" type="tel" inputmode="tel" placeholder="(47) 99999-9999"></label><label>E-mail do cliente<input class="t" name="ce" type="email"></label></div>
       <button class="btn" type="button" data-wa>Enviar pelo WhatsApp</button><button class="btn alt2" type="button" data-mail>Enviar por e-mail</button><button class="btn alt2" type="button" data-fechar>Fechar</button></form></div>`; };
     function renderCorretor() {
-      const pp = P[lang] || P["pt-BR"]; if (!info.cartao) { cartaoAberto = true; enviarAberto = false; }
-      sh.innerHTML = `<style>${CSS}</style>${cartaoAberto ? formCorretor() : ""}${enviarAberto ? enviarForm() : ""}<div class="modo" role="status"><span>${esc(pp.modo)}</span>
-        ${info.cartao ? '<button class="sep" type="button" data-enviar>Enviar ao cliente</button>' : ""}<button class="sep" type="button" data-trocar>${esc(pp.trocar)}</button></div>`;
-      sh.querySelector("[data-trocar]").onclick = trocar;
+      if (!info.cartao && !adiado) { cartaoAberto = true; enviarAberto = false; }
+      sh.innerHTML = `<style>${CSS}</style>${cartaoAberto ? formCorretor() : ""}${enviarAberto ? enviarForm() : ""}<div class="modo" role="status"><span>${esc(MODO[lang] || MODO["pt-BR"])}</span>
+        ${info.cartao ? '<button class="sep" type="button" data-enviar>Enviar ao cliente</button>' : '<button class="sep" type="button" data-cartao>Meus dados</button>'}</div>`;
+      const bc = sh.querySelector("[data-cartao]"); if (bc) bc.onclick = () => { adiado = false; cartaoAberto = true; render(); };
       const be = sh.querySelector("[data-enviar]"); if (be) be.onclick = () => { enviarAberto = true; cartaoAberto = false; render(); };
       const fe = sh.querySelector(".gate form"); if (!fe) return;
       if (fe.querySelector("[data-fechar]")) {
@@ -240,7 +215,7 @@
       cv.onpointermove = (e) => { if (!desenhando) return; const p = pt(e); cx.beginPath(); cx.moveTo(ult[0], ult[1]); cx.lineTo(p[0], p[1]); cx.stroke(); ult = p; tracos++; };
       cv.onpointerup = cv.onpointercancel = () => { desenhando = false; };
       fe.querySelector("[data-limpar]").onclick = () => { cx.clearRect(0, 0, cv.width, cv.height); tracos = 0; };
-      fe.querySelector("[data-nao]").onclick = () => { cartaoAberto = false; trocar(); };
+      fe.querySelector("[data-nao]").onclick = () => { adiado = true; cartaoAberto = false; render(); };
       setTimeout(() => fe.elements.nome.focus(), 50);
       fe.onsubmit = async (e) => { e.preventDefault(); const er = fe.querySelector(".er"), g = (n) => fe.elements[n].value.trim(); er.textContent = "";
         if (g("nome").length < 2) return (er.textContent = "Informe seu nome.");
@@ -257,19 +232,7 @@
     }
     function render() {
       t = T[lang] || T["pt-BR"];
-      const pp = P[lang] || P["pt-BR"];
-      if (papel === null) { // tela inicial: tres perfis
-        sh.innerHTML = `<style>${CSS}</style><div class="portal" role="dialog" aria-modal="true" aria-labelledby="lc-pf-t"><div class="box">
-          <div><p class="eyebrow">${esc(info.empresa || info.empreendimento)}</p><h2 id="lc-pf-t">${esc(pp.h)}</h2><p class="lead">${esc(pp.lead(info.empreendimento))}</p></div>
-          <div class="opts">
-            <button class="opt" type="button" data-p="construtora">${svg("obra")}<b>${esc(pp.c1)}</b><small>${esc(pp.d1)}</small></button>
-            <button class="opt" type="button" data-p="corretor">${svg("corretor")}<b>${esc(pp.c2)}</b><small>${esc(pp.d2)}</small></button>
-            <button class="opt main" type="button" data-p="cliente">${svg("cliente")}<b>${esc(pp.c3)}</b><small>${esc(pp.d3)}</small></button>
-          </div></div></div>`;
-        sh.querySelectorAll(".opt").forEach((b) => (b.onclick = () => escolher(b.dataset.p)));
-        (sh.querySelector(".opt.main") || sh.querySelector(".opt")).focus();
-        return;
-      }
+      if (papel === null || papel === "equipe") { sh.innerHTML = ""; return; } // carregando, ou dono olhando: nada por cima do mapa
       if (papel === "corretor") { renderCorretor(); return; } // apresentação normal: sem faixa, sem IA, sem cadastro de cliente, sem batimento
       sh.innerHTML = `<style>${CSS}</style>${cadastro()}
         <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(info.corretor)}</b></span></button>
@@ -323,6 +286,7 @@
       } catch (e) { esp.className = "m err"; esp.textContent = e.message === "erro" ? t.net : e.message; }
       ocupado = false; go && (go.disabled = false); msgs = sh.querySelector(".msgs").innerHTML; sh.querySelector(".msgs").scrollTop = 1e6;
     }
-    render();
+    papel = info.meu_link ? "corretor" : info.equipe ? "equipe" : "cliente"; // logado no link dele: corretor; logado em qualquer outro: só olha
+    cartaoAberto = papel === "corretor" && !cartaoOk(); armar(); render();
   }
 })();

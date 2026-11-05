@@ -24,6 +24,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PAINEL = ROOT / "painel"
 SEED = ROOT / "tools" / "seed"
+APRESENTACAO = "apresentacao-montemerano"  # pasta da apresentação do cliente (mapa aéreo + tour 3D)
 DB_PATH = pathlib.Path(os.environ.get("LC_DB") or ROOT / "dados" / "link-corretor.db")
 HOST = "127.0.0.1"
 # Segredos só em .env.local (modelo em .env.example). GOOGLE_MAPS_KEY: chave de navegador do Google Maps Platform (Map Tiles API,
@@ -44,8 +45,7 @@ STATUS = ["novo", "contatado", "visita", "proposta", "fechado", "perdido"]
 CANAIS = ["whatsapp", "instagram", "qr", "email", "site", "outro"]
 IDIOMAS = ["pt-BR", "en", "es", "zh", "hi", "ar", "fr", "bn", "ru"]  # os 9 mais falados; mesma lista em IDIOMAS_IA do painel.js
 # Recursos da apresentação que a construtora liga/desliga por empreendimento (todos ligados por padrão).
-RECURSOS = {"sol": "Posição solar", "mapa": "Mapa com distâncias", "selo": "Selo do corretor que atende", "proposta": "Simulador de proposta",
-            "unidades": "Tabela de unidades", "whatsapp": "WhatsApp do corretor", "ia": "Perguntas à IA", "cadastro": "Cadastro do cliente (3ª interação)"}
+RECURSOS = {"selo": "Selo do corretor que atende", "whatsapp": "WhatsApp do corretor", "ia": "Perguntas à IA", "cadastro": "Cadastro do cliente (popup após 30 s)"}  # só o que a apresentação do Montemerano realmente tem
 CLAUDE_EXE = shutil.which("claude") or str(pathlib.Path.home() / ".local" / "bin" / "claude.exe")
 AI_MODEL = os.environ.get("LC_AI_MODEL", "haiku")
 AI_SEM = threading.Semaphore(3)
@@ -249,15 +249,8 @@ def pasta_ok(rel):
 
 
 def fontes_detectadas():
-    pulo = {".git", "node_modules", "vendor", "media", "tests", "original"}
-    achadas = []
-    base = ROOT / "Planta-Interativa"
-    if base.is_dir():
-        for ind in base.rglob("index.html"):
-            partes = ind.relative_to(ROOT).parts
-            if len(partes) > 6 or any(p in pulo for p in partes[:-1]): continue
-            achadas.append(ind.parent.relative_to(ROOT).as_posix())
-    return sorted(set(achadas))
+    """v2: a única apresentação é o mapa do Montemerano (com o tour 3D dentro)."""
+    return [APRESENTACAO] if (ROOT / APRESENTACAO / "index.html").is_file() else []
 
 
 def pasta_da(prop): return pasta_ok(prop["source_dir"]) if prop["source_dir"] else None
@@ -486,6 +479,8 @@ def fluxo_simulado_ligado(): return setting("demo_fluxo", "1") != "0"
 
 
 def simular_se_demo(p):
+    return  # v2: não há simulação de clientes; só dados reais
+    
     """Chama simular_cliente() com probabilidade p quando há corretores de exemplo e o fluxo simulado está ligado (padrão: ligado)."""
     try:
         if fluxo_simulado_ligado() and random.random() < p and q("SELECT 1 FROM users WHERE demo=1", one=True): simular_cliente()
@@ -503,15 +498,15 @@ def remover_exemplo():
 def semear_empreendimentos():
     def fatos(n):
         p = SEED / n; return p.read_text(encoding="utf-8") if p.is_file() else ""
-    base = "Planta-Interativa/Planta Interativa"
-    for nome, cidade, pasta, arq in [("Bossa Eco Luxury Villas", "Praia do Toque", f"{base}/app", "bossa-fatos.txt"), ("Felicità 402 Home Club", "Itapema · SC", f"{base}/apresentacao", "felicita-fatos.txt"),
-                                       ("Villa Montemerano", "Balneário Perequê · Porto Belo · SC", f"{base}/tour/dist", "montemerano-fatos.txt")]:  # o tour precisa estar compilado: npm run build:painel
+    # v2: só o Montemerano. A entrada é o mapa aéreo (apresentacao-montemerano/); o tour 3D compilado fica em apresentacao-montemerano/tour/ (npm run build:painel).
+    for nome, cidade, pasta, arq in [("Villa Montemerano", "Balneário Perequê · Porto Belo · SC", APRESENTACAO, "montemerano-fatos.txt")]:
         if pasta_ok(pasta) and not q("SELECT 1 FROM properties WHERE source_dir=?", (pasta,), one=True):
             run("INSERT INTO properties(name,city,source_dir,facts,languages) VALUES(?,?,?,?,?)", (nome, cidade, pasta, fatos(arq), json.dumps(IDIOMAS)))
 
 
 # ───────────────────────── rotas: conta ─────────────────────────
-def r_me(h, u, q_, b): return {"setup": setting("setup_done") is None, "user": usuario_publico(u) if u else None, "empresa": setting("business_name", ""), "logo": setting("business_logo", "") if u else "", "logo_shape": setting("business_logo_shape", "round"), "theme": json.loads(setting("business_theme", "null") or "null")}
+LOGO_PADRAO = "/painel/logo-justus.png"  # marca da incorporadora; a construtora pode trocar em Configurações
+def r_me(h, u, q_, b): return {"setup": setting("setup_done") is None, "user": usuario_publico(u) if u else None, "empresa": setting("business_name", ""), "logo": (setting("business_logo", "") or LOGO_PADRAO) if u else "", "logo_shape": setting("business_logo_shape", "wide" if not setting("business_logo", "") else "round"), "theme": json.loads(setting("business_theme", "null") or "null")}
 
 
 def r_setup(h, u, q_, b):
@@ -522,7 +517,7 @@ def r_setup(h, u, q_, b):
     uid = run("INSERT INTO users(role,name,email,pw_salt,pw_hash) VALUES('owner',?,?,?,?)", (nome, email, salt, hs))
     set_setting("business_name", empresa); set_setting("ai_monthly_limit", 300); set_setting("setup_done", "1")
     semear_empreendimentos()
-    exemplo = carregar_exemplo() if b.get("exemplo") else 0
+    exemplo = 0
     h.abrir_sessao(uid)
     return {"ok": True, "exemplo": exemplo}
 
@@ -597,7 +592,7 @@ def prop_pub(p):
     p["capa"] = capa_de(p); return p
 
 
-CAPAS = ["img/externa-01.webp", "media/hero-dia.jpg", "media/g02.jpg", "media/voo-geral.jpg", "media/render.webp", "capa.jpg", "capa.webp"]
+CAPAS = ["media/hi/m-externa-01.jpg", "media/hi/externa-01.jpg", "img/externa-01.webp", "media/hero-dia.jpg", "media/g02.jpg", "media/voo-geral.jpg", "media/render.webp", "capa.jpg", "capa.webp"]
 def capa_de(p):
     """Imagem 1:1 do cartão do empreendimento: a primeira das CAPAS que existir na pasta da apresentação (servida por /pre/<id>/)."""
     try:
@@ -858,7 +853,8 @@ def r_pub_info(h, u, q_, b, code):
             "idiomas": json.loads(L["languages"] or "[]"), "recursos": recursos_de(L), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
             "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"],
             "cartao": bool(q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True)),  # só diz SE já cadastrou; a assinatura nunca vai para o cliente
-            "corretor_email": (q("SELECT email FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (L["broker_id"],), one=True) or q("SELECT email FROM users WHERE id=?", (L["broker_id"],), one=True) or {}).get("email", "")}
+            "corretor_email": (q("SELECT email FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (L["broker_id"],), one=True) or {}).get("email", "") if (u and (u["role"] == "owner" or u["id"] == L["broker_id"])) else "",
+            "equipe": bool(u), "meu_link": bool(u and u["role"] == "broker" and u["id"] == L["broker_id"])}  # quem está logado: "meu_link" = o corretor dono deste link
 
 
 def r_pub_register(h, u, q_, b, code):
@@ -891,6 +887,7 @@ def r_pub_register(h, u, q_, b, code):
 def r_pub_corretor(h, u, q_, b, code):
     """Corretor (perfil 'Corretor' da apresentação) deixa nome, telefone, e-mail e assinatura para propostas: ficam no painel da construtora."""
     L = link_publico(code); need(L, "Link indisponível.", 404)
+    need(u and u["role"] == "broker" and u["id"] == L["broker_id"], "Entre no painel com o seu acesso de corretor para cadastrar seus dados.", 403)
     need(rate_ok(f"card:{h.client_address[0]}", 8, 600), "Muitos envios em pouco tempo. Aguarde alguns minutos.", 429)
     need(not q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True), "Os dados deste corretor já foram cadastrados. Para alterar, fale com a construtora.", 409)
     nome = txt(b.get("nome"), 120, "o nome", True); need(len(nome) >= 2, "Informe seu nome.")
@@ -954,7 +951,7 @@ ROTAS = [
     ("GET", r"/api/clientes", r_clientes, ANY), ("GET", r"/api/clientes/(\d+)", r_cliente, ANY), ("PATCH", r"/api/clientes/(\d+)", r_cliente_edit, ANY),
     ("GET", r"/api/links", r_links, ANY), ("POST", r"/api/links", r_link_new, ANY), ("PATCH", r"/api/links/(\d+)", r_link_edit, ANY),
     ("GET", r"/api/questions", r_questions, ANY),
-    ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER), ("POST", r"/api/exemplo", r_exemplo, OWNER),
+    ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER),
     ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB), ("POST", r"/api/p/([a-z0-9]+)/corretor", r_pub_corretor, PUB),
     ("PATCH", r"/api/brokers/(\d+)/cartao", r_cartao_edit, OWNER), ("POST", r"/api/brokers/(\d+)/cartao/liberar", r_cartao_liberar, OWNER),
     ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB),
@@ -1020,10 +1017,8 @@ class H(BaseHTTPRequestHandler):
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
-            tag = '<script src="/painel/materiais.js?v=3"></script><script src="/painel/casca.js?v=5"></script>' + tag  # materiais (galeria, planta, antes/depois) + cabeçalho padrão  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
-            if recursos is not None: tag = '<script>window.LC_CIDADE=' + json.dumps(recursos.get("cidade") or [], ensure_ascii=False).replace("</", "<\\/") + ';</script>' + tag  # boxes "Dados da cidade"
-            if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=16" data-code="{injetar_code}" defer></script>'
+            # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=20" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -1036,7 +1031,8 @@ class H(BaseHTTPRequestHandler):
             if ini > fim: return self.resp(416, b"", "text/plain", {"Content-Range": f"bytes */{tam}"})
             code = 206
         self.send_response(code); self.send_header("Content-Type", tipo); self.send_header("Accept-Ranges", "bytes")
-        self.send_header("Cache-Control", "no-cache" if ext in SEM_CACHE else "public, max-age=600"); self.send_header("Content-Length", str(fim - ini + 1 if tam else 0))
+        imutavel = ext in (".js", ".css") and "assets" in caminho.parts and re.search(r"-[A-Za-z0-9_-]{8}\.(js|css)$", caminho.name)  # bundles do Vite: o hash muda com o conteúdo
+        self.send_header("Cache-Control", "public, max-age=31536000, immutable" if imutavel else "no-cache" if ext in SEM_CACHE else "public, max-age=600"); self.send_header("Content-Length", str(fim - ini + 1 if tam else 0))
         if code == 206: self.send_header("Content-Range", f"bytes {ini}-{fim}/{tam}")
         self.cabecalhos_base(); self.end_headers()
         if self.command == "HEAD" or not tam: return
@@ -1072,7 +1068,7 @@ class H(BaseHTTPRequestHandler):
         pasta = pasta_da(L)
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
         v = visitante_do_cookie(self)
-        if not rel and v: registrar_abertura(self, v, L)  # cliente já identificado: abertura no nome dele. Sem cadastro, o widget pede depois de 3 interações
+        if not rel and v and not self.usuario(): registrar_abertura(self, v, L)  # cliente já identificado: abertura no nome dele. Sem cadastro, o widget pede depois de 3 interações
         self.servir_pasta(pasta, rel, L["entry"], injetar=code, voltar=True, recursos=recursos_de(L))
 
     def previa(self, pid, resto):
@@ -1089,7 +1085,7 @@ class H(BaseHTTPRequestHandler):
         L = link_publico(code)
         if not L: return self.pagina_erro(404, "Link indisponível", "Este link foi desativado ou não existe. Peça um novo ao seu corretor.")
         ua = self.headers.get("User-Agent") or ""; ip = self.client_address[0]
-        if not BOT_RE.search(ua) and rate_ok(f"click:{ip}", 90, 60):
+        if not BOT_RE.search(ua) and not self.usuario() and rate_ok(f"click:{ip}", 90, 60):  # quem está logado (equipe) testando o link não conta como clique
             visitante = hashlib.sha256(f"{ip}|{ua}".encode()).hexdigest()[:12]
             if not q("SELECT 1 FROM clicks WHERE link_id=? AND visitor=? AND ts>=datetime('now','-30 seconds')", (L["link_id"], visitante), one=True):
                 run("INSERT INTO clicks(link_id,device,visitor) VALUES(?,?,?)", (L["link_id"], "celular" if re.search(r"mobi|android|iphone", ua, re.I) else "computador", visitante))

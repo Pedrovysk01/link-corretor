@@ -6,6 +6,7 @@ import { MATERIALS } from './materials'
 import { Cidade } from './Cidade'
 import { ModelBoundary, ModelPiece } from './models/ModelPiece'
 import { preloadModels } from './models/preload'
+import { EMBED } from '../lib/embed'
 
 
 const GROUND_SIZE = 400
@@ -139,6 +140,6 @@ function Skyline({ bounds }: { readonly bounds: Rect }) {
 
 export function Surroundings({ kind, bounds, floorsBelow = 14 }: { readonly kind: 'garden' | 'skyline' | 'cidade'; readonly bounds: Rect; readonly floorsBelow?: number }) {
   if (kind === 'garden') preloadModels(['shrub_02', 'shrub_04']) // idempotente; só o jardim paga esses 3,8 MB
-  if (kind === 'cidade') return <Cidade bounds={bounds} floorsBelow={floorsBelow} />
+  if (kind === 'cidade') return EMBED ? null : <Cidade bounds={bounds} floorsBelow={floorsBelow} /> // dentro do mapa, o entorno é o aéreo do site
   return kind === 'garden' ? <Garden bounds={bounds} /> : <Skyline bounds={bounds} />
 }

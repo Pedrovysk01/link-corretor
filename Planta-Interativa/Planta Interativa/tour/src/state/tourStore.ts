@@ -10,6 +10,9 @@ export interface TourState {
   readonly activeRoomId: string | null
   readonly visitedRoomIds: readonly string[]
   readonly isInquiryOpen: boolean
+  /** Panorama 360° ligado dentro do ambiente (quando o ambiente tem `pano`). Começa ligado ao entrar. */
+  readonly pano360: boolean
+  setPano360: (on: boolean) => void
   /** Leave the film for the 3D tour, starting at the dollhouse overview. */
   enterTour: () => void
   /** Go back to the cinematic film. */
@@ -29,6 +32,8 @@ export const createTourStore = ({ propertyId, roomId, view }: TourLocation) =>
     activeRoomId: roomId,
     visitedRoomIds: roomId ? [roomId] : [],
     isInquiryOpen: false,
+    pano360: true,
+    setPano360: (on) => set({ pano360: on }),
 
     enterTour: () => set({ view: 'tour', mode: 'overview', activeRoomId: null }),
     showFilm: () => set({ view: 'film', mode: 'overview', activeRoomId: null }),

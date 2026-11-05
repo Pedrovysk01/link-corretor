@@ -1,6 +1,0 @@
-node_modules
-.unlazy/
-.unlazy-hook-state.json
-tests/out/
-
-.vercel

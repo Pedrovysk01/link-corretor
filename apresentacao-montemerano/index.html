@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Villa Montemerano · Mapa interativo</title>
+<meta name="description" content="Mapa interativo da Villa Montemerano Residence, Balneário Perequê, Porto Belo/SC: prédio, andares, plantas, lazer, imagens e visualização 3D.">
+<link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
+<link rel="preload" href="vendor/fonts/Figtree-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="vendor/fonts/InstrumentSerif-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="data/empreendimento.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/ficha.css">
+<link rel="stylesheet" href="css/telas.css">
+<link rel="stylesheet" href="css/componentes.css">
+<link rel="stylesheet" href="css/celular.css">
+<link rel="stylesheet" href="css/vendas.css">
+<link rel="stylesheet" href="css/materiais.css">
+<link rel="stylesheet" href="css/montemerano.css">
+<link rel="stylesheet" href="css/tour.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<main>
+  <!-- Mapa Aéreo 2D com pan e zoom -->
+  <div class="pzv" id="mview" aria-label="Mapa aéreo do entorno da Villa Montemerano">
+    <div class="pzw" id="mworld">
+      <img id="mimg" alt="Vista aérea do Balneário Perequê com a Villa Montemerano" src="media/hero/aerea-hero-1800.webp" srcset="media/hero/aerea-hero-1800.webp 1800w, media/hero/aerea-hero-2600.webp 2600w" sizes="100vw" decoding="async" fetchpriority="high" draggable="false">
+      <div id="torre-fx" aria-hidden="true"></div>
+      <svg id="msvg" viewBox="0 0 1800 1214" aria-hidden="true"></svg>
+    </div>
+  </div>
+  <div id="pins"></div>
+  <div class="fx-luz" aria-hidden="true"><i class="fx-flare"></i><i class="fx-part"></i></div>
+
+  <!-- Abertura: a primeira impressão. Título em tipografia grande sobre a foto, que desce para o cabeçalho enquanto a câmera voa até a torre. -->
+  <div id="intro" aria-hidden="true">
+    <div class="it-eyebrow">Justus Incorporadora · Balneário Perequê</div>
+    <h2 class="it-title"><span class="w"><i>Villa</i></span> <span class="w"><i><em>Montemerano</em></i></span></h2>
+    <div class="it-sub"><span>20 pavimentos</span><span>40 apartamentos</span><span>659 m² de lazer</span></div>
+  </div>
+
+  <!-- Maquete 3D (Three.js) -->
+  <div id="v3d" hidden><div id="v3msg" hidden></div></div>
+
+  <!-- Barra Superior de Navegação -->
+  <header class="bar">
+    <div class="bar-l">
+      <div class="brand">
+        <div class="eyebrow">Justus Incorporadora · Balneário Perequê</div>
+        <h1>Villa <i>Montemerano</i></h1>
+      </div>
+      <div class="seg view-seg" role="group" aria-label="Tipo de visão">
+        <button class="chip" data-v="2d" aria-pressed="true">Visão de Cima</button>
+        <button class="chip c3d" data-v="3d" aria-pressed="false">Visão 3D</button>
+      </div>
+    </div>
+    <div class="bar-r">
+      <nav class="controls" aria-label="Menu principal">
+        <button class="chip" data-act="geral" aria-pressed="true">Visão geral</button>
+        <button class="chip" data-panel="andares" aria-haspopup="true" aria-expanded="false" aria-controls="p-andares">Andares (20)</button>
+        <button class="chip" data-panel="chamarizes" aria-haspopup="true" aria-expanded="false" aria-controls="p-chamarizes">Chamarizes</button>
+        <button class="chip" data-panel="plantas" aria-haspopup="true" aria-expanded="false" aria-controls="p-plantas">Plantas</button>
+        <button class="chip" data-act="exp">Experiências</button>
+        <button class="chip" data-panel="materiais" aria-haspopup="true" aria-expanded="false" aria-controls="p-materiais">Materiais</button>
+        <button class="chip" data-act="film">Apresentação</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Dock Mobile -->
+  <nav class="dock" aria-label="Menu principal">
+    <button class="chip" data-act="geral" aria-pressed="true"><span>Geral</span></button>
+    <button class="chip" data-panel="andares" aria-haspopup="true" aria-expanded="false" aria-controls="p-andares"><span>Andares</span></button>
+    <button class="chip" data-panel="chamarizes" aria-haspopup="true" aria-expanded="false" aria-controls="p-chamarizes"><span>Áreas</span></button>
+    <button class="chip" data-panel="plantas" aria-haspopup="true" aria-expanded="false" aria-controls="p-plantas"><span>Plantas</span></button>
+    <button class="chip" data-act="exp"><span>Exp.</span></button>
+    <button class="chip" data-panel="materiais" aria-haspopup="true" aria-expanded="false" aria-controls="p-materiais"><span>Mais</span></button>
+  </nav>
+
+  <!-- Painéis Flutuantes -->
+  <div class="panel" id="p-andares" role="group" aria-label="Pavimentos residenciais" hidden></div>
+  <div class="panel" id="p-chamarizes" role="group" aria-label="Chamarizes do empreendimento" hidden></div>
+  <div class="panel" id="p-plantas" role="group" aria-label="Plantas oficiais" hidden></div>
+  <div class="panel" id="p-materiais" role="group" aria-label="Materiais comerciais" hidden></div>
+
+  <!-- Controles de Zoom -->
+  <div class="zoom" id="zoom"><button id="zin" aria-label="Aproximar">+</button><button id="zout" aria-label="Afastar">−</button></div>
+  
+  <!-- Legenda inferior -->
+  <aside class="legend" aria-label="Resumo do empreendimento">
+    <span id="lg-fatos">20 andares tipo · 40 apartamentos · 659 m² lazer</span>
+    <button class="linfo" id="infobtn" aria-haspopup="dialog" aria-label="Como usar e informações legais">i</button>
+  </aside>
+
+  <div class="tip" id="tip" hidden></div>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <aside class="card" id="card" hidden aria-live="polite"></aside>
+</main>
+
+<!-- Visualizador de Plantas com Pan/Zoom -->
+<section class="plv" id="pl" hidden role="dialog" aria-modal="true" aria-label="Plantas oficiais">
+  <div class="pzv" id="plview"><div class="pzw" id="plworld"><img id="plimg" alt="" draggable="false"><svg id="plsvg" aria-hidden="true"></svg></div></div>
+  <div id="plpins"></div>
+  <div class="pl-top">
+    <div><small>Plantas</small><b id="pl-title"></b></div>
+    <div class="seg" id="pl-tabs" role="group" aria-label="Escolher planta"></div>
+    <button class="x" id="pl-x" aria-label="Fechar plantas">×</button>
+  </div>
+  <div class="pl-hint" id="pl-hint"></div>
+  <div class="zoom" style="z-index:3"><button id="plin" aria-label="Aproximar">+</button><button id="plout" aria-label="Afastar">−</button></div>
+</section>
+
+<!-- Janela de Informações e Uso -->
+<div class="auth" id="info" hidden role="dialog" aria-modal="true" aria-labelledby="infot"><div class="box">
+  <button class="x" aria-label="Fechar">×</button>
+  <div class="eyebrow">Informações</div><h2 id="infot">Como usar o mapa interativo</h2>
+  <p class="lead">Navegue pelo empreendimento: arraste para mover a visão e use a roda do mouse ou a pinça para aproximar.</p>
+  <article><small>Interatividade</small><p>Toque ou clique em qualquer um dos <strong>20 andares</strong>, no <strong>Lazer (659 m²)</strong>, no <strong>Hall de Entrada</strong> ou nas <strong>Garagens</strong> para abrir a ficha completa daquela unidade com fotos, vídeo e planta.</p></article>
+  <article><small>Visão 3D</small><p>Alterne para a <strong>Visão 3D</strong> para orbitar o prédio em 3D real, inclinar e aproximar. No 3D, cada andar e chamariz continua interativo com destaque e clique direto.</p></article>
+  <article><small>Localização</small><p id="info-end"></p></article>
+  <article><small>Informações legais</small><p id="info-legal"></p></article>
+</div></div>
+
+<!-- Player de Vídeo em Tela Cheia -->
+<div class="cine" id="cine" hidden><video id="cv" muted playsinline preload="auto"></video><div class="prog" id="cbar"></div>
+  <div class="cap"><small id="ck"></small><b id="ct"></b><p id="cp"></p></div><button class="skip" id="cskip">Ir para o mapa ›</button><button class="cine-x" id="cx" aria-label="Fechar vídeo">×</button></div>
+
+<!-- Grade de Experiências -->
+<section class="exp" id="exp" hidden aria-label="Experiências do empreendimento"><button class="cine-x exp-x" id="expX" aria-label="Fechar experiências">×</button><div class="exp-in">
+  <div class="exp-head"><div><div class="eyebrow">Villa Montemerano</div><h2>A vida no <i>Montemerano</i></h2>
+    <p>Ambientes do lazer e do apartamento. Toque em qualquer um para assistir.</p></div>
+    <button id="expClose">Voltar ao mapa</button></div>
+  <div class="grid" id="grid"></div></div></section>
+
+<!-- Visualizador Lightbox de Imagem Ampliada -->
+<div class="pv" id="pv" hidden role="dialog" aria-modal="true" aria-label="Imagem ampliada">
+  <div class="top"><div><small id="pvk"></small><b id="pvt"></b></div><button class="x" id="pvx" aria-label="Fechar">×</button></div>
+  <div class="canvas" id="pvc"><img id="pvi" alt=""><span class="ilus">Imagem ilustrativa</span><button class="pva l" id="pvl" aria-label="Imagem anterior">‹</button><button class="pva r" id="pvr" aria-label="Próxima imagem">›</button><span class="pvn" id="pvnum"></span></div>
+  <div class="bot"><div class="ptabs" id="pvtabs"></div>
+    <div class="zb"><button id="pvo" aria-label="Afastar">−</button><button id="pvf" aria-label="Ajustar">⤢</button><button id="pvn" aria-label="Aproximar">+</button></div></div>
+</div>
+
+<!-- Player Lightbox de Vídeo de Experiência -->
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Vídeo da experiência">
+  <div class="top"><small id="lbk"></small><button class="x" id="lbx" aria-label="Fechar">×</button></div>
+  <div class="stage"><div class="frame" id="lbf"><video id="lbv" muted playsinline></video><img id="lbimg" alt="" hidden><span class="ilus" style="bottom:14px">Imagens ilustrativas</span><div class="prog" id="lbp"></div></div>
+    <button class="arrow l" id="lbl" aria-label="Anterior">‹</button><button class="arrow r" id="lbr" aria-label="Próxima">›</button></div>
+  <div class="info"><div><b id="lbt"></b><p id="lbd"></p></div><div class="meta"><div class="thumbs" id="lbthumbs"></div><div class="dots" id="lbdots"></div></div></div>
+</div>
+</body>
+</html>
