@@ -1,0 +1,38 @@
+[
+ {
+  "id": "bossa",
+  "url": "http://127.0.0.1:8117/",
+  "recursos": 37,
+  "hosts": [
+   [
+    "127.0.0.1:8117",
+    37
+   ]
+  ],
+  "scripts": 16,
+  "assets": 7,
+  "libs": [
+   "(+3 endpoint_candidate de confiança baixa omitidos: nomes de uniforms/atributos, não endpoints)"
+  ],
+  "endpoints": 1,
+  "chunks": 16
+ },
+ {
+  "id": "felicita",
+  "url": "http://127.0.0.1:8118/#projeto",
+  "recursos": 15,
+  "hosts": [
+   [
+    "127.0.0.1:8118",
+    15
+   ]
+  ],
+  "scripts": 8,
+  "assets": 7,
+  "libs": [
+   "(+180 endpoint_candidate de confiança baixa omitidos: nomes de uniforms/atributos, não endpoints)"
+  ],
+  "endpoints": 0,
+  "chunks": 8
+ }
+]
