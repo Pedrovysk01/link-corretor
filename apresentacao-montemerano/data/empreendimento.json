@@ -1,0 +1,2124 @@
+{
+ "nome": "Villa Montemerano",
+ "mostrarStatus": false,
+ "endereco": "Av. Dorvalino Voltolini · Balneário Perequê · Porto Belo · SC",
+ "incorporadora": "Justus Incorporadora",
+ "projeto": "RS Concept Arquitetura e Engenharia",
+ "contato": {
+  "whatsapp": "",
+  "email": ""
+ },
+ "legal": "A área privativa corresponde à área privativa total e diverge da área útil ou de “vassoura”. De acordo com a lei 4591/64, informamos que as imagens e ilustrações contidas neste material possuem caráter exclusivamente promocional. Os móveis, assim como alguns materiais de acabamento representados nas ilustrações e plantas, não fazem parte do contrato. O apartamento será entregue conforme indicado no memorial descritivo, podendo haver modificações em função do projeto estrutural sem aviso prévio.",
+ "fatos": [
+  "659 m² de área de lazer",
+  "Apartamentos de 3 suítes e 2 vagas de garagem",
+  "Fachada contemporânea",
+  "2 modernos elevadores",
+  "Medidores individuais de água e gás",
+  "Sistema de captação e reaproveitamento de água da chuva para limpeza de calçadas",
+  "Sistema de gás central",
+  "Todos os apartamentos de frente para a rua",
+  "Som ambiente em toda a área de lazer",
+  "Áreas comuns com iluminação em LED e sensores de presença",
+  "Lava-pés e acesso de banhistas",
+  "Completa e ampla área de lazer"
+ ],
+ "aptos": [
+  {
+   "id": "a116",
+   "titulo": "Apartamento 116,60 m²",
+   "area": "116,60",
+   "suites": 3,
+   "vagas": 2,
+   "lado": "esquerdo",
+   "ambientes": [
+    {
+     "n": "Living",
+     "m2": "45,56"
+    },
+    {
+     "n": "Suíte master",
+     "m2": "13,50"
+    },
+    {
+     "n": "Suíte 02",
+     "m2": "11,20"
+    },
+    {
+     "n": "Suíte 01",
+     "m2": "11,60"
+    },
+    {
+     "n": "BWC",
+     "m2": "3,46"
+    },
+    {
+     "n": "BWC",
+     "m2": "3,46"
+    },
+    {
+     "n": "BWC",
+     "m2": "3,40"
+    },
+    {
+     "n": "Circulação",
+     "m2": "7,20"
+    },
+    {
+     "n": "Lavabo",
+     "m2": "2,12"
+    },
+    {
+     "n": "Á. Serviço",
+     "m2": "2,80"
+    }
+   ],
+   "itens": [
+    "Acabamento de alto padrão",
+    "Sacada com churrasqueira a carvão",
+    "Teto em gesso",
+    "Amplo living",
+    "Lavabo",
+    "Tubulação para água quente",
+    "Infraestrutura para ar-condicionado tipo split",
+    "Piso em porcelanato"
+   ],
+   "galeria": [
+    [
+     "living-estar",
+     "Living estar"
+    ],
+    [
+     "living-jantar",
+     "Living jantar"
+    ],
+    [
+     "sacada",
+     "Sacada"
+    ],
+    [
+     "suite",
+     "Suíte master"
+    ]
+   ],
+   "video": "v-living-estar"
+  },
+  {
+   "id": "a128",
+   "titulo": "Apartamento 128,60 m²",
+   "area": "128,60",
+   "suites": 3,
+   "vagas": 2,
+   "lado": "direito",
+   "ambientes": [
+    {
+     "n": "Living",
+     "m2": "50,20"
+    },
+    {
+     "n": "Suíte master",
+     "m2": "14,75"
+    },
+    {
+     "n": "Suíte 02",
+     "m2": "13,40"
+    },
+    {
+     "n": "Suíte 01",
+     "m2": "13,50"
+    },
+    {
+     "n": "BWC",
+     "m2": "3,73"
+    },
+    {
+     "n": "BWC",
+     "m2": "3,73"
+    },
+    {
+     "n": "BWC",
+     "m2": "3,30"
+    },
+    {
+     "n": "Circulação",
+     "m2": "8,20"
+    },
+    {
+     "n": "Lavabo",
+     "m2": "2,12"
+    },
+    {
+     "n": "Á. Serviço",
+     "m2": "2,86"
+    }
+   ],
+   "itens": [
+    "Acabamento de alto padrão",
+    "Sacada com churrasqueira a carvão",
+    "Teto em gesso",
+    "Amplo living",
+    "Lavabo",
+    "Tubulação para água quente",
+    "Infraestrutura para ar-condicionado tipo split",
+    "Piso em porcelanato"
+   ],
+   "galeria": [
+    [
+     "living-jantar",
+     "Living jantar"
+    ],
+    [
+     "living-estar",
+     "Living estar"
+    ],
+    [
+     "suite",
+     "Suíte master"
+    ],
+    [
+     "sacada",
+     "Sacada"
+    ]
+   ],
+   "video": "v-living-jantar"
+  }
+ ],
+ "mapa": {
+  "w": 1800,
+  "h": 1214,
+  "predio": [
+   [
+    1318,
+    268
+   ],
+   [
+    1400,
+    268
+   ],
+   [
+    1402,
+    300
+   ],
+   [
+    1470,
+    322
+   ],
+   [
+    1472,
+    900
+   ],
+   [
+    1236,
+    896
+   ],
+   [
+    1234,
+    330
+   ],
+   [
+    1318,
+    300
+   ]
+  ],
+  "lazer": [
+   [
+    1188,
+    914
+   ],
+   [
+    1236,
+    896
+   ],
+   [
+    1472,
+    902
+   ],
+   [
+    1496,
+    884
+   ],
+   [
+    1498,
+    940
+   ],
+   [
+    1472,
+    984
+   ],
+   [
+    1236,
+    978
+   ],
+   [
+    1190,
+    960
+   ]
+  ],
+  "pins": [
+   {
+    "id": "predio",
+    "t": "Villa Montemerano · 20 andares",
+    "p": [
+     1359,
+     268
+    ]
+   },
+   {
+    "id": "chamariz-lazer",
+    "t": "Lazer · 659 m²",
+    "p": [
+     1343,
+     915
+    ]
+   },
+   {
+    "id": "chamariz-hall",
+    "t": "Hall de Entrada & Portaria",
+    "p": [
+     1348,
+     1016
+    ]
+   }
+  ],
+  "views": [
+   [
+    "geral",
+    "Visão geral",
+    [
+     450,
+     250,
+     1650,
+     1000
+    ]
+   ],
+   [
+    "predio",
+    "O prédio",
+    [
+     1180,
+     230,
+     1540,
+     1000
+    ]
+   ],
+   [
+    "lazer",
+    "Lazer",
+    [
+     1150,
+     850,
+     1550,
+     1010
+    ]
+   ],
+   [
+    "entorno",
+    "Entorno",
+    [
+     0,
+     330,
+     1250,
+     1214
+    ]
+   ]
+  ],
+  "geo": {
+   "lat": -27.14,
+   "lon": -48.55,
+   "tz": -3,
+   "norte": 180
+  }
+ },
+ "filmGeral": [
+  "media/v-filme-completo",
+  "Apresentação",
+  "Villa Montemerano",
+  "Balneário Perequê, Porto Belo · SC"
+ ],
+ "experiencias": [
+  [
+   "piscinas",
+   "Piscinas",
+   "Piscina adulto e piscina infantil no pavimento de lazer.",
+   [
+    "v:v-piscina-tk-01",
+    "v:v-piscina-tk-02",
+    [
+     "piscina",
+     "Piscinas"
+    ]
+   ],
+   "v-piscina-tk-01",
+   null
+  ],
+  [
+   "salao",
+   "Salão de festas",
+   "82,70 m² de salão, com cozinha de apoio e lavabos.",
+   [
+    "v:v-salao-de-festas",
+    [
+     "salao-de-festas",
+     "Salão de festas"
+    ]
+   ],
+   "v-salao-de-festas",
+   null
+  ],
+  [
+   "academia",
+   "Academia",
+   "44,00 m² equipados, dentro do pavimento de lazer.",
+   [
+    "v:v-academia",
+    [
+     "academia",
+     "Academia"
+    ]
+   ],
+   "v-academia",
+   null
+  ],
+  [
+   "jogos",
+   "Sala de jogos",
+   "54,10 m² para jogos e convívio.",
+   [
+    "v:v-sala-de-jogos",
+    [
+     "sala-de-jogos",
+     "Sala de jogos"
+    ]
+   ],
+   "v-sala-de-jogos",
+   null
+  ],
+  [
+   "brinq",
+   "Brinquedoteca",
+   "13,30 m² dedicados às crianças.",
+   [
+    "v:v-brinquedoteca",
+    [
+     "brinquedoteca",
+     "Brinquedoteca"
+    ]
+   ],
+   "v-brinquedoteca",
+   null
+  ],
+  [
+   "play",
+   "Playground, mini quadra e pet place",
+   "Playground, mini quadra poliesportiva e pet place ao ar livre.",
+   [
+    "v:v-playground",
+    "v:v-petplace-e-quadra",
+    [
+     "playground",
+     "Playground"
+    ],
+    [
+     "petplace",
+     "Pet place e mini quadra"
+    ]
+   ],
+   "v-playground",
+   null
+  ],
+  [
+   "gourmet",
+   "Área gourmet e fire place",
+   "Área gourmet, estares e fire place no deck.",
+   [
+    "v:v-gourmet-externo",
+    "v:v-fireplace",
+    [
+     "gourmet-externo",
+     "Área gourmet"
+    ],
+    [
+     "fireplace",
+     "Fire place"
+    ]
+   ],
+   "v-gourmet-externo",
+   null
+  ],
+  [
+   "apto",
+   "O apartamento",
+   "Living, sacada com churrasqueira e suíte master.",
+   [
+    "v:v-living-estar",
+    "v:v-living-jantar",
+    "v:v-sacada",
+    "v:v-suite-tk-01",
+    "v:v-suite-tk-02",
+    [
+     "living-estar",
+     "Living estar"
+    ],
+    [
+     "living-jantar",
+     "Living jantar"
+    ],
+    [
+     "sacada",
+     "Sacada"
+    ],
+    [
+     "suite",
+     "Suíte master"
+    ]
+   ],
+   "v-living-estar",
+   null
+  ],
+  [
+   "fora",
+   "O prédio por fora",
+   "Fachada contemporânea, de dia e à noite.",
+   [
+    "v:v-externa-giro",
+    "v:v-externa-noturna",
+    "v:v-externa-tk-01",
+    "v:v-externa-tk-02",
+    [
+     "externa-01",
+     "Fachada"
+    ],
+    [
+     "externa-noturna",
+     "Fachada à noite"
+    ],
+    [
+     "externa-aerea",
+     "Vista aérea"
+    ]
+   ],
+   "v-externa-noturna",
+   null
+  ]
+ ],
+ "lazerPins": [
+  {
+   "id": "salao",
+   "n": "Salão de festas",
+   "m2": "82,70",
+   "p": [
+    0.395,
+    0.915
+   ]
+  },
+  {
+   "id": "jogos",
+   "n": "Sala de jogos",
+   "m2": "54,10",
+   "p": [
+    0.37,
+    0.45
+   ]
+  },
+  {
+   "id": "academia",
+   "n": "Academia",
+   "m2": "44,00",
+   "p": [
+    0.64,
+    0.5
+   ]
+  },
+  {
+   "id": "brinq",
+   "n": "Brinquedoteca",
+   "m2": "13,30",
+   "p": [
+    0.69,
+    0.8
+   ]
+  },
+  {
+   "id": "piscinas",
+   "n": "Piscina adulto",
+   "p": [
+    0.915,
+    0.4
+   ]
+  },
+  {
+   "id": "piscinas",
+   "n": "Piscina infantil",
+   "p": [
+    0.69,
+    0.105
+   ]
+  },
+  {
+   "id": "play",
+   "n": "Mini quadra",
+   "p": [
+    0.17,
+    0.105
+   ]
+  },
+  {
+   "id": "play",
+   "n": "Playground",
+   "p": [
+    0.155,
+    0.5
+   ]
+  },
+  {
+   "id": "play",
+   "n": "Pet place",
+   "p": [
+    0.16,
+    0.355
+   ]
+  },
+  {
+   "id": "gourmet",
+   "n": "Fire place",
+   "p": [
+    0.14,
+    0.88
+   ]
+  },
+  {
+   "id": "gourmet",
+   "n": "Área gourmet",
+   "p": [
+    0.865,
+    0.95
+   ]
+  }
+ ],
+ "plantas": {
+  "tipo": {
+   "src": "media/mapa/planta-tipo.webp",
+   "w": 1636,
+   "h": 2726,
+   "titulo": "Pavimento tipo",
+   "zonas": [
+    {
+     "apto": "a116",
+     "rect": [
+      0.0,
+      0.0,
+      0.49,
+      1.0
+     ]
+    },
+    {
+     "apto": "a128",
+     "rect": [
+      0.51,
+      0.0,
+      1.0,
+      1.0
+     ]
+    }
+   ]
+  },
+  "lazer": {
+   "src": "media/mapa/planta-lazer.webp",
+   "w": 1636,
+   "h": 1811,
+   "titulo": "Pavimento de lazer"
+  }
+ },
+ "materiais": [
+  {
+   "id": "catalogo",
+   "titulo": "Catálogo do empreendimento",
+   "descricao": "Apresentação completa, plantas e imagens.",
+   "categoria": "Comercial",
+   "tipo": "pdf",
+   "arquivo": "media/catalogo-montemerano.pdf",
+   "tamanho": "12 MB",
+   "paginas": 17
+  },
+  {
+   "id": "ptipo",
+   "titulo": "Planta do pavimento tipo",
+   "descricao": "Os dois apartamentos do andar.",
+   "categoria": "Plantas",
+   "tipo": "img",
+   "arquivo": "media/mapa/planta-tipo.webp",
+   "tamanho": "imagem"
+  },
+  {
+   "id": "plazer",
+   "titulo": "Planta do pavimento de lazer",
+   "descricao": "Ambientes do lazer, com áreas.",
+   "categoria": "Plantas",
+   "tipo": "img",
+   "arquivo": "media/mapa/planta-lazer.webp",
+   "tamanho": "imagem"
+  },
+  {
+   "id": "elev",
+   "titulo": "Fachadas do prédio",
+   "descricao": "Frente, fundos e laterais.",
+   "categoria": "Imagens",
+   "tipo": "img",
+   "arquivo": "media/mapa/elevacoes.webp",
+   "tamanho": "imagem"
+  },
+  {
+   "id": "cima",
+   "titulo": "Vista de cima",
+   "descricao": "Cobertura e lazer vistos de cima.",
+   "categoria": "Imagens",
+   "tipo": "img",
+   "arquivo": "media/mapa/vista-de-cima.webp",
+   "tamanho": "imagem"
+  }
+ ],
+ "andares": [
+  {
+   "num": 23,
+   "id": "andar-23",
+   "label": "23º Pavimento",
+   "alt3d": 74.8,
+   "pin2d": [
+    1361,
+    339
+   ],
+   "poly2d": [
+    [
+     1233,
+     333
+    ],
+    [
+     1381,
+     343
+    ],
+    [
+     1468,
+     328
+    ],
+    [
+     1468,
+     336
+    ],
+    [
+     1381,
+     352
+    ],
+    [
+     1233,
+     343
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "2301",
+     "label": "Apto 2301",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "2302",
+     "label": "Apto 2302",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 22,
+   "id": "andar-22",
+   "label": "22º Pavimento",
+   "alt3d": 71.6,
+   "pin2d": [
+    1361,
+    358
+   ],
+   "poly2d": [
+    [
+     1233,
+     343
+    ],
+    [
+     1381,
+     352
+    ],
+    [
+     1468,
+     336
+    ],
+    [
+     1468,
+     363
+    ],
+    [
+     1381,
+     382
+    ],
+    [
+     1233,
+     371
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "2201",
+     "label": "Apto 2201",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "2202",
+     "label": "Apto 2202",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 21,
+   "id": "andar-21",
+   "label": "21º Pavimento",
+   "alt3d": 68.4,
+   "pin2d": [
+    1361,
+    388
+   ],
+   "poly2d": [
+    [
+     1233,
+     371
+    ],
+    [
+     1381,
+     382
+    ],
+    [
+     1468,
+     363
+    ],
+    [
+     1468,
+     394
+    ],
+    [
+     1381,
+     415
+    ],
+    [
+     1233,
+     403
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "2101",
+     "label": "Apto 2101",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "2102",
+     "label": "Apto 2102",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 20,
+   "id": "andar-20",
+   "label": "20º Pavimento",
+   "alt3d": 65.2,
+   "pin2d": [
+    1361,
+    420
+   ],
+   "poly2d": [
+    [
+     1233,
+     403
+    ],
+    [
+     1381,
+     415
+    ],
+    [
+     1468,
+     394
+    ],
+    [
+     1468,
+     425
+    ],
+    [
+     1381,
+     449
+    ],
+    [
+     1233,
+     435
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "2001",
+     "label": "Apto 2001",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "r",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "2002",
+     "label": "Apto 2002",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 19,
+   "id": "andar-19",
+   "label": "19º Pavimento",
+   "alt3d": 62.0,
+   "pin2d": [
+    1361,
+    452
+   ],
+   "poly2d": [
+    [
+     1233,
+     435
+    ],
+    [
+     1381,
+     449
+    ],
+    [
+     1468,
+     425
+    ],
+    [
+     1468,
+     455
+    ],
+    [
+     1381,
+     483
+    ],
+    [
+     1233,
+     467
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1901",
+     "label": "Apto 1901",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1902",
+     "label": "Apto 1902",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 18,
+   "id": "andar-18",
+   "label": "18º Pavimento",
+   "alt3d": 58.8,
+   "pin2d": [
+    1361,
+    484
+   ],
+   "poly2d": [
+    [
+     1233,
+     467
+    ],
+    [
+     1381,
+     483
+    ],
+    [
+     1468,
+     455
+    ],
+    [
+     1468,
+     485
+    ],
+    [
+     1381,
+     516
+    ],
+    [
+     1233,
+     499
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1801",
+     "label": "Apto 1801",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1802",
+     "label": "Apto 1802",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 17,
+   "id": "andar-17",
+   "label": "17º Pavimento",
+   "alt3d": 55.6,
+   "pin2d": [
+    1361,
+    516
+   ],
+   "poly2d": [
+    [
+     1233,
+     499
+    ],
+    [
+     1381,
+     516
+    ],
+    [
+     1468,
+     485
+    ],
+    [
+     1468,
+     516
+    ],
+    [
+     1381,
+     550
+    ],
+    [
+     1233,
+     530
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1701",
+     "label": "Apto 1701",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1702",
+     "label": "Apto 1702",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "r",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 16,
+   "id": "andar-16",
+   "label": "16º Pavimento",
+   "alt3d": 52.4,
+   "pin2d": [
+    1361,
+    548
+   ],
+   "poly2d": [
+    [
+     1233,
+     530
+    ],
+    [
+     1381,
+     550
+    ],
+    [
+     1468,
+     516
+    ],
+    [
+     1468,
+     546
+    ],
+    [
+     1381,
+     583
+    ],
+    [
+     1233,
+     562
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1601",
+     "label": "Apto 1601",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1602",
+     "label": "Apto 1602",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 15,
+   "id": "andar-15",
+   "label": "15º Pavimento",
+   "alt3d": 49.2,
+   "pin2d": [
+    1361,
+    580
+   ],
+   "poly2d": [
+    [
+     1233,
+     562
+    ],
+    [
+     1381,
+     583
+    ],
+    [
+     1468,
+     546
+    ],
+    [
+     1468,
+     577
+    ],
+    [
+     1381,
+     617
+    ],
+    [
+     1233,
+     594
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1501",
+     "label": "Apto 1501",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1502",
+     "label": "Apto 1502",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 14,
+   "id": "andar-14",
+   "label": "14º Pavimento",
+   "alt3d": 46.0,
+   "pin2d": [
+    1361,
+    612
+   ],
+   "poly2d": [
+    [
+     1233,
+     594
+    ],
+    [
+     1381,
+     617
+    ],
+    [
+     1468,
+     577
+    ],
+    [
+     1468,
+     607
+    ],
+    [
+     1381,
+     650
+    ],
+    [
+     1233,
+     626
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1401",
+     "label": "Apto 1401",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "r",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1402",
+     "label": "Apto 1402",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 13,
+   "id": "andar-13",
+   "label": "13º Pavimento",
+   "alt3d": 42.8,
+   "pin2d": [
+    1361,
+    644
+   ],
+   "poly2d": [
+    [
+     1233,
+     626
+    ],
+    [
+     1381,
+     650
+    ],
+    [
+     1468,
+     607
+    ],
+    [
+     1468,
+     638
+    ],
+    [
+     1381,
+     684
+    ],
+    [
+     1233,
+     657
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1301",
+     "label": "Apto 1301",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1302",
+     "label": "Apto 1302",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 12,
+   "id": "andar-12",
+   "label": "12º Pavimento",
+   "alt3d": 39.6,
+   "pin2d": [
+    1361,
+    676
+   ],
+   "poly2d": [
+    [
+     1233,
+     657
+    ],
+    [
+     1381,
+     684
+    ],
+    [
+     1468,
+     638
+    ],
+    [
+     1468,
+     668
+    ],
+    [
+     1381,
+     717
+    ],
+    [
+     1233,
+     689
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1201",
+     "label": "Apto 1201",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1202",
+     "label": "Apto 1202",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 11,
+   "id": "andar-11",
+   "label": "11º Pavimento",
+   "alt3d": 36.4,
+   "pin2d": [
+    1361,
+    708
+   ],
+   "poly2d": [
+    [
+     1233,
+     689
+    ],
+    [
+     1381,
+     717
+    ],
+    [
+     1468,
+     668
+    ],
+    [
+     1468,
+     699
+    ],
+    [
+     1381,
+     751
+    ],
+    [
+     1233,
+     721
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1101",
+     "label": "Apto 1101",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1102",
+     "label": "Apto 1102",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 10,
+   "id": "andar-10",
+   "label": "10º Pavimento",
+   "alt3d": 33.2,
+   "pin2d": [
+    1361,
+    740
+   ],
+   "poly2d": [
+    [
+     1233,
+     721
+    ],
+    [
+     1381,
+     751
+    ],
+    [
+     1468,
+     699
+    ],
+    [
+     1468,
+     729
+    ],
+    [
+     1381,
+     784
+    ],
+    [
+     1233,
+     753
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "1001",
+     "label": "Apto 1001",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "1002",
+     "label": "Apto 1002",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 9,
+   "id": "andar-9",
+   "label": "9º Pavimento",
+   "alt3d": 30.0,
+   "pin2d": [
+    1361,
+    771
+   ],
+   "poly2d": [
+    [
+     1233,
+     753
+    ],
+    [
+     1381,
+     784
+    ],
+    [
+     1468,
+     729
+    ],
+    [
+     1468,
+     759
+    ],
+    [
+     1381,
+     818
+    ],
+    [
+     1233,
+     784
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "901",
+     "label": "Apto 901",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "r",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "902",
+     "label": "Apto 902",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 8,
+   "id": "andar-8",
+   "label": "8º Pavimento",
+   "alt3d": 26.8,
+   "pin2d": [
+    1361,
+    803
+   ],
+   "poly2d": [
+    [
+     1233,
+     784
+    ],
+    [
+     1381,
+     818
+    ],
+    [
+     1468,
+     759
+    ],
+    [
+     1468,
+     790
+    ],
+    [
+     1381,
+     851
+    ],
+    [
+     1233,
+     816
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "801",
+     "label": "Apto 801",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "802",
+     "label": "Apto 802",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 7,
+   "id": "andar-7",
+   "label": "7º Pavimento",
+   "alt3d": 23.6,
+   "pin2d": [
+    1361,
+    835
+   ],
+   "poly2d": [
+    [
+     1233,
+     816
+    ],
+    [
+     1381,
+     851
+    ],
+    [
+     1468,
+     790
+    ],
+    [
+     1468,
+     820
+    ],
+    [
+     1381,
+     884
+    ],
+    [
+     1233,
+     848
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "701",
+     "label": "Apto 701",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "702",
+     "label": "Apto 702",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "r",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 6,
+   "id": "andar-6",
+   "label": "6º Pavimento",
+   "alt3d": 20.4,
+   "pin2d": [
+    1361,
+    867
+   ],
+   "poly2d": [
+    [
+     1233,
+     848
+    ],
+    [
+     1381,
+     884
+    ],
+    [
+     1468,
+     820
+    ],
+    [
+     1468,
+     851
+    ],
+    [
+     1381,
+     918
+    ],
+    [
+     1233,
+     879
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "601",
+     "label": "Apto 601",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "602",
+     "label": "Apto 602",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 5,
+   "id": "andar-5",
+   "label": "5º Pavimento",
+   "alt3d": 17.2,
+   "pin2d": [
+    1361,
+    898
+   ],
+   "poly2d": [
+    [
+     1233,
+     879
+    ],
+    [
+     1381,
+     918
+    ],
+    [
+     1468,
+     851
+    ],
+    [
+     1468,
+     881
+    ],
+    [
+     1381,
+     951
+    ],
+    [
+     1233,
+     911
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "501",
+     "label": "Apto 501",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "d",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "502",
+     "label": "Apto 502",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  },
+  {
+   "num": 4,
+   "id": "andar-4",
+   "label": "4º Pavimento",
+   "alt3d": 14.0,
+   "pin2d": [
+    1361,
+    931
+   ],
+   "poly2d": [
+    [
+     1233,
+     911
+    ],
+    [
+     1381,
+     951
+    ],
+    [
+     1468,
+     881
+    ],
+    [
+     1468,
+     913
+    ],
+    [
+     1381,
+     987
+    ],
+    [
+     1233,
+     945
+    ]
+   ],
+   "aptos": [
+    {
+     "id": "401",
+     "label": "Apto 401",
+     "tipo": "a116",
+     "area": "116,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado esquerdo (frente/oeste)"
+    },
+    {
+     "id": "402",
+     "label": "Apto 402",
+     "tipo": "a128",
+     "area": "128,60",
+     "suites": 3,
+     "vagas": 2,
+     "status": "v",
+     "lado": "Lado direito (frente/leste)"
+    }
+   ]
+  }
+ ],
+ "chamarizes": [
+  {
+   "id": "hall",
+   "titulo": "Hall de Entrada & Acessos",
+   "eyebrow": "Térreo · Nível da Rua",
+   "badge": "Pé-direito duplo · Acesso exclusivo",
+   "quote": "Hall de entrada imponente com pé-direito duplo, acabamentos nobres, guarita com controle de acesso, lava-pés e entrada exclusiva para banhistas.",
+   "video": "v-externa-tk-01",
+   "g": [
+    [
+     "externa-01",
+     "Fachada e entrada"
+    ],
+    [
+     "externa-noturna",
+     "Acesso iluminado à noite"
+    ]
+   ],
+   "specs": [
+    [
+     "Pé-direito",
+     "Duplo"
+    ],
+    [
+     "Elevadores",
+     "2 modernos"
+    ],
+    [
+     "Segurança",
+     "Guarita 24h"
+    ]
+   ],
+   "itens": [
+    "Hall de entrada finamente decorado e mobiliado",
+    "Pé-direito duplo imponente",
+    "Guarita de segurança com controle de acesso",
+    "Entrada e lava-pés exclusivo para banhistas vindos da praia",
+    "Dois modernos elevadores de alta velocidade",
+    "Medidores individuais de água, luz e gás",
+    "Captação e reaproveitamento de água da chuva para limpeza"
+   ],
+   "poly2d": [
+    [
+     1190,
+     1042
+    ],
+    [
+     1381,
+     1052
+    ],
+    [
+     1523,
+     1038
+    ],
+    [
+     1523,
+     1100
+    ],
+    [
+     1381,
+     1108
+    ],
+    [
+     1190,
+     1085
+    ]
+   ],
+   "pin2d": [
+    1356,
+    1072
+   ]
+  },
+  {
+   "id": "garagens",
+   "titulo": "Garagens Privativas",
+   "eyebrow": "G1 e G2 · Embasamento",
+   "badge": "2 vagas por apartamento",
+   "quote": "Pavimentos de garagem projetados para conforto e segurança, com rampas de inclinação suave, circulação ampla e vagas privativas cobertas.",
+   "video": "v-externa-tk-02",
+   "g": [
+    [
+     "externa-01",
+     "Embasamento do prédio"
+    ]
+   ],
+   "specs": [
+    [
+     "Vagas por apto",
+     "2 privativas"
+    ],
+    [
+     "Acesso",
+     "Portão automatizado"
+    ],
+    [
+     "Piso",
+     "Pintura epóxi"
+    ]
+   ],
+   "itens": [
+    "Duas vagas de garagem privativas e demarcadas para cada apartamento",
+    "Acesso seguro com portões automatizados de alta velocidade",
+    "Piso com acabamento em pintura epóxi de alta resistência",
+    "Circulação ampla facilitando manobras de SUVs e caminhonetes",
+    "Acesso direto aos elevadores por antecâmara pressurizada"
+   ],
+   "poly2d": [
+    [
+     1190,
+     946
+    ],
+    [
+     1233,
+     950
+    ],
+    [
+     1381,
+     993
+    ],
+    [
+     1470,
+     1004
+    ],
+    [
+     1523,
+     906
+    ],
+    [
+     1523,
+     1038
+    ],
+    [
+     1381,
+     1052
+    ],
+    [
+     1190,
+     1042
+    ]
+   ],
+   "pin2d": [
+    1356,
+    1010
+   ]
+  },
+  {
+   "id": "lazer",
+   "titulo": "Área de Lazer Completa",
+   "eyebrow": "Terraço Lazer · 659 m²",
+   "badge": "Club House · Mobiliado e equipado",
+   "quote": "Mais de 659 m² de lazer completo sobre o embasamento, totalmente mobiliado, decorado e climatizado pela Justus Incorporadora.",
+   "video": "v-piscina-tk-01",
+   "g": [
+    [
+     "piscina",
+     "Piscinas adulto e infantil"
+    ],
+    [
+     "salao-de-festas",
+     "Salão de festas principal"
+    ],
+    [
+     "academia",
+     "Academia fitness equipada"
+    ],
+    [
+     "sala-de-jogos",
+     "Sala de jogos"
+    ],
+    [
+     "playground",
+     "Playground infantil"
+    ],
+    [
+     "gourmet-externo",
+     "Área gourmet e churrasqueira"
+    ],
+    [
+     "fireplace",
+     "Fire place no deck de madeira"
+    ],
+    [
+     "petplace",
+     "Pet place e mini quadra"
+    ],
+    [
+     "brinquedoteca",
+     "Brinquedoteca"
+    ]
+   ],
+   "specs": [
+    [
+     "Área total",
+     "659 m²"
+    ],
+    [
+     "Salão de Festas",
+     "82,70 m²"
+    ],
+    [
+     "Academia",
+     "44,00 m²"
+    ],
+    [
+     "Sala de Jogos",
+     "54,10 m²"
+    ]
+   ],
+   "itens": [
+    "Piscina adulto com deck molhado e piscina infantil",
+    "Salão de festas de 82,70 m² com espaço gourmet e churrasqueira",
+    "Academia fitness completa de 44,00 m²",
+    "Sala de jogos de 54,10 m² para entretenimento",
+    "Brinquedoteca infantil de 13,30 m²",
+    "Mini quadra poliesportiva",
+    "Playground ao ar livre e Pet place gramado",
+    "Espaço gourmet externo com pergolado",
+    "Lounge fire place com lareira ecológica ao ar livre",
+    "Sistema de som ambiente em toda a área de lazer",
+    "Iluminação 100% LED com sensores de presença",
+    "Lavabos masculinos, femininos e adaptados para PCD"
+   ],
+   "poly2d": [
+    [
+     1190,
+     903
+    ],
+    [
+     1233,
+     910
+    ],
+    [
+     1233,
+     948
+    ],
+    [
+     1381,
+     992
+    ],
+    [
+     1381,
+     987
+    ],
+    [
+     1468,
+     912
+    ],
+    [
+     1468,
+     878
+    ],
+    [
+     1523,
+     872
+    ],
+    [
+     1523,
+     905
+    ],
+    [
+     1470,
+     1003
+    ],
+    [
+     1375,
+     998
+    ],
+    [
+     1226,
+     953
+    ],
+    [
+     1190,
+     945
+    ]
+   ],
+   "pin2d": [
+    1450,
+    940
+   ]
+  }
+ ]
+}

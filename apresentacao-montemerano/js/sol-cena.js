@@ -13,9 +13,9 @@ const W = M.w, H = M.h;
 const CEU = "M0,0 L0,291 L20,291 L40,291 L60,291 L80,291 L100,291 L120,294 L140,297 L160,302 L180,307 L200,311 L220,312 L240,312 L260,310 L280,308 L300,307 L320,308 L340,309 L360,310 L380,310 L400,311 L420,311 L440,312 L460,312 L480,311 L500,309 L520,305 L540,300 L560,294 L580,290 L600,286 L620,284 L640,282 L660,282 L680,283 L700,284 L720,286 L740,287 L760,288 L780,290 L800,293 L820,295 L840,297 L860,298 L880,299 L900,297 L920,294 L940,292 L960,292 L980,291 L1000,291 L1020,292 L1040,293 L1060,293 L1080,293 L1100,293 L1120,292 L1140,290 L1160,288 L1180,287 L1200,287 L1220,288 L1240,289 L1260,290 L1280,287 L1300,283 L1320,278 L1340,274 L1360,269 L1380,267 L1400,264 L1420,261 L1440,257 L1460,253 L1480,251 L1500,250 L1520,249 L1540,249 L1560,247 L1580,245 L1600,241 L1620,236 L1640,232 L1660,228 L1680,225 L1700,223 L1720,223 L1740,222 L1760,222 L1780,222 L1800,221 L1800,0 Z";
 const HORIZ = [[0, 291], [20, 291], [40, 291], [60, 291], [80, 291], [100, 291], [120, 294], [140, 297], [160, 302], [180, 307], [200, 311], [220, 312], [240, 312], [260, 310], [280, 308], [300, 307], [320, 308], [340, 309], [360, 310], [380, 310], [400, 311], [420, 311], [440, 312], [460, 312], [480, 311], [500, 309], [520, 305], [540, 300], [560, 294], [580, 290], [600, 286], [620, 284], [640, 282], [660, 282], [680, 283], [700, 284], [720, 286], [740, 287], [760, 288], [780, 290], [800, 293], [820, 295], [840, 297], [860, 298], [880, 299], [900, 297], [920, 294], [940, 292], [960, 292], [980, 291], [1000, 291], [1020, 292], [1040, 293], [1060, 293], [1080, 293], [1100, 293], [1120, 292], [1140, 290], [1160, 288], [1180, 287], [1200, 287], [1220, 288], [1240, 289], [1260, 290], [1280, 287], [1300, 283], [1320, 278], [1340, 274], [1360, 269], [1380, 267], [1400, 264], [1420, 261], [1440, 257], [1460, 253], [1480, 251], [1500, 250], [1520, 249], [1540, 249], [1560, 247], [1580, 245], [1600, 241], [1620, 236], [1640, 232], [1660, 228], [1680, 225], [1700, 223], [1720, 223], [1740, 222], [1760, 222], [1780, 222], [1800, 221]];
 const horizEm = x => { const i = Math.max(0, Math.min(HORIZ.length - 2, Math.floor(x / 20))); const [x0, y0] = HORIZ[i], [x1, y1] = HORIZ[i + 1]; return y0 + (y1 - y0) * Math.max(0, Math.min(1, (x - x0) / 20)) };
-const FOV = 170;              // a foto é aérea e larga: o pôr do sol (≈−75° do eixo) cai sobre a serra da esquerda, dentro do quadro               // campo horizontal aproximado da foto, em graus
+const FOV = 175;              // a foto é aérea e larga: o pôr do sol (≈−75° do eixo) cai sobre a serra da esquerda, dentro do quadro               // campo horizontal aproximado da foto, em graus
 const AZ_FOTO = G.norte;      // azimute para onde a câmera olha (o topo da foto)
-const PX_POR_GRAU_EL = 9;     // perto do horizonte o sol sobe devagar na foto; acima de ~30° sai pelo topo   // quanto o sol sobe por grau de elevação (perspectiva da foto)
+const PX_POR_GRAU_EL = 7;     // perto do horizonte o sol sobe devagar na foto; acima de ~30° sai pelo topo   // quanto o sol sobe por grau de elevação (perspectiva da foto)
 // chão (perspectiva): direção na tela para um azimute, achatada na vertical porque a foto é inclinada (~55° de visada)
 const ACHATE = 0.55;
 const scr = az => { const t = (az - G.norte) * Math.PI / 180; return [Math.sin(t), -Math.cos(t) * ACHATE] };
@@ -75,7 +75,7 @@ export function pintarCena(s, hora, dia) {
   let daz = ((s.az - AZ_FOTO) % 360 + 360) % 360; if (daz > 180) daz -= 360;
   const visivel = up && Math.abs(daz) < FOV / 2 + 12;
   const x = W / 2 + (daz / (FOV / 2)) * (W / 2);
-  const y = horizEm(Math.max(0, Math.min(W, x))) + 18 - Math.pow(Math.max(0, s.el), 1.15) * PX_POR_GRAU_EL;
+  const y = horizEm(Math.max(0, Math.min(W, x))) + 10 - Math.pow(Math.max(0, s.el - 1), 1.1) * PX_POR_GRAU_EL;
   for (const c of [sol, brilho, halo]) { c.setAttribute("cx", x); c.setAttribute("cy", y) }
   const baixo = Math.max(0, 1 - s.el / 18); // perto do horizonte: maior, mais laranja, halo mais forte
   sol.setAttribute("r", 34 + baixo * 26);
@@ -97,7 +97,9 @@ export function pintarCena(s, hora, dia) {
   if (!up || s.el < 1.5) { sombra.setAttribute("opacity", 0); sombraPodio.setAttribute("opacity", 0); return }
   const tanE = Math.tan(s.el * Math.PI / 180);
   const L = Math.min(900, TORRE_H / tanE * .75), Lp = Math.min(240, PODIO_H / tanE * .75);
-  const sx = -dx * L, sy = -dy * L;
+  // a sombra cai no chão, do lado oposto ao sol. Na foto (vista de cima e inclinada), "para o fundo" é para cima da tela;
+  // como a câmera está alta, a sombra nunca pode subir pela torre: limita a componente vertical para não ultrapassar o pé do prédio.
+  const sx = -dx * L, sy = Math.max(-dy * L, -40);
   const topo = TORRE_BASE.map(p => [p[0] + sx, p[1] + sy]);
   sombra.setAttribute("d", path(hull(TORRE_BASE.concat(topo))));
   // a sombra não deve cobrir a própria torre: fica atrás dos polígonos clicáveis (que não pintam), então tudo bem
