@@ -1,5 +1,5 @@
 """Monta os mosaicos de satélite do chão do tour (Esri World Imagery) em volta do lote e grava
-public/img/entorno-satelite.jpg (largo, z16) e entorno-satelite-perto.jpg (detalhe, z18), mais src/scene/entorno.generated.ts
+public/img/entorno-satelite.webp (largo, z16) e entorno-satelite-perto.webp (detalhe, z18), mais src/scene/entorno.generated.ts
 com tamanhos e deslocamentos em metros, para a torre cair exatamente em cima do ponto informado.
 
     python scripts/build-satelite.py -27.1561 -48.5745
@@ -35,13 +35,13 @@ def mosaico(z, R, saida, px):
     # posição do ponto dentro do mosaico, em pixels, e deslocamento do centro do mosaico em relação ao ponto (metros)
     px_x, px_y = (R + (fx - xt)) * 256, (R + (fy - yt)) * 256
     off_x, off_z = (lado / 2 - px_x) * mpp, (lado / 2 - px_y) * mpp
-    img.resize((px, px), Image.LANCZOS).save(ROOT / "public" / "img" / saida, quality=84)
+    img.resize((px, px), Image.LANCZOS).save(ROOT / "public" / "img" / saida, "WEBP", quality=76, method=6)
     print(f"z{z}: {saida} · lado {lado * mpp:.0f} m · falhas {falhas} · deslocamento ({off_x:.1f}, {off_z:.1f}) m")
     return {"size": round(lado * mpp, 1), "offX": round(off_x, 1), "offZ": round(off_z, 1)}
 
 
-larg = mosaico(16, 2, "entorno-satelite.jpg", 2048)
-perto = mosaico(18, 3, "entorno-satelite-perto.jpg", 2048)
+larg = mosaico(16, 2, "entorno-satelite.webp", 2048)
+perto = mosaico(18, 3, "entorno-satelite-perto.webp", 2048)
 (ROOT / "src" / "scene" / "entorno.generated.ts").write_text(
     "/* Gerado por scripts/build-satelite.py — não edite à mão. Coordenada usada: %s, %s */\n"
     "export const ENTORNO = { lat: %s, lon: %s, largo: %s, perto: %s } as const\n" % (lat, lon, lat, lon, larg, perto), encoding="utf-8")

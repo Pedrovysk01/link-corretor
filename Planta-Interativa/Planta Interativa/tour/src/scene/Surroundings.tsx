@@ -7,7 +7,6 @@ import { Cidade } from './Cidade'
 import { ModelBoundary, ModelPiece } from './models/ModelPiece'
 import { preloadModels } from './models/preload'
 
-preloadModels(['shrub_02', 'shrub_04'])
 
 const GROUND_SIZE = 400
 /** The lawn runs far enough that its edge sits inside the haze rather than against the sky. */
@@ -139,6 +138,7 @@ function Skyline({ bounds }: { readonly bounds: Rect }) {
 }
 
 export function Surroundings({ kind, bounds, floorsBelow = 14 }: { readonly kind: 'garden' | 'skyline' | 'cidade'; readonly bounds: Rect; readonly floorsBelow?: number }) {
+  if (kind === 'garden') preloadModels(['shrub_02', 'shrub_04']) // idempotente; só o jardim paga esses 3,8 MB
   if (kind === 'cidade') return <Cidade bounds={bounds} floorsBelow={floorsBelow} />
   return kind === 'garden' ? <Garden bounds={bounds} /> : <Skyline bounds={bounds} />
 }

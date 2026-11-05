@@ -65,9 +65,9 @@ export function Cidade({ bounds, floorsBelow }: CidadeProps) {
   const [facade, podium, sat, satPerto, pano, aereo] = useTexture([
     `${BASE}img/fachada.webp`,
     `${BASE}img/podio.webp`,
-    `${BASE}img/entorno-satelite.jpg`,
-    `${BASE}img/entorno-satelite-perto.jpg`,
-    `${BASE}img/entorno-pano.jpg`,
+    `${BASE}img/entorno-satelite.webp`,
+    `${BASE}img/entorno-satelite-perto.webp`,
+    `${BASE}img/entorno-pano.webp`,
     `${BASE}img/externa-aerea.webp`,
   ])
   const aereoOn = chaoAereo()

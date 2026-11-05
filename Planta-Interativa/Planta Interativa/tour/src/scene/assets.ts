@@ -4,7 +4,7 @@
  */
 const BASE = `${import.meta.env.BASE_URL}assets`
 
-export const HDRI_URL = `${BASE}/hdri/kloofendal_48d_partly_cloudy_puresky_2k.hdr`
+export const HDRI_URL = `${BASE}/hdri/kloofendal_48d_partly_cloudy_puresky_1k.hdr`
 
 /**
  * Where the sun sits in that HDRI, measured from its brightest pixel (u 0.595, v 0.234), in three.js
