@@ -1,6 +1,6 @@
 import { useTexture } from '@react-three/drei'
-import { useMemo } from 'react'
-import { BackSide, CanvasTexture, MeshBasicMaterial, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, type Texture } from 'three'
+import { useLayoutEffect, useMemo, useRef } from 'react'
+import { BackSide, CanvasTexture, Group, MeshBasicMaterial, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, Vector3, type Texture } from 'three'
 import type { Rect } from '../data/types'
 import { ENTORNO } from './entorno.generated'
 import { MATERIALS } from './materials'
@@ -21,6 +21,14 @@ const PANO_HEIGHT = (2 * Math.PI * PANO_RADIUS * 345) / 4096
 export const cidadeGroundY = (floorsBelow: number) => -Math.max(1, floorsBelow) * STOREY - PODIUM_FLOORS * STOREY
 
 const BASE = import.meta.env.BASE_URL
+
+/** Chão "aéreo" (como o Bossa): o render "Externa Aérea" da Justus num painel inclinado de frente para a câmera de visão
+ *  geral, ancorado na base da torre. Ganha nitidez (é um render, não satélite) e perde liberdade: ao girar muito a
+ *  câmera, o painel se revela como imagem. Liga/desliga por URL: ?chao=aereo | ?chao=satelite (padrão: aéreo). */
+const AEREO = { w: 1600, h: 1080, u: 0.748, v: 0.9, pxPorMetro: 6.8 } // ancora = pé da torre no render; escala pela altura da torre (≈75 m em 680 px)
+const chaoAereo = () => new URLSearchParams(location.search).get('chao') !== 'satelite'
+/** Mesma direção da visão geral de CameraRig.overviewPose (eye − target), para o painel ficar de frente para ela. */
+const DIR_VISAO = new Vector3(-0.25, 1.05, 0.8).normalize()
 
 const prep = (t: Texture, repeat?: readonly [number, number]) => {
   t.colorSpace = SRGBColorSpace
@@ -54,13 +62,16 @@ interface CidadeProps {
 }
 
 export function Cidade({ bounds, floorsBelow }: CidadeProps) {
-  const [facade, podium, sat, satPerto, pano] = useTexture([
+  const [facade, podium, sat, satPerto, pano, aereo] = useTexture([
     `${BASE}img/fachada.webp`,
     `${BASE}img/podio.webp`,
     `${BASE}img/entorno-satelite.jpg`,
     `${BASE}img/entorno-satelite-perto.jpg`,
     `${BASE}img/entorno-pano.jpg`,
+    `${BASE}img/externa-aerea.webp`,
   ])
+  const aereoOn = chaoAereo()
+  const painel = useRef<Group>(null)
   const cx = bounds.x + bounds.w / 2
   const cz = bounds.z + bounds.d / 2
   const drop = Math.max(1, floorsBelow) * STOREY
@@ -77,8 +88,17 @@ export function Cidade({ bounds, floorsBelow }: CidadeProps) {
       largo: new MeshBasicMaterial({ map: prep(sat) }),
       perto: new MeshBasicMaterial({ map: prep(satPerto), alphaMap: bordaSuave(), transparent: true, depthWrite: false }),
       pano: new MeshBasicMaterial({ map: prep(pano), side: BackSide, fog: false }),
+      aereo: new MeshBasicMaterial({ map: prep(aereo), fog: false }),
     }
-  }, [facade, podium, sat, satPerto, pano, floorsBelow])
+  }, [facade, podium, sat, satPerto, pano, aereo, floorsBelow])
+
+  const aW = AEREO.w / AEREO.pxPorMetro
+  const aH = AEREO.h / AEREO.pxPorMetro
+  useLayoutEffect(() => {
+    const g = painel.current
+    if (!g) return
+    g.lookAt(g.position.clone().add(DIR_VISAO)) // o +z do grupo (frente do plano) aponta para a câmera de visão geral
+  }, [cx, cz, groundY, aereoOn])
 
   return (
     <group>
@@ -97,6 +117,14 @@ export function Cidade({ bounds, floorsBelow }: CidadeProps) {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx + ENTORNO.perto.offX, groundY, cz + ENTORNO.perto.offZ]} material={mats.perto} renderOrder={1}>
         <planeGeometry args={[ENTORNO.perto.size, ENTORNO.perto.size]} />
       </mesh>
+      {aereoOn && (
+        <group ref={painel} position={[cx, groundY, cz]}>
+          {/* render aéreo ancorado no pé da torre: o pixel (u, v) do render cai na origem do grupo */}
+          <mesh position={[(0.5 - AEREO.u) * aW, (AEREO.v - 0.5) * aH, -1]} material={mats.aereo} renderOrder={2}>
+            <planeGeometry args={[aW, aH]} />
+          </mesh>
+        </group>
+      )}
       {/* horizonte: faixa do drone (morros, cidade, mar) em volta de tudo; o céu acima é o HDRI */}
       <mesh position={[cx, groundY + PANO_HEIGHT / 2 - 40, cz]} material={mats.pano}>
         <cylinderGeometry args={[PANO_RADIUS, PANO_RADIUS, PANO_HEIGHT, 96, 1, true]} />

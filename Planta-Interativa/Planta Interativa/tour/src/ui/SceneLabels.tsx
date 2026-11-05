@@ -38,8 +38,11 @@ function Anchored({ at, className, onClick, children, label }: AnchoredProps) {
 /** Room names floating over the dollhouse; clicking one steps inside. */
 function OverviewLabels({ property }: { readonly property: Property }) {
   const height = property.wallHeight * CUTAWAY_SCALE + LABEL_LIFT
+  const f = property.focus
   return property.rooms.map((room) => {
     const [x, z] = roomCenter(room)
+    // Pavimento com dois apartamentos: rotula só o que está em foco (o vizinho fica como volume mudo).
+    if (f && (x < f.x || x > f.x + f.w || z < f.z || z > f.z + f.d)) return null
     return (
       <Anchored key={room.id} at={[x, height, z]} className="room-label" onClick={() => tourStore.getState().enterRoom(room.id)}>
         <span className="room-label__name">{room.name}</span>
