@@ -14,7 +14,7 @@ export const montemeranoLazer: Property = {
   location: 'Balneário Perequê · Porto Belo/SC',
   priceFrom: 0,
   currency: 'BRL',
-  completion: 'A confirmar',
+  completion: 'Previsão jul/2028',
   bedrooms: 0,
   bathrooms: 0,
   wallHeight: 3,

@@ -84,7 +84,7 @@ const base: Omit<Property, 'id' | 'name' | 'shortName' | 'tagline' | 'tour' | 'a
   location: apto01.location,
   priceFrom: 0,
   currency: 'BRL',
-  completion: 'A confirmar',
+  completion: 'Previsão jul/2028',
   bedrooms: 3,
   bathrooms: 4,
   wallHeight: apto01.wallHeight,

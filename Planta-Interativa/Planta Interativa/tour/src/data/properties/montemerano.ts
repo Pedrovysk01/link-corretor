@@ -16,7 +16,7 @@ export const apto01: Property = {
   location: 'Balneário Perequê · Porto Belo/SC',
   priceFrom: 0,
   currency: 'BRL',
-  completion: 'A confirmar',
+  completion: 'Previsão jul/2028',
   bedrooms: 3,
   bathrooms: 4,
   wallHeight: 2.7,
