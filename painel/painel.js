@@ -117,9 +117,8 @@ const fotoQuadrada = (f) => new Promise((ok, erro) => { if (!f) return ok(null);
   img.onload = () => { const lado = Math.min(img.width, img.height), M = 320, c = h("canvas", { width: M, height: M }); c.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, M, M); URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", .86)); };
   img.onerror = () => erro(new Error("Não consegui ler esta imagem.")); img.src = url; });
 const escolherFoto = (aoEscolher) => { const i = h("input", { type: "file", accept: "image/png,image/jpeg,image/webp", style: "display:none" }); i.onchange = async () => { try { const d = await fotoQuadrada(i.files[0]); if (d) await aoEscolher(d); } catch (e) { aviso(e.message, true); } i.remove(); }; document.body.append(i); i.click(); };
-// Logo do WhatsApp, preenchida
-const icWa = () => { const sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("viewBox", "0 0 24 24"); sv.setAttribute("class", "ic ic-wa"); sv.setAttribute("aria-hidden", "true");
-  sv.innerHTML = '<path fill="currentColor" stroke="none" d="M12.04 2a9.9 9.9 0 0 0-8.5 14.98L2 22l5.17-1.5A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.07.9.92-2.99-.2-.31a8.2 8.2 0 1 1 6.83 3.73Zm4.5-6.14c-.25-.12-1.46-.72-1.68-.8-.23-.09-.39-.13-.56.12-.16.24-.64.8-.78.97-.15.16-.29.18-.54.06a6.7 6.7 0 0 1-3.3-2.88c-.25-.43.25-.4.71-1.33.08-.16.04-.3-.02-.42-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47a.9.9 0 0 0-.65.3 2.75 2.75 0 0 0-.86 2.04 4.8 4.8 0 0 0 1 2.53 10.9 10.9 0 0 0 4.2 3.7c1.56.68 2.17.73 2.95.62.48-.07 1.46-.6 1.67-1.18.2-.58.2-1.07.15-1.18-.07-.1-.23-.16-.48-.28Z"/>'; return sv; };
+// Logo do WhatsApp (imagem oficial do projeto, fundo transparente)
+const icWa = () => h("img", { class: "ic-wa", src: "whatsapp.webp", alt: "", width: 40, height: 40, decoding: "async", "aria-hidden": "true" });
 const vazio = (icone, titulo, texto, acao) => h("div", { class: "vazio" }, h("span", { class: "ic-box" }, ic(icone)), h("strong", null, titulo), texto && h("p", null, texto), acao);
 let _id = 0;
 function campo(rotulo, input, dica) { const id = "c" + ++_id; input.id = id; return h("div", { class: "field" }, h("label", { for: id }, rotulo), input, dica && h("span", { class: "hint" }, dica)); }

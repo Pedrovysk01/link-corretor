@@ -526,10 +526,10 @@ table.t .grip:active{cursor:grabbing}
 .card.prop.com-capa{padding:0 20px 20px!important;overflow:hidden}  /* padding fixo: a capa sangra exatamente até a borda */
 .prop-capa{display:block;width:calc(100% + 40px);margin:0 -20px 2px;aspect-ratio:1/1;object-fit:cover;background:var(--surface2)}
 /* botão só com a logo do WhatsApp (verde escuro: contraste ≥ 3:1 com o ícone branco) */
-.btn-wa{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#178a40;color:#fff;flex:none;text-decoration:none;box-shadow:0 2px 6px rgba(23,138,64,.3);transition:background-color .2s,scale .2s}
-.btn-wa:hover{background:#12733a}
+.btn-wa{display:inline-grid;place-items:center;width:44px;height:44px;flex:none;text-decoration:none;background:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.22));transition:scale .2s,filter .2s}
+.btn-wa:hover{scale:1.06;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))}
 .btn-wa:active{scale:.94}
-.btn-wa .ic-wa{width:22px;height:22px;display:block}
+.btn-wa .ic-wa{width:100%;height:100%;display:block;object-fit:contain}
 .card.corretor{cursor:pointer}
 .card.corretor:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 /* detalhe do cliente: "Carregar mais" e selo do corretor que atende */
@@ -548,8 +548,7 @@ a.selo:hover{background:var(--surface3,var(--surface2));text-decoration:underlin
 @media (max-width:519px){.props{grid-template-columns:minmax(0,1fr)}}
 /* cartão do corretor mais estreito: nome e contato quebram, o botão do WhatsApp fica no canto */
 .card.corretor{position:relative}
-.card.corretor .btn-wa{position:absolute;top:14px;right:14px;width:36px;height:36px}
-.card.corretor .btn-wa .ic-wa{width:20px;height:20px}
+.card.corretor .btn-wa{position:absolute;top:12px;right:12px;width:44px;height:44px}
 .card.corretor>.row:first-child{padding-right:40px}
 .card.corretor h2{font-size:1.0625rem}
 .card.corretor .stats,.card.prop .stats{gap:14px}
