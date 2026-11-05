@@ -556,3 +556,18 @@ a.selo:hover{background:var(--surface3,var(--surface2));text-decoration:underlin
 .card.prop .row{flex-wrap:wrap}
 
 .contato-c{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}  /* e-mail e telefone do corretor: uma linha cada, sem quebrar no meio */
+
+/* formulário "Dados da cidade": 5 boxes recolhíveis, contador de letras */
+.cid-lista{display:grid;gap:8px;margin-top:6px}
+.cid-box{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.cid-box>summary{display:flex;gap:10px;align-items:center;padding:10px 12px;cursor:pointer;list-style:none;min-height:44px}
+.cid-box>summary::-webkit-details-marker{display:none}
+.cid-box>summary::after{content:"+";margin-left:auto;font-weight:600;color:var(--muted)}
+.cid-box[open]>summary::after{content:"−"}
+.cid-campos{display:grid;gap:12px;padding:0 12px 14px}
+.cid-dados{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:600px){.cid-dados{grid-template-columns:1fr}}
+.com-conta{position:relative}
+.com-conta .conta{position:absolute;right:10px;bottom:8px;font:500 11px var(--mono,monospace);color:var(--muted);pointer-events:none}
+.com-conta input,.com-conta textarea{padding-right:56px}
+.com-conta textarea{min-height:64px}

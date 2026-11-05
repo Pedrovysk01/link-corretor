@@ -14,7 +14,8 @@
 (() => {
   "use strict";
   if (window.__lcMateriais) return;
-  const cfg = window.LC_MATERIAIS; if (!cfg) return;
+  const cidade = Array.isArray(window.LC_CIDADE) ? window.LC_CIDADE.filter((c) => c && c.titulo) : [];  // boxes "Dados da cidade" do painel
+  const cfg = window.LC_MATERIAIS || (cidade.length ? {} : null); if (!cfg) return;
   window.__lcMateriais = true;
   const BASE = "/painel/vendor/cloudimage/";
   // os bundles UMD expõem um namespace (window.CIHotspot.CIHotspot / .default); o carousel expõe a classe direto
@@ -22,9 +23,9 @@
   const libs = { galeria: ["carousel.min.js", () => classe(window.CloudImageCarousel)], plantas: ["hotspot.min.js", () => classe(window.CIHotspot)], antes: ["before-after.min.js", () => classe(window.CIBeforeAfter)] };
   const carregados = {};
   const carregar = (k) => carregados[k] || (carregados[k] = new Promise((res, rej) => { if (libs[k][1]()) return res(libs[k][1]()); const s = document.createElement("script"); s.src = BASE + libs[k][0] + "?v=1"; s.onload = () => res(libs[k][1]()); s.onerror = () => rej(new Error(libs[k][0])); document.head.append(s); }));
-  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/materiais.css?v=1"; document.head.append(css);
+  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/materiais.css?v=3"; document.head.append(css);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const abas = [["galeria", "Galeria", (cfg.galeria || []).length], ["plantas", "Planta", (cfg.plantas || []).length], ["antes", "Antes e depois", (cfg.antesDepois || []).length]].filter((a) => a[2]);
+  const abas = [["galeria", "Galeria", (cfg.galeria || []).length], ["plantas", "Planta", (cfg.plantas || []).length], ["antes", "Antes e depois", (cfg.antesDepois || []).length], ["cidade", "A cidade", cidade.length]].filter((a) => a[2]);
   if (!abas.length) return;
 
   const raiz = document.createElement("section"); raiz.className = "lc-mat"; raiz.hidden = true; raiz.setAttribute("role", "dialog"); raiz.setAttribute("aria-modal", "true"); raiz.setAttribute("aria-label", "Materiais do empreendimento");
@@ -32,7 +33,8 @@
     <div class="lc-mat-sub" id="lc-mat-sub"></div><button type="button" class="lc-mat-x" aria-label="Fechar materiais">×</button></div>
     <div class="lc-mat-corpo"><div class="lc-mat-pane" data-pane="galeria"><div class="lc-mat-galeria"></div></div>
     <div class="lc-mat-pane" data-pane="plantas"><div class="lc-mat-planta"></div><p class="lc-mat-nota">Planta ilustrativa. Toque nos pontos para ver cada ambiente.</p></div>
-    <div class="lc-mat-pane" data-pane="antes"><div class="lc-mat-antes"></div></div></div>`;
+    <div class="lc-mat-pane" data-pane="antes"><div class="lc-mat-antes"></div></div>
+    <div class="lc-mat-pane" data-pane="cidade"><div class="lc-mat-cidade"></div><p class="lc-mat-nota">Informações da região reunidas pela construtora.</p></div></div>`;
   document.body.append(raiz);
   const q = (s) => raiz.querySelector(s);
   const inst = {}; let abaAtual = null, idxPlanta = 0, idxAntes = 0;
@@ -54,10 +56,13 @@
   window.addEventListener("resize", () => { const el = q(".lc-mat-planta-in"); if (el && !raiz.hidden) ajustarPlanta(el, +el.dataset.w, +el.dataset.h); });
   const montarAntes = async () => { const B = await carregar("antes"); destruir("antes"); const a = cfg.antesDepois[idxAntes]; const el = q(".lc-mat-antes"); el.innerHTML = "";
     inst.antes = new B(el, { beforeSrc: a.antes, afterSrc: a.depois, labels: { before: (a.rotulos || ["Antes", "Depois"])[0], after: (a.rotulos || ["Antes", "Depois"])[1] }, orientation: a.orientacao || "horizontal", mode: "drag", zoom: true }); };
+  // A cidade: até 5 cartões (etiqueta, título, texto curto, até 3 destaques), no padrão do Bossa
+  const TAG_OK = { Aberto: 1, Entregue: 1 };
+  const montarCidade = () => { q(".lc-mat-cidade").innerHTML = cidade.map((c) => `<article class="lc-cid">${c.tag && c.tag !== "Dado" ? `<span class="lc-cid-tag${TAG_OK[c.tag] ? " ok" : ""}">${esc(c.tag)}</span>` : ""}<h3>${esc(c.titulo)}</h3>${c.texto ? `<p>${esc(c.texto)}</p>` : ""}${(c.dados || []).length ? `<div class="lc-cid-d">${c.dados.map((d) => `<span>${esc(d)}</span>`).join("")}</div>` : ""}</article>`).join(""); };
   const sub = (lista, idx, setIdx, montar) => { const el = q("#lc-mat-sub"); el.innerHTML = lista.length > 1 ? lista.map((x, i) => `<button type="button" class="lc-mat-chip" aria-pressed="${i === idx}">${esc(x.titulo || "Opção " + (i + 1))}</button>`).join("") : "";
     [...el.children].forEach((b, i) => b.onclick = () => { setIdx(i); sub(lista, i, setIdx, montar); montar(); }); };
   const mostrar = async (k) => { abaAtual = k; raiz.querySelectorAll(".lc-mat-aba").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.aba === k))); raiz.querySelectorAll(".lc-mat-pane").forEach((p) => p.classList.toggle("on", p.dataset.pane === k));
-    try { if (k === "galeria") { sub([], 0); await montarGaleria(); } else if (k === "plantas") { sub(cfg.plantas, idxPlanta, (i) => idxPlanta = i, montarPlanta); await montarPlanta(); } else { sub(cfg.antesDepois, idxAntes, (i) => idxAntes = i, montarAntes); await montarAntes(); } }
+    try { if (k === "cidade") { sub([], 0); montarCidade(); } else if (k === "galeria") { sub([], 0); await montarGaleria(); } else if (k === "plantas") { sub(cfg.plantas, idxPlanta, (i) => idxPlanta = i, montarPlanta); await montarPlanta(); } else { sub(cfg.antesDepois, idxAntes, (i) => idxAntes = i, montarAntes); await montarAntes(); } }
     catch (e) { console.warn("materiais:", e); const alvo = q(`.lc-mat-pane[data-pane="${k}"] > div`); if (alvo) alvo.innerHTML = "<p class='lc-mat-nota'>Não foi possível carregar este material agora.</p>"; } };
   const abrir = (k) => { raiz.hidden = false; document.documentElement.classList.add("lc-mat-on"); const alvo = abas.some((a) => a[0] === k) ? k : abas[0][0]; mostrar(alvo); setTimeout(() => { const b = q(`.lc-mat-aba[data-aba="${alvo}"]`); b && b.focus(); }, 50); };
   const fechar = () => { raiz.hidden = true; document.documentElement.classList.remove("lc-mat-on"); Object.keys(inst).forEach(destruir); if (window.LC_CASCA_API) window.LC_CASCA_API.fecharPainel(); };
@@ -65,4 +70,11 @@
   q(".lc-mat-x").onclick = fechar;
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !raiz.hidden) { e.stopPropagation(); fechar(); } }, true);
   window.LC_MATERIAIS_API = { abrir, fechar, abas: abas.map((a) => a[0]) };
+  // Bossa (cabeçalho próprio): ganha um botão "A cidade" no menu, ao lado de Materiais
+  if (cidade.length && !window.LC_MATERIAIS) {
+    const pronto = () => { const nav = document.querySelector("header.bar nav.controls"); if (!nav || nav.querySelector("[data-lc-cidade]")) return !!nav;
+      const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.dataset.lcCidade = ""; b.textContent = "A cidade"; b.onclick = () => abrir("cidade");
+      const ref = nav.querySelector('[data-act="film"]'); nav.insertBefore(b, ref || null); return true; };
+    if (!pronto()) document.addEventListener("DOMContentLoaded", pronto);
+  }
 })();

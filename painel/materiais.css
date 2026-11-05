@@ -1,7 +1,7 @@
 /* Link Corretor — painel "Materiais" das apresentações (materiais.js): tela cheia sobre a apresentação, papel do Bossa, abas. */
 .lc-mat{position:fixed;inset:0;z-index:2147481900;display:flex;flex-direction:column;background:rgba(243,239,230,.96);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);color:#16302e;font:500 .8125rem/1.4 "Figtree","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
 .lc-mat[hidden]{display:none}
-html.lc-mat-on .lc-casca,html.lc-mat-on .lc-panel{display:none!important}  /* o cabeçalho padrão some enquanto os materiais estão abertos (o painel tem o seu fechar) */
+html.lc-mat-on .lc-casca,html.lc-mat-on .lc-panel,html.lc-mat-on [data-lc-voltar],html.lc-mat-on .lc-foot,html.lc-mat-on .lc-star{display:none!important}  /* o cabeçalho padrão some enquanto os materiais estão abertos (o painel tem o seu fechar) */
 .lc-mat *{box-sizing:border-box}
 .lc-mat-topo{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 10px;flex-wrap:wrap}
 .lc-mat-abas{display:flex;gap:2px;padding:3px;border-radius:9px;background:rgba(22,48,46,.07)}
@@ -30,3 +30,14 @@ html.lc-mat-on .lc-casca,html.lc-mat-on .lc-panel{display:none!important}  /* o 
 /* variáveis dos plugins: marcadores em latão, popover em papel */
 .lc-mat{--ci-hotspot-marker-bg:#c9944a;--ci-hotspot-marker-color:#16302e;--ci-hotspot-popover-bg:#fffdf9;--ci-hotspot-popover-color:#16302e;--ci-hotspot-popover-radius:14px}
 @media (max-width:720px){.lc-mat-topo{padding-left:12px;padding-right:12px;gap:8px}.lc-mat-corpo{padding:0 10px calc(env(safe-area-inset-bottom,0px) + 10px)}.lc-mat-aba{padding:8px 10px}}
+
+/* A cidade: cartões curtos lado a lado (rolam no celular), etiqueta de status, título em serifa, destaques em pílulas */
+.lc-mat-cidade{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;align-content:start;overflow:auto;padding:4px 2px 8px}
+.lc-cid{display:grid;gap:8px;align-content:start;padding:16px 18px;border-radius:14px;background:#fffdf9;border:1px solid rgba(22,48,46,.14);box-shadow:0 1px 2px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.05)}
+.lc-cid-tag{justify-self:start;font:600 .625rem/1.4 "Figtree",sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:rgba(168,122,60,.14);color:#80592a}
+.lc-cid-tag.ok{background:rgba(15,118,110,.12);color:#0f766e}
+.lc-cid h3{margin:0;font:400 1.375rem/1.1 "Instrument Serif","Cormorant Garamond",Georgia,serif;color:#16302e;text-wrap:balance}
+.lc-cid p{margin:0;font-size:.8125rem;line-height:1.45;color:#4d6460}
+.lc-cid-d{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.lc-cid-d span{font-size:.6875rem;font-weight:600;padding:4px 9px;border-radius:8px;background:rgba(22,48,46,.07);color:#16302e}
+@media (max-width:720px){.lc-mat-cidade{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory}.lc-cid{scroll-snap-align:start}}

@@ -127,6 +127,8 @@ def init_db():
     c.executescript(SCHEMA)
     if "photo" not in [r[1] for r in c.execute("PRAGMA table_info(users)")]:
         c.execute("ALTER TABLE users ADD COLUMN photo TEXT NOT NULL DEFAULT ''")  # foto 1:1 do corretor (data URL reduzida no navegador)
+    if "city_cards" not in [r[1] for r in c.execute("PRAGMA table_info(properties)")]:
+        c.execute("ALTER TABLE properties ADD COLUMN city_cards TEXT NOT NULL DEFAULT '[]'")  # até 5 boxes "Dados da cidade" (preenchidos pela construtora)
     if "features" not in [r[1] for r in c.execute("PRAGMA table_info(properties)")]:
         c.execute("ALTER TABLE properties ADD COLUMN features TEXT NOT NULL DEFAULT '{}'")  # recursos ligados/desligados; vazio = tudo ligado
     if "ai_questions_old" in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}:
@@ -551,12 +553,41 @@ def r_senha(h, u, q_, b):
 def r_dashboard(h, u, q_, b): return dashboard(u, int(q_.get("dias", 30) or 30))
 
 
+CIDADE_TAGS = ["Dado", "Projeto", "Anunciado", "Em obras", "Em instalação", "Aberto", "Entregue"]
+CIDADE_MAX = {"titulo": 40, "texto": 140, "dado": 28}
+
+
+def cidade_de(p):
+    """Boxes 'Dados da cidade' do empreendimento: [{tag, titulo, texto, dados:[até 3]}] (no máximo 5)."""
+    try: v = json.loads(p["city_cards"] or "[]") if "city_cards" in p.keys() else []
+    except (ValueError, TypeError): v = []
+    return v if isinstance(v, list) else []
+
+
+def validar_cidade(lista):
+    need(isinstance(lista, list) and len(lista) <= 5, "Até 5 boxes de dados da cidade.")
+    out = []
+    for i, c in enumerate(lista, 1):
+        need(isinstance(c, dict), "Box inválido.")
+        titulo = str(c.get("titulo") or "").strip(); texto = str(c.get("texto") or "").strip()
+        if not titulo and not texto: continue  # box vazio: ignora
+        need(titulo, f"Box {i}: escreva um título.")
+        need(len(titulo) <= CIDADE_MAX["titulo"], f"Box {i}: título com no máximo {CIDADE_MAX['titulo']} caracteres.")
+        need(len(texto) <= CIDADE_MAX["texto"], f"Box {i}: texto com no máximo {CIDADE_MAX['texto']} caracteres.")
+        dados = [str(x).strip() for x in (c.get("dados") or []) if str(x).strip()][:3]
+        need(all(len(x) <= CIDADE_MAX["dado"] for x in dados), f"Box {i}: cada destaque com no máximo {CIDADE_MAX['dado']} caracteres.")
+        tag = c.get("tag") if c.get("tag") in CIDADE_TAGS else "Dado"
+        out.append({"tag": tag, "titulo": titulo, "texto": texto, "dados": dados})
+    return out
+
+
 def recursos_de(p):
     """Dicionário recurso→bool do empreendimento: tudo ligado, exceto o que a construtora desligou. IA e cadastro seguem ai_on/form_on."""
     try: salvo = json.loads(p["features"] or "{}") if "features" in p.keys() else {}
     except (ValueError, TypeError): salvo = {}
     out = {k: bool(salvo.get(k, True)) for k in RECURSOS}
     out["ia"] = bool(p["ai_on"]); out["cadastro"] = bool(p["form_on"])
+    out["cidade"] = cidade_de(p)  # vai para a apresentação como window.LC_CIDADE (não entra no data-recursos)
     return out
 
 
@@ -601,6 +632,7 @@ def validar_prop(b, atual=None):
         d["features"] = json.dumps({k: bool(r.get(k, True)) for k in RECURSOS if k not in ("ia", "cadastro")})
         if "ia" in r: d["ai_on"] = 1 if r["ia"] else 0
         if "cadastro" in r: d["form_on"] = 1 if r["cadastro"] else 0
+    if "cidade_cards" in b: d["city_cards"] = json.dumps(validar_cidade(b.get("cidade_cards")), ensure_ascii=False)
     if "languages" in b:
         l = [x for x in (b.get("languages") or []) if x in IDIOMAS]; need(l, "Deixe pelo menos um idioma ligado."); d["languages"] = json.dumps(l)
     if "source_dir" in b or "external_url" in b:
@@ -987,8 +1019,9 @@ class H(BaseHTTPRequestHandler):
         if (injetar_code or voltar) and ext == ".html":
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
-            if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps(recursos)}\'></script>' + tag  # liga/desliga módulos
-            tag = '<script src="/painel/materiais.js?v=1"></script><script src="/painel/casca.js?v=4"></script>' + tag  # materiais (galeria, planta, antes/depois) + cabeçalho padrão  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
+            if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
+            tag = '<script src="/painel/materiais.js?v=3"></script><script src="/painel/casca.js?v=5"></script>' + tag  # materiais (galeria, planta, antes/depois) + cabeçalho padrão  # cabeçalho padrão (marca, Visão 3D/Cima, menu) em toda apresentação; a página declara window.LC_CASCA
+            if recursos is not None: tag = '<script>window.LC_CIDADE=' + json.dumps(recursos.get("cidade") or [], ensure_ascii=False).replace("</", "<\\/") + ';</script>' + tag  # boxes "Dados da cidade"
             if recursos is not None and GOOGLE_MAPS_KEY: tag = f'<script>window.LC_GOOGLE_KEY={json.dumps(GOOGLE_MAPS_KEY)};</script>' + tag  # cidade 3D fotorrealista (Google 3D Tiles)
             if injetar_code: tag += f'<script src="/painel/embed.js?v=16" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag

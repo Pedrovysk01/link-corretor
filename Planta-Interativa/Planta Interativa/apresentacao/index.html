@@ -90,7 +90,7 @@ transition:opacity .55s var(--ease),transform .55s var(--ease),filter .55s var(-
 .stat b{display:block;font:500 30px/1 var(--serif);letter-spacing:-.01em}.stat span{display:block;font-size:12px;line-height:1.3;color:rgba(255,255,255,.88);margin-top:6px}
 .stat small{display:block;font-size:10px;color:var(--mute);margin-top:5px}
 .title{position:absolute;left:clamp(16px,4vw,48px);top:calc(96px + env(safe-area-inset-top));max-width:520px;pointer-events:none}
-html.lc-casca-on .title{top:calc(176px + env(safe-area-inset-top))} /* abaixo do cabeçalho padrão do painel (casca.js) */
+html.lc-casca-on .title{top:calc(236px + env(safe-area-inset-top))} /* abaixo do cabeçalho padrão do painel (casca.js) */
 html.lc-casca-on .bar{top:calc(78px + env(safe-area-inset-top))}     /* barra de horas do sol desce para não bater no menu da casca */
 @media (max-width:720px){html.lc-casca-on .bar{top:calc(176px + env(safe-area-inset-top))}html.lc-casca-on .title{top:calc(200px + env(safe-area-inset-top))}}
 .title h2{font-size:clamp(34px,5vw,64px);line-height:1;letter-spacing:-.02em;text-shadow:0 2px 30px rgba(0,0,0,.45)}
@@ -189,6 +189,32 @@ html.lc-casca-on .bar{top:calc(78px + env(safe-area-inset-top))}     /* barra de
 #msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:35;color:var(--mute);font-size:14px;pointer-events:none;transition:opacity .4s}
 .maplibregl-ctrl-attrib{font-size:10px!important}
 #g3d-attr{position:absolute;left:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:21;font:500 10px/1.3 var(--sans);color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.6);pointer-events:none;max-width:60vw}#g3d-attr b{font-weight:700;letter-spacing:.04em}
+
+/* ===== PADRÃO DAS CAIXAS (igual ao Bossa, o modelo): papel translúcido, tinta verde, latão =====
+   As variáveis são redefinidas DENTRO de .glass, então tudo que usa --mute/--gold nas caixas vira junto;
+   o cenário (mapa, torre, títulos sobre a foto) continua com o texto claro. */
+.glass{--mute:#4d6460;--gold:#80592a;--glass:rgba(246,243,236,.92);--glassb:rgba(255,255,255,.6);color:#16302e;
+  background:var(--glass);border:1px solid var(--glassb);border-top-color:rgba(255,255,255,.8);box-shadow:0 10px 30px rgba(0,0,0,.22);
+  -webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7)}
+@media (prefers-reduced-transparency:reduce){.glass{background:#f3efe6}}
+@media (prefers-contrast:more){.glass{background:#f3efe6;border-color:#16302e}}
+.glass .chip,.glass.chips .chip{color:#4d6460;background:rgba(22,48,46,.07);border-color:transparent}
+.glass .chip:hover{background:rgba(255,255,255,.55)}
+.glass .chip.on{background:#fffdf9;color:#16302e;border-color:#fffdf9;box-shadow:0 1px 2px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06)}
+.glass .stat span,.stat.glass span,.glass .item p,.item.glass p,.glass .hud span,.hud.glass span,.rota.glass p{color:#16302e}
+.item.glass.on{border-color:#a87a3c;box-shadow:0 0 0 1px #a87a3c,0 10px 30px rgba(0,0,0,.22)}
+.glass .tag,.item.glass .tag{background:rgba(168,122,60,.14);color:#80592a}
+.glass .tag.ok,.item.glass .tag.ok{background:rgba(15,118,110,.12);color:#0f766e}
+.glass .kpis span,.item.glass .kpis span{background:rgba(22,48,46,.07)}
+.glass .mode,.glass .pinfo,.glass #lzlist button,.glass .sheetx,#sheet.glass .sheetx{background:rgba(22,48,46,.07)}
+.glass .spark i{background:rgba(22,48,46,.12)}
+#sheet.glass .grab i{background:rgba(22,48,46,.25)}
+.bar.glass .sep{background:rgba(22,48,46,.18)}
+#dock.glass .pill{background:#fffdf9;box-shadow:0 1px 2px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06)}
+#dock.glass button{color:#4d6460}#dock.glass button[aria-current=true]{color:#16302e}
+.floors.glass button{color:#4d6460}
+#brand.glass span{color:#a87a3c}
+.actions .glass{color:#16302e;font-weight:600}
 </style>
 </head>
 <body>

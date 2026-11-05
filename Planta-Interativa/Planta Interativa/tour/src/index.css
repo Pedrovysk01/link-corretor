@@ -1090,3 +1090,28 @@ body.intro-on .hint {
   opacity: 0;
   pointer-events: none;
 }
+
+/* ===== PADRÃO DAS CAIXAS (igual ao Bossa, o modelo): papel translúcido, tinta verde, latão.
+   As cores do tour são redefinidas só DENTRO de .glass; o resto da cena (filme, rótulos sobre o 3D) não muda. */
+.glass {
+  --color-surface: rgba(246, 243, 236, 0.92);
+  --color-surface-strong: #e7e1d3;
+  --color-field: rgba(22, 48, 46, 0.07);
+  --color-text: #16302e;
+  --color-text-muted: #4d6460;
+  --color-accent: #80592a;
+  --color-gold: #80592a;
+  --color-border: rgba(22, 48, 46, 0.14);
+  --color-danger: #8c3a2b;
+  --plan-room: rgba(22, 48, 46, 0.06);
+  --plan-outdoor: rgba(79, 99, 64, 0.16);
+  --plan-visited: rgba(168, 122, 60, 0.16);
+  --plan-active: rgba(168, 122, 60, 0.34);
+  --plan-wall: #16302e;
+  color: var(--color-text);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(22px) saturate(1.7);
+  -webkit-backdrop-filter: blur(22px) saturate(1.7);
+}
+.glass .media figcaption { color: #f3efe6; }

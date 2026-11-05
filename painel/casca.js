@@ -20,7 +20,7 @@
   "use strict";
   if (window.__lcCasca) return;
   window.__lcCasca = true;
-  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/casca.css?v=4"; document.head.append(css);
+  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "/painel/casca.css?v=5"; document.head.append(css);
   // Perfil: Corretor · Cliente · Construtora, logo abaixo de "Visão 3D". Aciona o embed (embed.js, window.LC_EMBED) quando ele existe;
   // na prévia do dono (/pre/) só "Construtora" tem efeito (abre o painel). O ativo acompanha o perfil escolhido.
   const papelSeg = () => {

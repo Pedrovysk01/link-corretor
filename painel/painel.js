@@ -603,6 +603,25 @@ function formCorretor() {
 async function redefinir(b) { if (!confirm(`Gerar uma nova senha para ${b.name}? A atual deixa de funcionar e ele será desconectado.`)) return; const r = await api("PATCH", `/api/brokers/${b.id}`, { nova_senha: true }); mostrarSenha(b.name, b.email, r.senha); }
 
 // ───────── empreendimentos ─────────
+// "Dados da cidade": até 5 boxes curtos (etiqueta, título, texto, 3 destaques) que aparecem na apresentação em Materiais → A cidade
+const CID_TAGS = ["Dado", "Projeto", "Anunciado", "Em obras", "Em instalação", "Aberto", "Entregue"], CID_MAX = { titulo: 40, texto: 140, dado: 28 };
+function contado(input, max) { const n = h("span", { class: "conta" }, `${input.value.length}/${max}`); input.addEventListener("input", () => { n.textContent = `${input.value.length}/${max}`; }); return h("div", { class: "com-conta" }, input, n); }
+function blocoCidade(cards) {
+  const box = (i) => { const c = cards[i] || {}, pre = `cid-${i}-`;
+    const titulo = h("input", { type: "text", name: pre + "titulo", maxlength: CID_MAX.titulo, value: c.titulo || "", placeholder: i === 0 ? "Ex.: Alargamento da orla" : "" });
+    const texto = h("textarea", { name: pre + "texto", maxlength: CID_MAX.texto, rows: 2, placeholder: i === 0 ? "Ex.: Faixa de areia ampliada, no mesmo modelo de Balneário Camboriú." : "" }, c.texto || "");
+    const dados = [0, 1, 2].map((k) => h("input", { type: "text", name: pre + "d" + k, maxlength: CID_MAX.dado, value: (c.dados || [])[k] || "", placeholder: i === 0 ? ["4,75 km de orla", "+20 a 60 m de areia", "R$ 60 mi"][k] : "Destaque " + (k + 1) }));
+    return h("details", { class: "cid-box", open: i === 0 && !cards.length ? true : null }, h("summary", null, h("b", null, `Box ${i + 1}`), h("span", { class: "muted small wrap" }, c.titulo || "vazio")),
+      h("div", { class: "cid-campos" },
+        campo("Etiqueta", h("select", { name: pre + "tag" }, CID_TAGS.map((t) => h("option", { value: t, selected: (c.tag || "Dado") === t ? true : null }, t === "Dado" ? "Sem etiqueta" : t)))),
+        campo(`Título (até ${CID_MAX.titulo} letras)`, contado(titulo, CID_MAX.titulo)),
+        campo(`Texto (até ${CID_MAX.texto} letras)`, contado(texto, CID_MAX.texto)),
+        h("div", { class: "field" }, h("span", { class: "lbl" }, `Destaques (até 3, ${CID_MAX.dado} letras cada)`), h("div", { class: "cid-dados" }, dados)))); };
+  return h("div", { class: "field" }, h("span", { class: "lbl" }, "Dados da cidade"),
+    h("small", { class: "help" }, "Até 5 boxes curtos sobre a região (obras, valorização, serviços). Aparecem na apresentação em Materiais → A cidade. Box sem título não aparece."),
+    h("div", { class: "cid-lista" }, [0, 1, 2, 3, 4].map(box)));
+}
+function lerCidade(f) { return [0, 1, 2, 3, 4].map((i) => ({ tag: f.get(`cid-${i}-tag`), titulo: (f.get(`cid-${i}-titulo`) || "").trim(), texto: (f.get(`cid-${i}-texto`) || "").trim(), dados: [0, 1, 2].map((k) => (f.get(`cid-${i}-d${k}`) || "").trim()).filter(Boolean) })).filter((c) => c.titulo || c.texto); }
 async function telaProps() {
   const props = await api("GET", "/api/properties");
   const el = h("div", { class: "stack" }, cabeca("Empreendimentos", "A apresentação de cada um e o que a IA sabe sobre ele.", vistaToggle("props"), h("button", { class: "btn primary", onclick: () => formProp() }, ic("plus"), "Novo empreendimento")));
@@ -637,10 +656,11 @@ async function formProp(p) {
     campo("WhatsApp do empreendimento", h("input", { type: "tel", name: "whatsapp", value: p.whatsapp ? fone(p.whatsapp) : "", placeholder: "(47) 99999-9999" }), "Usado quando o corretor não tem WhatsApp cadastrado."),
     h("div", { class: "field" }, h("span", { class: "lbl" }, "Idiomas da IA"), h("div", { class: "caixas cols3" }, IDIOMAS_IA.map(([c, pais, t]) => caixa(h("span", { class: "idioma" }, bandeira(pais), t), p.languages.includes(c), "lang-" + c))), h("small", { class: "help" }, "Os 9 idiomas mais falados. A IA responde no idioma do navegador do cliente, se estiver ligado aqui.")),
     h("div", { class: "field" }, h("span", { class: "lbl" }, "Recursos na apresentação"), h("div", { class: "caixas" }, REC.map(([k, t]) => caixa(t, rec[k] !== false, "rec-" + k))), h("small", { class: "help" }, "Tudo ligado por padrão. Desligue o que não quiser mostrar neste empreendimento; vale para todos os links dele.")),
+    blocoCidade((p.recursos && p.recursos.cidade) || []),
     h("div", { class: "field" }, caixa("Empreendimento ativo (links funcionam)", p.active, "active")),
     campo("O que a IA sabe", h("textarea", { name: "facts", rows: 10, placeholder: "Tipologias, metragens, preços, condições de pagamento, áreas comuns, localização…" }, p.facts || ""), "Única fonte da IA: responde só com isso e manda falar com o corretor quando não souber. Mantenha preços e disponibilidade em dia.")];
   dialogo(novo ? "Novo empreendimento" : "Editar empreendimento", corpo, [btnFechar(), btnOk("Salvar")], { onSubmit: async (f, fechar) => {
-    const corpoApi = { name: f.get("name"), city: f.get("city"), whatsapp: f.get("whatsapp"), languages: IDIOMAS_IA.map(([c]) => c).filter((c) => f.get("lang-" + c)), recursos: Object.fromEntries(REC.map(([k]) => [k, f.get("rec-" + k) === "on"])), ai_on: f.get("rec-ia") === "on", form_on: f.get("rec-cadastro") === "on", active: f.get("active") === "on", facts: f.get("facts"), source_dir: f.get("source_dir"), external_url: f.get("external_url") };
+    const corpoApi = { cidade_cards: lerCidade(f), name: f.get("name"), city: f.get("city"), whatsapp: f.get("whatsapp"), languages: IDIOMAS_IA.map(([c]) => c).filter((c) => f.get("lang-" + c)), recursos: Object.fromEntries(REC.map(([k]) => [k, f.get("rec-" + k) === "on"])), ai_on: f.get("rec-ia") === "on", form_on: f.get("rec-cadastro") === "on", active: f.get("active") === "on", facts: f.get("facts"), source_dir: f.get("source_dir"), external_url: f.get("external_url") };
     await (novo ? api("POST", "/api/properties", corpoApi) : api("PATCH", `/api/properties/${p.id}`, corpoApi)); fechar(); aviso("Empreendimento salvo."); rotear(); } });
 }
 
