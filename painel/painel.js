@@ -109,6 +109,7 @@ async function copiar(txt, ok = "Copiado.") {
 }
 
 const fmtN = (n) => Number(n || 0).toLocaleString("pt-BR");
+const brlN = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const utc = (ts) => new Date(String(ts).replace(" ", "T") + "Z");
 function quando(ts) {
   if (!ts) return "—"; const d = utc(ts), s = (Date.now() - d.getTime()) / 1000;
@@ -504,7 +505,7 @@ function linhaCliente(c, { semCorretor } = {}) {
   let det = null;
   const linha = h("div", { class: "pessoa", role: "button", tabindex: "0", "aria-expanded": "false" },
     avatar(c.name),
-    h("div", { class: "pessoa-m" }, h("div", { class: "pessoa-n" }, h("span", { class: "wrap" }, c.name), statusPill(c.status), c.outros_corretores > 0 && pill("outro link", "warn")),
+    h("div", { class: "pessoa-m" }, h("div", { class: "pessoa-n" }, h("span", { class: "wrap" }, c.name), statusPill(c.status), c.propostas > 0 && pill(c.propostas > 1 ? `${c.propostas} propostas` : "1 proposta", "on"), c.outros_corretores > 0 && pill("outro link", "warn")),
       h("div", { class: "pessoa-s wrap" }, contato || "sem contato"), h("div", { class: "pessoa-s wrap" }, [c.empreendimento, !semCorretor && (dono() ? "por " + c.corretor : null), c.shares && c.shares.length ? "comissão " + c.shares.map((s) => `${s.name.split(" ")[0]} ${s.pct}%`).join(" + ") : null].filter(Boolean).join(" · "))),
     h("div", { class: "pessoa-r" }, h("span", { class: "big" }, fmtN(c.aberturas)), h("span", { class: "muted small" }, c.aberturas === 1 ? "abertura" : "aberturas"), h("span", { class: "muted small" }, "última " + quando(c.ultima || c.created))));
   const wrap = h("div", { class: "pessoa-w" }, linha);
@@ -675,6 +676,12 @@ async function telaCliente(id) {
       h("div", { class: "card" }, tituloCard("clock", "Histórico de aberturas"), c.historico.length ? h("div", { class: "timeline" }, c.historico.map((o) => h("div", { class: "tl" }, h("span", { class: "tl-dot" + (o.broker_id !== c.broker_id ? " warn" : "") }),
         h("div", null, h("div", { class: "cell-main" }, dataHora(o.ts)), h("div", { class: "muted small wrap" }, [o.empreendimento, o.device, o.segundos > 30 ? "ficou " + dur(o.segundos) : null, o.broker_id !== c.broker_id ? "link de " + o.corretor : CANAIS[o.channel]].filter(Boolean).join(" · ")))))) : vazio("eye", "Nenhuma abertura registrada")),
       h("div", { class: "stack" },
+        c.propostas && c.propostas.length ? h("div", { class: "card" }, tituloCard("edit", "Propostas do cliente"), h("p", { class: "muted small", style: "margin:-6px 0 12px" }, "Montadas pelo cliente no chat da apresentação, sempre no nome do corretor de origem."),
+          h("div", { class: "props-cli" }, c.propostas.map((p) => h("div", { class: "prop-cli" },
+            h("div", { class: "row between" }, h("b", null, `Apto ${p.unit} · ${brlN(p.price)}`), h("span", { class: "muted small" }, dataHora(p.created))),
+            h("div", { class: "muted small", style: "margin-top:4px" }, [`Entrada ${brlN(p.entrada)}`, `${p.mensais}x de ${brlN(p.mensal_valor)}`, p.baloes ? `${p.baloes} balões ${p.balao_period === "semestral" ? "semestrais" : "anuais"} de ${brlN(p.balao_valor)}` : "sem balões",
+              `${p.modo === "banco" ? "banco na entrega" : "nas chaves"} ${brlN(p.chaves)}`, p.modo === "direto" ? "direto com a construtora" : "com financiamento bancário"].join(" · ")),
+            p.obs && h("p", { class: "wrap small", style: "margin:6px 0 0;white-space:pre-wrap" }, p.obs))))) : null,
         h("div", { class: "card" }, tituloCard("chat", "Recado do cliente"), h("p", { class: "wrap muted", style: "white-space:pre-wrap" }, c.message || "Não deixou recado.")),
         h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); await api("PATCH", `/api/clientes/${c.id}`, { notes: new FormData(e.target).get("notes") }); aviso("Anotações salvas."); } },
           tituloCard("edit", "Anotações"), h("textarea", { name: "notes", rows: 5, maxlength: 2000, "aria-label": "Anotações" }, c.notes || ""), h("div", null, h("button", { class: "btn", type: "submit" }, "Salvar anotações"))),

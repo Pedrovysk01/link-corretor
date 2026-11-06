@@ -18,6 +18,10 @@
       reg_t: "Antes de continuar", reg_s: (c) => `${c} preparou esta apresentação para você. Diga quem é você para seguir navegando; na próxima vez, abre direto.`,
       reg_nome: "Seu nome", reg_fone: "WhatsApp", reg_mail: "E-mail (se preferir ao WhatsApp)", reg_ok: (c, e) => `Aceito que ${c} e ${e} entrem em contato comigo sobre este empreendimento e guardem meus dados para isso.`,
       reg_go: "Continuar na apresentação", reg_need: "Informe seu nome e um WhatsApp ou e-mail.", reg_agree: "Marque o aceite para continuar.", reg_fine: (c) => `Atendimento por ${c}. Seus dados ficam só com a construtora e o corretor.`,
+      pr_tab: "Proposta", pr_t: "Monte sua proposta", pr_unit: "Unidade", pr_direto: "Direto com a construtora", pr_banco: "Banco nas chaves", pr_entrada: "Entrada (sinal)", pr_n: "Mensais na obra", pr_bal: "Balões", pr_balper: "Periodicidade", pr_balpct: "Total dos balões",
+      pr_chaves: "Nas chaves", pr_banco_pct: "Financiado pelo banco", pr_obs: "Observações", pr_send: "Enviar proposta", pr_price: "Preço", pr_total: "Total", pr_sem: "semestrais", pr_anu: "anuais", pr_nobal: "sem balões",
+      pr_ok: (c) => `Proposta enviada. ${c} e a construtora já receberam e entram em contato para formalizar.`, pr_bad: "A soma de entrada, balões e chaves passa de 100%. Ajuste as porcentagens.",
+      pr_ilus: "Valores ilustrativos: a tabela oficial da incorporadora ainda não foi divulgada. A proposta vale como intenção de compra.", pr_fine: "Simulação sem compromisso. Condições sujeitas à aprovação da incorporadora.",
       wa_text: (e) => `Olá! Estou vendo a apresentação do ${e} e gostaria de mais informações.`, other: (o) => `Você já é atendido por outro corretor. Este link é de ${o}; seu atendimento continua com quem começou.`, net: "Sem conexão. Tente de novo." },
     en: { served: "Served by", open: "Questions or contact", ask: "Ask the AI", contact: "Talk to", close: "Close", lang: "Language",
       hello: (c, n) => `Hi${n ? ", " + n.split(" ")[0] : ""}! I'm this development's assistant. Ask anything; if I don't know, ${c} will answer you.`,
@@ -28,6 +32,10 @@
       reg_t: "Before you continue", reg_s: (c) => `${c} prepared this presentation for you. Tell us who you are to keep browsing; next time it opens directly.`,
       reg_nome: "Your name", reg_fone: "WhatsApp", reg_mail: "Email (if you prefer)", reg_ok: (c, e) => `I agree that ${c} and ${e} may contact me about this development and keep my data for that.`,
       reg_go: "Continue", reg_need: "Enter your name and a WhatsApp or email.", reg_agree: "Please accept to continue.", reg_fine: (c) => `Served by ${c}. Your data stays with the developer and the broker only.`,
+      pr_tab: "Offer", pr_t: "Build your offer", pr_unit: "Unit", pr_direto: "Direct with the developer", pr_banco: "Bank at delivery", pr_entrada: "Down payment", pr_n: "Monthly during works", pr_bal: "Balloons", pr_balper: "Frequency", pr_balpct: "Balloons total",
+      pr_chaves: "At delivery", pr_banco_pct: "Bank financed", pr_obs: "Notes", pr_send: "Send offer", pr_price: "Price", pr_total: "Total", pr_sem: "semiannual", pr_anu: "annual", pr_nobal: "no balloons",
+      pr_ok: (c) => `Offer sent. ${c} and the developer have it and will get in touch to formalize.`, pr_bad: "Down payment, balloons and delivery add up to more than 100%. Adjust the percentages.",
+      pr_ilus: "Illustrative values: the developer's official price list has not been released yet. The offer counts as a purchase intent.", pr_fine: "Non-binding simulation. Terms subject to the developer's approval.",
       wa_text: (e) => `Hi! I'm viewing the ${e} presentation and would like more information.`, other: (o) => `You are already served by another broker. This link belongs to ${o}; your service continues with the first one.`, net: "No connection. Try again." },
     es: { served: "Atendido por", open: "Dudas o contacto", ask: "Pregunta a la IA", contact: "Hablar con", close: "Cerrar", lang: "Idioma",
       hello: (c, n) => `¡Hola${n ? ", " + n.split(" ")[0] : ""}! Soy el asistente del proyecto. Pregunta lo que quieras; si no lo sé, ${c} te responde.`,
@@ -38,6 +46,10 @@
       reg_t: "Antes de continuar", reg_s: (c) => `${c} preparó esta presentación para ti. Dinos quién eres para seguir navegando; la próxima vez abre directo.`,
       reg_nome: "Tu nombre", reg_fone: "WhatsApp", reg_mail: "Correo (si lo prefieres)", reg_ok: (c, e) => `Acepto que ${c} y ${e} me contacten sobre este proyecto y guarden mis datos para ello.`,
       reg_go: "Continuar", reg_need: "Indica tu nombre y un WhatsApp o correo.", reg_agree: "Marca la aceptación para continuar.", reg_fine: (c) => `Atendido por ${c}. Tus datos quedan solo con la constructora y el corredor.`,
+      pr_tab: "Propuesta", pr_t: "Arma tu propuesta", pr_unit: "Unidad", pr_direto: "Directo con la constructora", pr_banco: "Banco en la entrega", pr_entrada: "Entrada (señal)", pr_n: "Mensuales en obra", pr_bal: "Refuerzos", pr_balper: "Periodicidad", pr_balpct: "Total de refuerzos",
+      pr_chaves: "En la entrega", pr_banco_pct: "Financiado por el banco", pr_obs: "Observaciones", pr_send: "Enviar propuesta", pr_price: "Precio", pr_total: "Total", pr_sem: "semestrales", pr_anu: "anuales", pr_nobal: "sin refuerzos",
+      pr_ok: (c) => `Propuesta enviada. ${c} y la constructora ya la recibieron y se pondrán en contacto para formalizar.`, pr_bad: "Entrada, refuerzos y entrega suman más del 100%. Ajusta los porcentajes.",
+      pr_ilus: "Valores ilustrativos: la lista oficial de precios de la constructora aún no fue publicada. La propuesta vale como intención de compra.", pr_fine: "Simulación sin compromiso. Condiciones sujetas a la aprobación de la constructora.",
       wa_text: (e) => `¡Hola! Estoy viendo la presentación de ${e} y quisiera más información.`, other: (o) => `Ya te atiende otro corredor. Este enlace es de ${o}; tu atención sigue con quien empezó.`, net: "Sin conexión. Inténtalo de nuevo." },
   };
 
@@ -114,9 +126,53 @@
   .sig-w .row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#4d6460;font-weight:400}.sig-w .row button{all:unset;cursor:pointer;color:#80592a;text-decoration:underline;font-weight:600}
   .gate form.ct{max-height:94dvh;overflow:auto}.gate .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gate .btn.alt2{background:transparent;color:#16302e;border:1px solid rgba(22,48,46,.3)}
   .modo{flex-wrap:wrap;max-width:calc(100vw - 24px)}@media (max-width:900px){.modo{bottom:calc(env(safe-area-inset-bottom,0px) + var(--dockh,76px) + 84px)}}.modo button.sep{margin-left:4px;padding-left:10px;border-left:1px solid rgba(243,239,230,.3)}
+  /* ── refinamento: uma borda só por elemento, controles segmentados, foco por sombra, bandeira de idioma, foto do corretor, proposta ── */
+  img.av{object-fit:cover;background:#16302e}
+  .hd{padding:14px 10px 14px 16px;border-bottom:0;gap:12px}
+  .hd .av{width:42px;height:42px;box-shadow:0 0 0 2px rgba(243,239,230,.35)}
+  .lang{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;background:rgba(243,239,230,.1);color:#f3efe6;font-size:20px;line-height:1;cursor:pointer}
+  .lang:hover,.lang[aria-expanded=true]{background:rgba(243,239,230,.2)}
+  .langs{position:absolute;right:12px;top:64px;z-index:3;display:grid;gap:2px;min-width:170px;padding:6px;border-radius:12px;background:#fffdf9;color:#16302e;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+  .langs[hidden]{display:none}
+  .langs button{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#16302e;font:500 14px/1 "Figtree",sans-serif;cursor:pointer;text-align:left}
+  .langs button:hover{background:rgba(22,48,46,.07)}.langs button[aria-pressed=true]{background:#16302e;color:#f3efe6}
+  .tabs{display:flex;gap:0;margin:12px 14px 0;padding:4px;border-radius:999px;background:rgba(22,48,46,.08)}
+  .tabs button{flex:1;min-height:38px;border:0;border-radius:999px;background:transparent;color:#16302e;font:600 13px/1.1 "Figtree",sans-serif;padding:0 10px}
+  .tabs button[aria-selected=true]{background:#16302e;color:#f3efe6;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .m.bot{border:0;box-shadow:0 1px 2px rgba(22,48,46,.08),0 0 0 1px rgba(22,48,46,.06)}
+  .sug button{border:1px solid rgba(22,48,46,.18)}
+  .in{border-top:0;padding:10px 14px 14px;background:linear-gradient(to top,#f3efe6 70%,rgba(243,239,230,0))}
+  .in input,textarea,.gate input.t{border:1px solid rgba(22,48,46,.18);box-shadow:0 1px 2px rgba(22,48,46,.06)}
+  input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;border-color:#c9944a;box-shadow:0 0 0 3px rgba(201,148,74,.28)}
+  .ct{padding:16px 14px 18px;gap:14px}
+  .ct .card{border:0;box-shadow:0 1px 2px rgba(22,48,46,.08),0 0 0 1px rgba(22,48,46,.06);border-radius:12px;padding:12px 14px}
+  .ct .card .av{width:48px;height:48px}
+  .ct .rec{display:grid;gap:10px}.ct .rec .btn{width:100%}
+  .btn.alt{box-shadow:0 6px 18px -8px rgba(201,148,74,.8)}
+  .note{padding:0 16px 10px}
+  /* proposta */
+  .pr{padding:14px 14px 18px;display:grid;gap:12px;overflow-y:auto}
+  .pr label{display:grid;gap:6px;font-size:12px;font-weight:600;color:#4d6460;min-width:0}
+  .pr select,.sel{width:100%;min-height:42px;border-radius:9px;border:1px solid rgba(22,48,46,.18);background:#fffdf9;color:#16302e;font:500 14px "Figtree",sans-serif;padding:0 10px;box-shadow:0 1px 2px rgba(22,48,46,.06)}
+  .pr .seg{display:flex;padding:4px;border-radius:999px;background:rgba(22,48,46,.08)}
+  .pr .seg button{flex:1;min-height:36px;border:0;border-radius:999px;background:transparent;color:#16302e;font:600 12px/1.1 "Figtree",sans-serif;padding:0 8px;cursor:pointer}
+  .pr .seg button[aria-pressed=true]{background:#16302e;color:#f3efe6}
+  .pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pr-sum{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:#fffdf9;box-shadow:0 1px 2px rgba(22,48,46,.08),0 0 0 1px rgba(22,48,46,.06);font-size:14px}
+  .pr-sum div{display:flex;justify-content:space-between;gap:12px}.pr-sum div span:last-child{font-weight:600;white-space:nowrap}
+  .pr-sum .tot{border-top:1px solid rgba(22,48,46,.12);padding-top:6px;margin-top:2px;font-family:"Instrument Serif",Georgia,serif;font-size:18px}
+  .pr textarea{min-height:64px}
+  .pr .btn{width:100%}
+  .pr .warn{margin:0}
+  /* tablet e celular */
+  @media (min-width:521px) and (max-width:1024px){.panel{width:min(440px,calc(100vw - 24px));height:min(680px,calc(100dvh - 100px))}}
+  @media (max-width:520px){.panel{inset:auto 0 0 0;left:0;right:0;width:100%;height:min(92dvh,760px);border-radius:18px 18px 0 0}.pr-grid{grid-template-columns:1fr 1fr}.hd{padding-top:12px}.langs{right:10px}}
   @media (prefers-reduced-motion:reduce){.badge,.panel{animation:none}.fab:active,.btn:active{scale:1}}`;
   const ICON = { chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
     wa: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>' };
+  const BAND = { "pt-BR": "🇧🇷", en: "🇺🇸", es: "🇪🇸", zh: "🇨🇳", hi: "🇮🇳", ar: "🇸🇦", fr: "🇫🇷", bn: "🇧🇩", ru: "🇷🇺" };
+  const NOME = { "pt-BR": "Português", en: "English", es: "Español", zh: "中文", hi: "हिन्दी", ar: "العربية", fr: "Français", bn: "বাংলা", ru: "Русский" };
+  const brl = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
   const MODO = { "pt-BR": "Modo corretor · sem coleta de dados", en: "Broker mode · no data collection", es: "Modo corredor · sin recopilación de datos" };
   const svg = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -144,6 +200,7 @@
     const armar = () => { clearTimeout(relogio); relogio = null; if (papel !== "cliente" || rec.cadastro === false || info.cliente) return; relogio = setTimeout(() => { if (papel === "cliente" && !gate && !info.cliente) { gate = true; render(); } }, 30000); };
     window.LC_EMBED = { papel: () => papel, abrirIA: () => { if (papel !== "cliente" && !previa) return; aba = info.ia ? "ia" : "contato"; if (pedirCadastro()) return; aberto = true; render(); } };  // o tour 3D (iframe) chama abrirIA() no "Fale conosco"
     const fone = rec.whatsapp === false ? "" : String(info.whatsapp || "").replace(/\D/g, "");
+    const avHtml = () => (info.foto ? `<img class="av" src="${esc(info.foto)}" alt="">` : `${avHtml()}`);
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
@@ -168,9 +225,54 @@
       <div class="sug">${t.sug.map((s) => `<button type="button" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div><p class="note">${esc(t.note)}</p>
       <form class="in"><input type="text" maxlength="500" placeholder="${esc(t.ph)}" aria-label="${esc(t.ph)}" autocomplete="off"><button class="go" aria-label="${esc(t.send)}">${svg("send")}</button></form>`;
     const contato = () => `<div class="ct">
-      <div class="card"><span class="av">${esc(ini(info.corretor))}</span><div><b>${esc(info.corretor)}</b><small>${esc(info.empresa || "")}</small></div></div>
+      <div class="card">${avHtml()}<div><b>${esc(info.corretor)}</b><small>${esc(info.empresa || "")}</small></div></div>
       ${fone ? `<a class="btn alt" target="_blank" rel="noopener" href="https://wa.me/${fone}?text=${encodeURIComponent(t.wa_text(info.empreendimento))}">${svg("wa")}${esc(t.wa)}</a>` : ""}
       <form class="rec" novalidate><label>${esc(t.msg)}<textarea name="m" maxlength="800" placeholder="${esc(t.msg_ph)}"></textarea></label><p class="er" role="alert"></p><p class="ok" role="status"></p><button class="btn" type="submit">${esc(t.send)}</button></form></div>`;
+
+    // ───── Proposta do cliente: unidades disponíveis com preço (tabela do painel) + condições que ele personaliza ─────
+    let UN = null, P = { unit: "", modo: "direto", entradaPct: 15, n: 100, balN: 4, balPer: "anual", balPct: 10, chavesPct: 30, obs: "" };
+    const carregarUnidades = async () => { if (UN) return UN; try { const r = await fetch(`/api/p/${code}/unidades`); UN = r.ok ? await r.json() : { unidades: [] }; } catch { UN = { unidades: [] }; } if (!P.unit && UN.unidades[0]) P.unit = UN.unidades[0].id; return UN; };
+    const calc = () => { const u = (UN && UN.unidades.find((x) => x.id === P.unit)) || (UN && UN.unidades[0]); if (!u) return null;
+      const price = u.price, entrada = price * P.entradaPct / 100, chaves = price * P.chavesPct / 100, balTot = P.balN ? price * P.balPct / 100 : 0, balV = P.balN ? balTot / P.balN : 0, resto = price - entrada - chaves - balTot;
+      return { u, price, entrada, chaves, balTot, balV, resto, mensal: resto / P.n, ok: resto > 0 }; };
+    const proposta = () => {
+      if (!UN) { carregarUnidades().then(() => { if (aba === "prop" && aberto) render(); }); return `<div class="pr"><p class="note">…</p></div>`; }
+      if (!UN.unidades.length) return `<div class="pr"><p class="warn">${esc(t.fail)}</p></div>`;
+      const c = calc(), opt = (vs, cur, suf) => vs.map((v) => `<option value="${v}" ${v === cur ? "selected" : ""}>${v}${suf || ""}</option>`).join("");
+      return `<div class="pr">
+        ${UN.ilustrativo ? `<p class="warn">${esc(t.pr_ilus)}</p>` : ""}
+        <label>${esc(t.pr_unit)}<select data-pr="unit">${UN.unidades.map((u) => `<option value="${u.id}" ${u.id === P.unit ? "selected" : ""}>Apto ${u.id} · ${u.andar}º${u.area ? " · " + esc(u.area) + " m²" : ""} · ${brl(u.price)}</option>`).join("")}</select></label>
+        <div class="seg" role="group"><button type="button" data-modo="direto" aria-pressed="${P.modo === "direto"}">${esc(t.pr_direto)}</button><button type="button" data-modo="banco" aria-pressed="${P.modo === "banco"}">${esc(t.pr_banco)}</button></div>
+        <div class="pr-grid">
+          <label>${esc(t.pr_entrada)}<select data-pr="entradaPct">${opt([5, 10, 15, 20, 25, 30, 40], P.entradaPct, "%")}</select></label>
+          <label>${esc(t.pr_n)}<select data-pr="n">${opt([36, 48, 60, 72, 80, 100, 120], P.n, "x")}</select></label>
+          <label>${esc(t.pr_bal)}<select data-pr="balN">${opt([0, 2, 4, 6, 8], P.balN, "")}</select></label>
+          <label>${esc(t.pr_balper)}<select data-pr="balPer"><option value="semestral" ${P.balPer === "semestral" ? "selected" : ""}>${esc(t.pr_sem)}</option><option value="anual" ${P.balPer === "anual" ? "selected" : ""}>${esc(t.pr_anu)}</option></select></label>
+          <label>${esc(t.pr_balpct)}<select data-pr="balPct">${opt([0, 5, 10, 15, 20], P.balPct, "%")}</select></label>
+          <label>${esc(P.modo === "direto" ? t.pr_chaves : t.pr_banco_pct)}<select data-pr="chavesPct">${opt([0, 10, 20, 30, 40, 50], P.chavesPct, "%")}</select></label>
+        </div>
+        ${c ? `<div class="pr-sum">
+          <div><span>${esc(t.pr_price)}</span><span>${brl(c.price)}</span></div>
+          <div><span>${esc(t.pr_entrada)} · ${P.entradaPct}%</span><span>${brl(c.entrada)}</span></div>
+          <div><span>${esc(t.pr_n)}</span><span>${c.ok ? `${P.n}x ${brl(c.mensal)}` : "—"}</span></div>
+          <div><span>${esc(t.pr_bal)}</span><span>${P.balN ? `${P.balN}x ${brl(c.balV)} (${esc(P.balPer === "semestral" ? t.pr_sem : t.pr_anu)})` : esc(t.pr_nobal)}</span></div>
+          <div><span>${esc(P.modo === "direto" ? t.pr_chaves : t.pr_banco_pct)} · ${P.chavesPct}%</span><span>${brl(c.chaves)}</span></div>
+          <div class="tot"><span>${esc(t.pr_total)}</span><span>${brl(c.price)}</span></div></div>` : ""}
+        <label>${esc(t.pr_obs)}<textarea data-pr="obs" maxlength="600">${esc(P.obs)}</textarea></label>
+        <p class="er" role="alert">${c && !c.ok ? esc(t.pr_bad) : ""}</p><p class="ok" role="status"></p>
+        <button class="btn" type="button" data-enviar-pr ${c && c.ok ? "" : "disabled"}>${esc(t.pr_send)}</button>
+        <p class="note" style="padding:0">${esc(t.pr_fine)}</p></div>`;
+    };
+    function ligarProposta() {
+      const q = (s) => sh.querySelector(s);
+      sh.querySelectorAll("[data-pr]").forEach((el) => { if (el.tagName === "TEXTAREA") el.addEventListener("input", () => { P.obs = el.value; }); else el.addEventListener("change", () => { const k = el.dataset.pr; P[k] = k === "unit" || k === "balPer" ? el.value : Number(el.value); render(); }); });
+      sh.querySelectorAll("[data-modo]").forEach((b) => (b.onclick = () => { P.modo = b.dataset.modo; render(); }));
+      const env = q("[data-enviar-pr]"); if (!env) return;
+      env.onclick = async () => { if (pedirCadastro()) return; const c = calc(); if (!c || !c.ok) return; const er = q(".pr .er"), ok = q(".pr .ok"); er.textContent = ok.textContent = ""; env.disabled = true;
+        if (previa) { ok.textContent = "Visão da construtora: a proposta não é enviada."; env.disabled = false; return; }
+        try { await post("proposta", { unit: P.unit, modo: P.modo, entrada_pct: P.entradaPct, mensais: P.n, baloes: P.balN, balao_period: P.balPer, baloes_pct: P.balPct, chaves_pct: P.chavesPct, obs: P.obs }); ok.textContent = t.pr_ok(info.corretor); }
+        catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; env.disabled = false; } };
+    }
 
     // ───── Corretor: dados para proposta (nome, telefone, e-mail, assinatura digital) → ficam no painel da construtora ─────
     const CK = "lc_corretor_card", SK = "lc_cartao_" + code;
@@ -241,15 +343,16 @@
       if (papel === null || (papel === "equipe" && !previa)) { sh.innerHTML = ""; return; } // carregando, ou outra pessoa da equipe olhando: nada por cima do mapa
       if (papel === "corretor") { renderCorretor(); return; } // apresentação normal: sem faixa, sem IA, sem cadastro de cliente, sem batimento
       sh.innerHTML = `<style>${CSS}</style>${cadastro()}
-        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button>
+        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}">${avHtml()}<span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button>
         <button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
-          <div class="hd"><span class="av">${esc(ini(info.corretor))}</span><div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${previa ? " · visão da construtora" : ""}</span></div>
-            ${idiomas.length > 1 ? `<select aria-label="${esc(t.lang)}">${idiomas.map((l) => `<option value="${l}" ${l === lang ? "selected" : ""}>${l.split("-")[0].toUpperCase()}</option>`).join("")}</select>` : ""}
+          <div class="hd">${avHtml()}<div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${previa ? " · visão da construtora" : ""}</span></div>
+            ${idiomas.length > 1 ? `<button class="lang" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="${esc(t.lang)}: ${esc(NOME[lang] || lang)}">${BAND[lang] || "🌐"}</button>` : ""}
             <button class="x" aria-label="${esc(t.close)}">${svg("x")}</button></div>
           ${info.outro_corretor ? `<p class="warn" style="margin-top:10px">${esc(t.other(info.outro_corretor))}</p>` : ""}
-          ${info.ia ? `<div class="tabs" role="tablist"><button role="tab" data-a="ia" aria-selected="${aba === "ia"}">${esc(t.ask)}</button><button role="tab" data-a="contato" aria-selected="${aba === "contato"}">${esc(t.contact)} ${esc(info.corretor.split(" ")[0])}</button></div>` : ""}
-          <div class="body">${aba === "ia" ? ia() : contato()}</div></section>`;
+          ${info.ia || info.proposta ? `<div class="tabs" role="tablist">${info.ia ? `<button role="tab" data-a="ia" aria-selected="${aba === "ia"}">${esc(t.ask)}</button>` : ""}${info.proposta ? `<button role="tab" data-a="prop" aria-selected="${aba === "prop"}">${esc(t.pr_tab)}</button>` : ""}<button role="tab" data-a="contato" aria-selected="${aba === "contato"}">${esc(t.contact)} ${esc(info.corretor.split(" ")[0])}</button></div>` : ""}
+          ${idiomas.length > 1 ? `<div class="langs" role="listbox" hidden>${idiomas.map((l) => `<button type="button" role="option" data-l="${l}" aria-pressed="${l === lang}">${BAND[l] || "🌐"} ${esc(NOME[l] || l)}</button>`).join("")}</div>` : ""}
+          <div class="body">${aba === "ia" ? ia() : aba === "prop" ? proposta() : contato()}</div></section>`;
       if (msgs && aba === "ia") { sh.querySelector(".msgs").innerHTML = msgs; sh.querySelector(".sug")?.remove(); }
       ligar();
     }
@@ -259,7 +362,11 @@
       fab.onclick = abrir; q(".badge").onclick = () => { if (pedirCadastro()) return; aba = "contato"; aberto = true; render(); (sh.querySelector("textarea") || sh.querySelector(".x"))?.focus(); };
       q(".x").onclick = () => { aberto = false; painel.hidden = true; fab.hidden = false; fab.focus(); };
       painel.addEventListener("keydown", (e) => { if (e.key === "Escape") q(".x").click(); });
-      const sel = q("select"); if (sel) sel.onchange = () => { lang = sel.value; render(); };
+      const lb = q(".lang"), ll = q(".langs");
+      if (lb && ll) { lb.onclick = (ev) => { ev.stopPropagation(); ll.hidden = !ll.hidden; lb.setAttribute("aria-expanded", String(!ll.hidden)); if (!ll.hidden) ll.querySelector("[aria-pressed=true]")?.focus(); };
+        ll.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { lang = b.dataset.l; render(); }));
+        painel.addEventListener("click", (ev) => { if (!ll.hidden && !ev.composedPath().includes(ll) && !ev.composedPath().includes(lb)) { ll.hidden = true; lb.setAttribute("aria-expanded", "false"); } }); }
+      if (aba === "prop") ligarProposta();
       sh.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => { aba = b.dataset.a; render(); (sh.querySelector(".in input") || sh.querySelector("textarea"))?.focus(); }));
       sh.querySelectorAll(".sug button").forEach((b) => (b.onclick = () => perguntar(b.dataset.s)));
       const fi = q("form.in"); if (fi) fi.onsubmit = (e) => { e.preventDefault(); const i = fi.querySelector("input"), v = i.value.trim(); if (v) { i.value = ""; perguntar(v); } };
@@ -277,7 +384,8 @@
       if (!f.elements.ok.checked) return (er.textContent = t.reg_agree);
       const b = f.querySelector("button[type=submit]"); b.disabled = true;
       try { const r = await post("register", { nome: g("nome"), telefone: g("telefone"), email: g("email"), consentimento: true });
-        info.cliente = r.cliente; info.corretor = r.corretor; info.whatsapp = r.whatsapp || info.whatsapp; gate = false; render(); }
+        info.cliente = r.cliente; info.corretor = r.corretor; info.whatsapp = r.whatsapp || info.whatsapp; gate = false;
+        try { const i2 = await (await fetch(`/api/p/${code}/info`)).json(); info.foto = i2.foto || ""; info.corretores = i2.corretores; } catch { /* segue sem foto */ } render(); }
       catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; }
     }
     function pedirCadastro() { if (previa) return false; if (!info.cliente && rec.cadastro !== false) { gate = true; render(); return true; } return false; }

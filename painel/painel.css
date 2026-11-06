@@ -1032,3 +1032,7 @@ table.t th.acoes,table.t td.acoes{text-align:center}
 .ger-it.off{opacity:.65}
 .ger-it b .pill{margin-left:8px;vertical-align:middle}
 @media (max-width:560px){.ger-it{flex-wrap:wrap}}
+
+/* propostas do cliente (montadas no chat) */
+.props-cli{display:grid;gap:10px}
+.prop-cli{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}

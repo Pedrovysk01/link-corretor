@@ -107,6 +107,12 @@ CREATE TABLE IF NOT EXISTS ai_questions(
   visitor_id INTEGER REFERENCES visitors(id) ON DELETE CASCADE,
   ts TEXT NOT NULL DEFAULT (datetime('now')), question TEXT NOT NULL, answer TEXT, lang TEXT NOT NULL DEFAULT 'pt-BR');
 CREATE INDEX IF NOT EXISTS ai_prop_ts ON ai_questions(property_id, ts);
+CREATE TABLE IF NOT EXISTS proposals(
+  id INTEGER PRIMARY KEY, visitor_id INTEGER NOT NULL REFERENCES visitors(id) ON DELETE CASCADE, broker_id INTEGER NOT NULL, property_id INTEGER NOT NULL,
+  link_id INTEGER, unit TEXT NOT NULL, price REAL NOT NULL, entrada REAL NOT NULL DEFAULT 0, mensais INTEGER NOT NULL DEFAULT 0, mensal_valor REAL NOT NULL DEFAULT 0,
+  baloes INTEGER NOT NULL DEFAULT 0, balao_valor REAL NOT NULL DEFAULT 0, balao_period TEXT NOT NULL DEFAULT 'anual', chaves REAL NOT NULL DEFAULT 0,
+  modo TEXT NOT NULL DEFAULT 'direto', obs TEXT NOT NULL DEFAULT '', created TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE INDEX IF NOT EXISTS proposals_visitor ON proposals(visitor_id, id);
 CREATE TABLE IF NOT EXISTS units(
   id INTEGER PRIMARY KEY, property_id INTEGER NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
   floor INTEGER NOT NULL, unit TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'd' CHECK(status IN ('d','r','v')),
@@ -329,6 +335,7 @@ SELECT v.id, v.name, v.phone, v.email, v.status, v.notes, v.message, v.consent, 
   (SELECT MAX(o.last_seen) FROM opens o WHERE o.visitor_id=v.id) ultima,
   (SELECT COUNT(*) FROM ai_questions a WHERE a.visitor_id=v.id) perguntas,
   (SELECT COUNT(DISTINCT o.broker_id) FROM opens o WHERE o.visitor_id=v.id AND o.broker_id<>v.broker_id) outros_corretores,
+  (SELECT COUNT(*) FROM proposals pr WHERE pr.visitor_id=v.id) propostas,
   (SELECT json_group_array(json_object('broker_id',s.broker_id,'pct',s.pct,'name',u2.name,'tem_foto',u2.photo<>'')) FROM commission_shares s JOIN users u2 ON u2.id=s.broker_id WHERE s.visitor_id=v.id) shares
 FROM visitors v JOIN users u ON u.id=v.broker_id JOIN properties p ON p.id=v.property_id LEFT JOIN links l ON l.id=v.first_link_id
 WHERE 1=1"""
@@ -356,6 +363,7 @@ def cliente(user, vid):
                        "CAST((julianday(o.last_seen)-julianday(o.ts))*86400 AS INTEGER) segundos FROM opens o JOIN users u ON u.id=o.broker_id "
                        "JOIN properties p ON p.id=o.property_id LEFT JOIN links l ON l.id=o.link_id WHERE o.visitor_id=? ORDER BY o.id DESC LIMIT 200", (v["id"],))
     v["perguntas_lista"] = q("SELECT id, ts, question, answer FROM ai_questions WHERE visitor_id=? ORDER BY id DESC LIMIT 100", (v["id"],))
+    v["propostas"] = q("SELECT * FROM proposals WHERE visitor_id=? ORDER BY id DESC LIMIT 50", (v["id"],))
     return v
 
 
@@ -1008,7 +1016,11 @@ def r_pub_info(h, u, q_, b, code):
     # quem atende: se a comissão deste cliente foi dividida, todos os corretores da divisão (maior parte primeiro); senão, o corretor do link
     corretores = [r["name"] for r in q("SELECT u2.name FROM commission_shares s JOIN users u2 ON u2.id=s.broker_id WHERE s.visitor_id=? ORDER BY s.pct DESC, u2.name", (v["id"],))] if v else []
     if not corretores: corretores = [atendido["name"]]
-    return {"empreendimento": L["name"], "corretor": atendido["name"], "whatsapp": atendido["phone"] or L["whatsapp"], "ia": bool(L["ai_on"]), "form": bool(L["form_on"]),
+    aid = v["broker_id"] if v else L["broker_id"]
+    tem_foto = q("SELECT photo<>'' f FROM users WHERE id=?", (aid,), one=True)
+    return {"foto": f"/api/p/{code}/foto?v={aid}" if tem_foto and tem_foto["f"] else "",  # foto de quem atende (rota pública, só a foto)
+            "proposta": bool(q("SELECT 1 FROM units WHERE property_id=? AND status='d' AND price>0", (L["id"],), one=True)),  # há tabela de preços: o chat mostra a aba Proposta
+            "empreendimento": L["name"], "corretor": atendido["name"], "whatsapp": atendido["phone"] or L["whatsapp"], "ia": bool(L["ai_on"]), "form": bool(L["form_on"]),
             "idiomas": json.loads(L["languages"] or "[]"), "recursos": recursos_de(L), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
             "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"],
             "cartao": bool(q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True)),  # só diz SE já cadastrou; a assinatura nunca vai para o cliente
@@ -1153,6 +1165,45 @@ def r_ia_cliente_ativar(h, u, q_, b):
     set_setting("ia_provedor_ativo", prov); return ia_cliente_estado()
 
 
+def r_pub_foto(h, u, q_, b, code):
+    L = link_publico(code); need(L, "Link indisponível.", 404); v = visitante_do_cookie(h)
+    r = q("SELECT photo FROM users WHERE id=?", (v["broker_id"] if v else L["broker_id"],), one=True); need(r and r["photo"], "Sem foto.", 404)
+    cab, dado = r["photo"].split(",", 1)
+    import base64
+    h.resp(200, base64.b64decode(dado), cab[5:].split(";")[0], {"Cache-Control": "private, max-age=300"}); return None
+
+
+def r_pub_unidades(h, u, q_, b, code):
+    """Unidades disponíveis com preço, para o simulador de proposta do cliente."""
+    L = link_publico(code); need(L, "Link indisponível.", 404)
+    rows = q("SELECT floor, unit, price FROM units WHERE property_id=? AND status='d' AND price>0 ORDER BY floor DESC, unit", (L["id"],))
+    meta = {x["unit"]: x for x in unidades_apresentacao(L)} if rows else {}
+    return {"ilustrativo": setting(f"precos_ilustrativos_{L['id']}") == "1",
+            "unidades": [{"id": r["unit"], "andar": r["floor"], "price": r["price"], "area": meta.get(r["unit"], {}).get("area", ""), "lado": meta.get(r["unit"], {}).get("lado", "")} for r in rows]}
+
+
+def r_pub_proposta(h, u, q_, b, code):
+    """Proposta montada pelo cliente no chat. Fica no nome do corretor de origem (comissão) e aparece na página do cliente."""
+    L = link_publico(code); v = visitante_do_cookie(h); need(L and v, "Faça o cadastro para enviar a proposta.", 401)
+    need(rate_ok(f"prop:{v['id']}", 5, 600), "Muitas propostas em pouco tempo. Aguarde alguns minutos.", 429)
+    unit = re.sub(r"\D", "", str(b.get("unit") or "")); un = q("SELECT * FROM units WHERE property_id=? AND unit=? AND status='d' AND price>0", (L["id"], unit), one=True); need(un, "Esta unidade não está disponível.")
+    def pct(k, mx):
+        try: return max(0.0, min(float(mx), float(b.get(k) or 0)))
+        except (TypeError, ValueError): return 0.0
+    entrada_pct, bal_pct, chaves_pct = pct("entrada_pct", 60), pct("baloes_pct", 40), pct("chaves_pct", 70)
+    try: n, bn = int(b.get("mensais") or 0), int(b.get("baloes") or 0)
+    except (TypeError, ValueError): n, bn = 0, 0
+    need(12 <= n <= 180, "Parcelas mensais entre 12 e 180."); need(0 <= bn <= 12, "Balões: no máximo 12.")
+    per = b.get("balao_period") if b.get("balao_period") in ("semestral", "anual") else "anual"
+    modo = b.get("modo") if b.get("modo") in ("direto", "banco") else "direto"
+    price = un["price"]; entrada = price * entrada_pct / 100; chaves = price * chaves_pct / 100; bal_tot = price * bal_pct / 100 if bn else 0.0; resto = price - entrada - chaves - bal_tot
+    need(resto > 0, "A soma de entrada, balões e chaves passa de 100%.")
+    pid = run("INSERT INTO proposals(visitor_id,broker_id,property_id,link_id,unit,price,entrada,mensais,mensal_valor,baloes,balao_valor,balao_period,chaves,modo,obs) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+              (v["id"], v["broker_id"], L["id"], L["link_id"], unit, price, entrada, n, resto / n, bn, (bal_tot / bn if bn else 0.0), per, chaves, modo, txt(b.get("obs"), 600, "as observações")))
+    run("UPDATE visitors SET status='proposta' WHERE id=? AND status IN ('novo','contatado','visita')", (v["id"],))
+    return {"ok": True, "id": pid}
+
+
 def r_pub_message(h, u, q_, b, code):
     L = link_publico(code); v = visitante_do_cookie(h); need(L and v, "Faça o cadastro para enviar.", 401)
     msg = txt(b.get("mensagem"), 800, "a mensagem", True)
@@ -1175,7 +1226,7 @@ ROTAS = [
     ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER),
     ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB), ("POST", r"/api/p/([a-z0-9]+)/corretor", r_pub_corretor, PUB),
     ("PATCH", r"/api/brokers/(\d+)/cartao", r_cartao_edit, OWNER), ("POST", r"/api/brokers/(\d+)/cartao/liberar", r_cartao_liberar, OWNER),
-    ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/ia-teste", r_ia_teste, OWNER), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB),
+    ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/ia-teste", r_ia_teste, OWNER), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB), ("GET", r"/api/p/([a-z0-9]+)/foto", r_pub_foto, PUB), ("GET", r"/api/p/([a-z0-9]+)/unidades", r_pub_unidades, PUB), ("POST", r"/api/p/([a-z0-9]+)/proposta", r_pub_proposta, PUB),
 ]
 ROTAS = [(m, re.compile("^" + p + "$"), f, r) for m, p, f, r in ROTAS]
 
@@ -1239,7 +1290,7 @@ class H(BaseHTTPRequestHandler):
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
             # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=21" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=22" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
