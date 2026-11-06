@@ -21,7 +21,8 @@
       pr_tab: "Proposta", pr_t: "Monte sua proposta", pr_unit: "Unidade", pr_direto: "Direto com a construtora", pr_banco: "Banco nas chaves", pr_entrada: "Entrada (sinal)", pr_n: "Mensais na obra", pr_bal: "Balões", pr_balper: "Periodicidade", pr_balpct: "Total dos balões",
       pr_chaves: "Nas chaves", pr_banco_pct: "Financiado pelo banco", pr_obs: "Observações", pr_send: "Enviar proposta", pr_price: "Preço", pr_total: "Total", pr_sem: "semestrais", pr_anu: "anuais", pr_nobal: "sem balões",
       pr_ok: (c) => `Proposta enviada. ${c} e a construtora já receberam e entram em contato para formalizar.`, pr_bad: "A soma de entrada, balões e chaves passa de 100%. Ajuste as porcentagens.",
-      pr_ilus: "Valores ilustrativos: a tabela oficial da incorporadora ainda não foi divulgada. A proposta vale como intenção de compra.", pr_fine: "Simulação sem compromisso. Condições sujeitas à aprovação da incorporadora.",
+      pr_ilus: "Valores ilustrativos: a tabela oficial da incorporadora ainda não foi divulgada. A proposta vale como intenção de compra.",
+      pr_banco_t: "Em análise pela construtora", pr_banco_s: "Financiamento bancário e consórcio estão sendo negociados com os parceiros abaixo. Em breve você monta a proposta com as condições de cada um.", pr_banco_volta: "Montar proposta direto com a construtora", pr_fine: "Simulação sem compromisso. Condições sujeitas à aprovação da incorporadora.",
       wa_text: (e) => `Olá! Estou vendo a apresentação do ${e} e gostaria de mais informações.`, other: (o) => `Você já é atendido por outro corretor. Este link é de ${o}; seu atendimento continua com quem começou.`, net: "Sem conexão. Tente de novo." },
     en: { served: "Served by", open: "Questions or contact", ask: "Ask the AI", contact: "Talk to", close: "Close", lang: "Language",
       hello: (c, n) => `Hi${n ? ", " + n.split(" ")[0] : ""}! I'm this development's assistant. Ask anything; if I don't know, ${c} will answer you.`,
@@ -35,7 +36,8 @@
       pr_tab: "Offer", pr_t: "Build your offer", pr_unit: "Unit", pr_direto: "Direct with the developer", pr_banco: "Bank at delivery", pr_entrada: "Down payment", pr_n: "Monthly during works", pr_bal: "Balloons", pr_balper: "Frequency", pr_balpct: "Balloons total",
       pr_chaves: "At delivery", pr_banco_pct: "Bank financed", pr_obs: "Notes", pr_send: "Send offer", pr_price: "Price", pr_total: "Total", pr_sem: "semiannual", pr_anu: "annual", pr_nobal: "no balloons",
       pr_ok: (c) => `Offer sent. ${c} and the developer have it and will get in touch to formalize.`, pr_bad: "Down payment, balloons and delivery add up to more than 100%. Adjust the percentages.",
-      pr_ilus: "Illustrative values: the developer's official price list has not been released yet. The offer counts as a purchase intent.", pr_fine: "Non-binding simulation. Terms subject to the developer's approval.",
+      pr_ilus: "Illustrative values: the developer's official price list has not been released yet. The offer counts as a purchase intent.",
+      pr_banco_t: "Under review by the developer", pr_banco_s: "Bank financing and consortium plans are being negotiated with the partners below. Soon you will build your offer with each partner's terms.", pr_banco_volta: "Build an offer direct with the developer", pr_fine: "Non-binding simulation. Terms subject to the developer's approval.",
       wa_text: (e) => `Hi! I'm viewing the ${e} presentation and would like more information.`, other: (o) => `You are already served by another broker. This link belongs to ${o}; your service continues with the first one.`, net: "No connection. Try again." },
     es: { served: "Atendido por", open: "Dudas o contacto", ask: "Pregunta a la IA", contact: "Hablar con", close: "Cerrar", lang: "Idioma",
       hello: (c, n) => `¡Hola${n ? ", " + n.split(" ")[0] : ""}! Soy el asistente del proyecto. Pregunta lo que quieras; si no lo sé, ${c} te responde.`,
@@ -49,7 +51,8 @@
       pr_tab: "Propuesta", pr_t: "Arma tu propuesta", pr_unit: "Unidad", pr_direto: "Directo con la constructora", pr_banco: "Banco en la entrega", pr_entrada: "Entrada (señal)", pr_n: "Mensuales en obra", pr_bal: "Refuerzos", pr_balper: "Periodicidad", pr_balpct: "Total de refuerzos",
       pr_chaves: "En la entrega", pr_banco_pct: "Financiado por el banco", pr_obs: "Observaciones", pr_send: "Enviar propuesta", pr_price: "Precio", pr_total: "Total", pr_sem: "semestrales", pr_anu: "anuales", pr_nobal: "sin refuerzos",
       pr_ok: (c) => `Propuesta enviada. ${c} y la constructora ya la recibieron y se pondrán en contacto para formalizar.`, pr_bad: "Entrada, refuerzos y entrega suman más del 100%. Ajusta los porcentajes.",
-      pr_ilus: "Valores ilustrativos: la lista oficial de precios de la constructora aún no fue publicada. La propuesta vale como intención de compra.", pr_fine: "Simulación sin compromiso. Condiciones sujetas a la aprobación de la constructora.",
+      pr_ilus: "Valores ilustrativos: la lista oficial de precios de la constructora aún no fue publicada. La propuesta vale como intención de compra.",
+      pr_banco_t: "En análisis por la constructora", pr_banco_s: "Financiación bancaria y consorcio se están negociando con los socios de abajo. Pronto podrás armar la propuesta con las condiciones de cada uno.", pr_banco_volta: "Armar propuesta directo con la constructora", pr_fine: "Simulación sin compromiso. Condiciones sujetas a la aprobación de la constructora.",
       wa_text: (e) => `¡Hola! Estoy viendo la presentación de ${e} y quisiera más información.`, other: (o) => `Ya te atiende otro corredor. Este enlace es de ${o}; tu atención sigue con quien empezó.`, net: "Sin conexión. Inténtalo de nuevo." },
   };
 
@@ -164,13 +167,48 @@
   .pr textarea{min-height:64px}
   .pr .btn{width:100%}
   .pr .warn{margin:0}
+  /* tamanho: um pouco menor, alinhado à barra de baixo (--pl/--pw/--pb medidos na página) */
+  .panel{left:var(--pl,16px);width:var(--pw,min(390px,calc(100vw - 28px)));min-width:min(300px,calc(100vw - 16px));max-width:calc(100vw - 16px);bottom:var(--pb,calc(68px + env(safe-area-inset-bottom)));height:min(560px,calc(100dvh - var(--pb,80px) - 56px))}
+  .hd .av{width:38px;height:38px}.hd b{font-size:18px}
+  .m{font-size:14px;padding:9px 11px}.sug button{min-height:34px;font-size:12.5px}.in input{min-height:42px;font-size:15px}.go{width:42px;height:42px}
+  .fl{width:24px;height:17px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.15);display:inline-block;vertical-align:middle;flex:none}
+  .lang .fl{width:26px;height:18px}
+  /* modo banco congelado + faixa de parceiros */
+  .seg button .ic{width:14px;height:14px;margin-right:4px;display:inline-block;vertical-align:-2px}
+  .frz{display:grid;gap:8px;padding:14px;border-radius:12px;background:#fffdf9;box-shadow:0 1px 2px rgba(22,48,46,.08),0 0 0 1px rgba(22,48,46,.06)}
+  .frz p{margin:0;font-size:13px;line-height:1.45;color:#4d6460}
+  .frz-tag{display:inline-flex;align-items:center;gap:6px;justify-self:start;padding:6px 12px;border-radius:999px;background:rgba(201,148,74,.18);color:#80592a;font:600 12px/1 "Figtree",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+  .frz-tag .ic{width:14px;height:14px}
+  .mq{overflow:hidden;margin:0 -14px;padding:6px 0;mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+  .mq-in{display:flex;gap:18px;width:max-content;animation:mq 42s linear infinite}
+  .mq:hover .mq-in{animation-play-state:paused}
+  @keyframes mq{to{transform:translateX(-50%)}}
+  .mq-it{display:grid;justify-items:center;gap:5px;width:84px;flex:none;opacity:.8}
+  .mq-it img{width:36px;height:36px;border-radius:10px;background:#fff;padding:5px;object-fit:contain;box-shadow:0 1px 2px rgba(22,48,46,.12);filter:grayscale(1)}
+  .mq-it small{font-size:10.5px;color:#4d6460;text-align:center;line-height:1.2}
+  .btn.alt2{background:transparent;color:#16302e;border:1px solid rgba(22,48,46,.25)}
+  @media (prefers-reduced-motion:reduce){.mq-in{animation:none;flex-wrap:wrap;width:auto}.mq{mask-image:none;overflow:auto}}
   /* tablet e celular */
   @media (min-width:521px) and (max-width:1024px){.panel{width:min(440px,calc(100vw - 24px));height:min(680px,calc(100dvh - 100px))}}
-  @media (max-width:520px){.panel{inset:auto 0 0 0;left:0;right:0;width:100%;height:min(92dvh,760px);border-radius:18px 18px 0 0}.pr-grid{grid-template-columns:1fr 1fr}.hd{padding-top:12px}.langs{right:10px}}
+  @media (max-width:520px){.panel{inset:auto;left:var(--pl,10px);right:auto;width:var(--pw,calc(100vw - 20px));height:min(78dvh,620px);border-radius:16px}.pr-grid{grid-template-columns:1fr 1fr}.hd{padding-top:12px}.langs{right:10px}}
   @media (prefers-reduced-motion:reduce){.badge,.panel{animation:none}.fab:active,.btn:active{scale:1}}`;
   const ICON = { chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
-    wa: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>' };
-  const BAND = { "pt-BR": "🇧🇷", en: "🇺🇸", es: "🇪🇸", zh: "🇨🇳", hi: "🇮🇳", ar: "🇸🇦", fr: "🇫🇷", bn: "🇧🇩", ru: "🇷🇺" };
+    wa: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>', lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>' };
+  const fl = (inner) => `<svg class="fl" viewBox="0 0 24 17" aria-hidden="true">${inner}</svg>`;
+  const BAND = {  // bandeiras desenhadas (o emoji de bandeira vira letras no Windows)
+    "pt-BR": fl('<rect width="24" height="17" fill="#009b3a"/><path d="M12 2.2 21.5 8.5 12 14.8 2.5 8.5z" fill="#fedf00"/><circle cx="12" cy="8.5" r="3.6" fill="#002776"/>'),
+    en: fl('<rect width="24" height="17" fill="#fff"/><path d="M0 1.3h24M0 3.7h24M0 6.1h24M0 8.5h24M0 10.9h24M0 13.3h24M0 15.7h24" stroke="#b22234" stroke-width="1.25"/><rect width="10.5" height="8.5" fill="#3c3b6e"/>'),
+    es: fl('<rect width="24" height="17" fill="#c60b1e"/><rect y="4.25" width="24" height="8.5" fill="#ffc400"/>'),
+    zh: fl('<rect width="24" height="17" fill="#de2910"/><path d="m5 2.5 1.2 3.2 3.4.1-2.7 2.1 1 3.3L5 9.3l-2.9 1.9 1-3.3L.4 5.8l3.4-.1z" fill="#ffde00"/>'),
+    hi: fl('<rect width="24" height="17" fill="#ff9933"/><rect y="5.7" width="24" height="5.6" fill="#fff"/><rect y="11.3" width="24" height="5.7" fill="#138808"/><circle cx="12" cy="8.5" r="2.1" fill="none" stroke="#000080" stroke-width=".8"/>'),
+    ar: fl('<rect width="24" height="17" fill="#006c35"/><rect x="4" y="6" width="16" height="2.2" rx="1" fill="#fff"/><rect x="6" y="10" width="12" height="1.6" rx=".8" fill="#fff"/>'),
+    fr: fl('<rect width="8" height="17" fill="#0055a4"/><rect x="8" width="8" height="17" fill="#fff"/><rect x="16" width="8" height="17" fill="#ef4135"/>'),
+    bn: fl('<rect width="24" height="17" fill="#006a4e"/><circle cx="10.5" cy="8.5" r="4.6" fill="#f42a41"/>'),
+    ru: fl('<rect width="24" height="5.7" fill="#fff"/><rect y="5.7" width="24" height="5.6" fill="#0039a6"/><rect y="11.3" width="24" height="5.7" fill="#d52b1e"/>'),
+  };
+  // financiamento bancário e consórcio: parceiros em análise pela construtora (logos pelo favicon oficial de cada um)
+  const PARCEIROS = [["Caixa", "caixa.gov.br"], ["Banco do Brasil", "bb.com.br"], ["Bradesco", "bradesco.com.br"], ["Itaú", "itau.com.br"], ["Santander", "santander.com.br"], ["Banco Inter", "bancointer.com.br"], ["Sicredi", "sicredi.com.br"], ["Sicoob", "sicoob.com.br"],
+    ["Embracon", "embracon.com.br"], ["Porto Consórcio", "portoseguro.com.br"], ["Rodobens", "rodobens.com.br"], ["Ademicon", "ademicon.com.br"], ["Bradesco Consórcios", "bradescoconsorcios.com.br"], ["Itaú Consórcio", "consorcio.itau.com.br"], ["Santander Consórcio", "santanderconsorcio.com.br"], ["Consórcio Magalu", "consorciomagalu.com.br"]];
   const NOME = { "pt-BR": "Português", en: "English", es: "Español", zh: "中文", hi: "हिन्दी", ar: "العربية", fr: "Français", bn: "বাংলা", ru: "Русский" };
   const brl = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
   const MODO = { "pt-BR": "Modo corretor · sem coleta de dados", en: "Broker mode · no data collection", es: "Modo corredor · sin recopilación de datos" };
@@ -204,6 +242,11 @@
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
+    // o chat segue a barra de baixo da apresentação (legenda no computador, dock no celular): mesma borda esquerda e mesma largura
+    const encaixar = () => { const barra = [...document.querySelectorAll(".legend, .dock")].find((b) => b.getClientRects().length && getComputedStyle(b).visibility !== "hidden");
+      if (!barra) { host.style.removeProperty("--pl"); host.style.removeProperty("--pw"); host.style.removeProperty("--pb"); return; }
+      const r = barra.getBoundingClientRect(); host.style.setProperty("--pl", Math.round(r.left) + "px"); host.style.setProperty("--pw", Math.round(r.width) + "px"); host.style.setProperty("--pb", Math.round(innerHeight - r.top + 10) + "px"); };
+    addEventListener("resize", encaixar); setTimeout(encaixar, 600);
     const marcarTour = () => { host.toggleAttribute("data-tour", document.body.classList.contains("tour-on")); host.toggleAttribute("data-card", document.body.classList.contains("cardopen")); };
     new MutationObserver(marcarTour).observe(document.body, { attributes: true, attributeFilter: ["class"] }); marcarTour();
     // conta interações na apresentação (não no widget); na terceira, pede o cadastro
@@ -239,24 +282,29 @@
       if (!UN) { carregarUnidades().then(() => { if (aba === "prop" && aberto) render(); }); return `<div class="pr"><p class="note">…</p></div>`; }
       if (!UN.unidades.length) return `<div class="pr"><p class="warn">${esc(t.fail)}</p></div>`;
       const c = calc(), opt = (vs, cur, suf) => vs.map((v) => `<option value="${v}" ${v === cur ? "selected" : ""}>${v}${suf || ""}</option>`).join("");
+      const seg = `<div class="seg" role="group"><button type="button" data-modo="direto" aria-pressed="${P.modo === "direto"}">${esc(t.pr_direto)}</button><button type="button" data-modo="banco" aria-pressed="${P.modo === "banco"}">${svg("lock")}${esc(t.pr_banco)}</button></div>`;
+      if (P.modo === "banco") return `<div class="pr">${seg}
+        <div class="frz"><span class="frz-tag">${svg("lock")}${esc(t.pr_banco_t)}</span><p>${esc(t.pr_banco_s)}</p></div>
+        <div class="mq" aria-label="${esc(t.pr_banco_t)}"><div class="mq-in">${PARCEIROS.concat(PARCEIROS).map(([n, d]) => `<span class="mq-it"><img src="https://www.google.com/s2/favicons?domain=${d}&sz=64" alt="" loading="lazy" referrerpolicy="no-referrer"><small>${esc(n)}</small></span>`).join("")}</div></div>
+        <button class="btn alt2" type="button" data-modo="direto">${esc(t.pr_banco_volta)}</button></div>`;
       return `<div class="pr">
         ${UN.ilustrativo ? `<p class="warn">${esc(t.pr_ilus)}</p>` : ""}
         <label>${esc(t.pr_unit)}<select data-pr="unit">${UN.unidades.map((u) => `<option value="${u.id}" ${u.id === P.unit ? "selected" : ""}>Apto ${u.id} · ${u.andar}º${u.area ? " · " + esc(u.area) + " m²" : ""} · ${brl(u.price)}</option>`).join("")}</select></label>
-        <div class="seg" role="group"><button type="button" data-modo="direto" aria-pressed="${P.modo === "direto"}">${esc(t.pr_direto)}</button><button type="button" data-modo="banco" aria-pressed="${P.modo === "banco"}">${esc(t.pr_banco)}</button></div>
+        ${seg}
         <div class="pr-grid">
           <label>${esc(t.pr_entrada)}<select data-pr="entradaPct">${opt([5, 10, 15, 20, 25, 30, 40], P.entradaPct, "%")}</select></label>
           <label>${esc(t.pr_n)}<select data-pr="n">${opt([36, 48, 60, 72, 80, 100, 120], P.n, "x")}</select></label>
           <label>${esc(t.pr_bal)}<select data-pr="balN">${opt([0, 2, 4, 6, 8], P.balN, "")}</select></label>
           <label>${esc(t.pr_balper)}<select data-pr="balPer"><option value="semestral" ${P.balPer === "semestral" ? "selected" : ""}>${esc(t.pr_sem)}</option><option value="anual" ${P.balPer === "anual" ? "selected" : ""}>${esc(t.pr_anu)}</option></select></label>
           <label>${esc(t.pr_balpct)}<select data-pr="balPct">${opt([0, 5, 10, 15, 20], P.balPct, "%")}</select></label>
-          <label>${esc(P.modo === "direto" ? t.pr_chaves : t.pr_banco_pct)}<select data-pr="chavesPct">${opt([0, 10, 20, 30, 40, 50], P.chavesPct, "%")}</select></label>
+          <label>${esc(t.pr_chaves)}<select data-pr="chavesPct">${opt([0, 10, 20, 30, 40, 50], P.chavesPct, "%")}</select></label>
         </div>
         ${c ? `<div class="pr-sum">
           <div><span>${esc(t.pr_price)}</span><span>${brl(c.price)}</span></div>
           <div><span>${esc(t.pr_entrada)} · ${P.entradaPct}%</span><span>${brl(c.entrada)}</span></div>
           <div><span>${esc(t.pr_n)}</span><span>${c.ok ? `${P.n}x ${brl(c.mensal)}` : "—"}</span></div>
           <div><span>${esc(t.pr_bal)}</span><span>${P.balN ? `${P.balN}x ${brl(c.balV)} (${esc(P.balPer === "semestral" ? t.pr_sem : t.pr_anu)})` : esc(t.pr_nobal)}</span></div>
-          <div><span>${esc(P.modo === "direto" ? t.pr_chaves : t.pr_banco_pct)} · ${P.chavesPct}%</span><span>${brl(c.chaves)}</span></div>
+          <div><span>${esc(t.pr_chaves)} · ${P.chavesPct}%</span><span>${brl(c.chaves)}</span></div>
           <div class="tot"><span>${esc(t.pr_total)}</span><span>${brl(c.price)}</span></div></div>` : ""}
         <label>${esc(t.pr_obs)}<textarea data-pr="obs" maxlength="600">${esc(P.obs)}</textarea></label>
         <p class="er" role="alert">${c && !c.ok ? esc(t.pr_bad) : ""}</p><p class="ok" role="status"></p>
@@ -270,7 +318,7 @@
       const env = q("[data-enviar-pr]"); if (!env) return;
       env.onclick = async () => { if (pedirCadastro()) return; const c = calc(); if (!c || !c.ok) return; const er = q(".pr .er"), ok = q(".pr .ok"); er.textContent = ok.textContent = ""; env.disabled = true;
         if (previa) { ok.textContent = "Visão da construtora: a proposta não é enviada."; env.disabled = false; return; }
-        try { await post("proposta", { unit: P.unit, modo: P.modo, entrada_pct: P.entradaPct, mensais: P.n, baloes: P.balN, balao_period: P.balPer, baloes_pct: P.balPct, chaves_pct: P.chavesPct, obs: P.obs }); ok.textContent = t.pr_ok(info.corretor); }
+        try { await post("proposta", { unit: P.unit, modo: "direto", entrada_pct: P.entradaPct, mensais: P.n, baloes: P.balN, balao_period: P.balPer, baloes_pct: P.balPct, chaves_pct: P.chavesPct, obs: P.obs }); ok.textContent = t.pr_ok(info.corretor); }
         catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; env.disabled = false; } };
     }
 
@@ -347,18 +395,18 @@
         <button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
           <div class="hd">${avHtml()}<div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${previa ? " · visão da construtora" : ""}</span></div>
-            ${idiomas.length > 1 ? `<button class="lang" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="${esc(t.lang)}: ${esc(NOME[lang] || lang)}">${BAND[lang] || "🌐"}</button>` : ""}
+            ${idiomas.length > 1 ? `<button class="lang" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="${esc(t.lang)}: ${esc(NOME[lang] || lang)}">${BAND[lang] || fl('<rect width="24" height="17" fill="#4d6460"/>')}</button>` : ""}
             <button class="x" aria-label="${esc(t.close)}">${svg("x")}</button></div>
           ${info.outro_corretor ? `<p class="warn" style="margin-top:10px">${esc(t.other(info.outro_corretor))}</p>` : ""}
           ${info.ia || info.proposta ? `<div class="tabs" role="tablist">${info.ia ? `<button role="tab" data-a="ia" aria-selected="${aba === "ia"}">${esc(t.ask)}</button>` : ""}${info.proposta ? `<button role="tab" data-a="prop" aria-selected="${aba === "prop"}">${esc(t.pr_tab)}</button>` : ""}<button role="tab" data-a="contato" aria-selected="${aba === "contato"}">${esc(t.contact)} ${esc(info.corretor.split(" ")[0])}</button></div>` : ""}
-          ${idiomas.length > 1 ? `<div class="langs" role="listbox" hidden>${idiomas.map((l) => `<button type="button" role="option" data-l="${l}" aria-pressed="${l === lang}">${BAND[l] || "🌐"} ${esc(NOME[l] || l)}</button>`).join("")}</div>` : ""}
+          ${idiomas.length > 1 ? `<div class="langs" role="listbox" hidden>${idiomas.map((l) => `<button type="button" role="option" data-l="${l}" aria-pressed="${l === lang}">${BAND[l] || fl('<rect width="24" height="17" fill="#4d6460"/>')} ${esc(NOME[l] || l)}</button>`).join("")}</div>` : ""}
           <div class="body">${aba === "ia" ? ia() : aba === "prop" ? proposta() : contato()}</div></section>`;
       if (msgs && aba === "ia") { sh.querySelector(".msgs").innerHTML = msgs; sh.querySelector(".sug")?.remove(); }
       ligar();
     }
     function ligar() {
       const q = (s) => sh.querySelector(s), painel = q(".panel"), fab = q(".fab");
-      const abrir = () => { if (pedirCadastro()) return; aberto = true; painel.hidden = false; fab.hidden = true; (q(".in input") || q("textarea"))?.focus(); };
+      const abrir = () => { if (pedirCadastro()) return; encaixar(); aberto = true; painel.hidden = false; fab.hidden = true; (q(".in input") || q("textarea"))?.focus(); };
       fab.onclick = abrir; q(".badge").onclick = () => { if (pedirCadastro()) return; aba = "contato"; aberto = true; render(); (sh.querySelector("textarea") || sh.querySelector(".x"))?.focus(); };
       q(".x").onclick = () => { aberto = false; painel.hidden = true; fab.hidden = false; fab.focus(); };
       painel.addEventListener("keydown", (e) => { if (e.key === "Escape") q(".x").click(); });
