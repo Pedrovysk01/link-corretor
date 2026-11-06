@@ -4,8 +4,10 @@
    a construtora só olha (aba "← Painel" do voltar.js). Shadow DOM: não herda nem vaza estilo. */
 (() => {
   "use strict";
-  const sc = document.currentScript, code = sc && sc.dataset.code;
-  if (!code || window.__lcEmbed) return;
+  const sc = document.currentScript, code = sc && sc.dataset.code, prePid = sc && sc.dataset.pid;
+  if ((!code && !prePid) || window.__lcEmbed) return;
+  const API = code ? `/api/p/${code}` : `/api/pre/${prePid}`;  // link do corretor ou pré-visualização da construtora (aberta do painel)
+  const CHAVE = code || "pre" + prePid;
   window.__lcEmbed = true;
 
   const T = {
@@ -188,6 +190,7 @@
   .mq-it small{font-size:10.5px;color:#4d6460;text-align:center;line-height:1.2}
   .btn.alt2{background:transparent;color:#16302e;border:1px solid rgba(22,48,46,.25)}
   @media (prefers-reduced-motion:reduce){.mq-in{animation:none;flex-wrap:wrap;width:auto}.mq{mask-image:none;overflow:auto}}
+  img.av.logo{object-fit:contain;background:#fff;padding:4px}
   /* barra de baixo: botão da IA + selo "Atendimento por", lado a lado */
   .dockbar{position:fixed;left:16px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:calc(100vw - 24px)}
   .dockbar .fab,.dockbar .badge{position:static;left:auto;top:auto;bottom:auto;max-width:100%;animation:pop .5s cubic-bezier(.2,.8,.2,1) both}
@@ -223,20 +226,20 @@
   const svg = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ini = (n) => String(n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
-  const post = async (p, body) => { const r = await fetch(`/api/p/${code}/${p}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const post = async (p, body) => { const r = await fetch(`${API}/${p}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.erro || "erro"); return j; };
 
   const previaAsk = async (txt) => { const r = await fetch("/api/ia-teste", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property_id: info0.pid, pergunta: txt }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.erro || "erro"); return j; };
   let info0 = null;
-  fetch(`/api/p/${code}/info`).then((r) => (r.ok ? r.json() : null)).then((info) => { if (info) { info0 = info; montar(info); } }).catch(() => {});
+  fetch(`${API}/info`).then((r) => (r.ok ? r.json() : null)).then((info) => { if (info) { info0 = info; montar(info); } }).catch(() => {});
 
   function montar(info) {
     const idiomas = info.idiomas && info.idiomas.length ? info.idiomas : ["pt-BR"];
     const nav = (navigator.language || "pt-BR").toLowerCase();
     const TZ_BR = /^America\/(Sao_Paulo|Fortaleza|Recife|Bahia|Belem|Manaus|Cuiaba|Campo_Grande|Porto_Velho|Boa_Vista|Rio_Branco|Noronha|Araguaina|Maceio|Santarem|Eirunepe)$/;
     let noBrasil = nav.startsWith("pt"); try { noBrasil = noBrasil || TZ_BR.test(Intl.DateTimeFormat().resolvedOptions().timeZone || ""); } catch { /* sem Intl */ }
-    let lembrado = null; try { lembrado = localStorage.getItem("lc_lang_" + code); } catch { /* sem storage */ }
+    let lembrado = null; try { lembrado = localStorage.getItem("lc_lang_" + CHAVE); } catch { /* sem storage */ }
     let lang = idiomas.includes(lembrado) ? lembrado : noBrasil && idiomas.includes("pt-BR") ? "pt-BR" : idiomas.find((l) => nav.startsWith(l.toLowerCase().split("-")[0])) || idiomas[0];  // no Brasil, sempre português
     let t = T[lang] || T["pt-BR"], aba = info.ia ? "ia" : "contato", ocupado = false, aberto = false, msgs = null, gate = false, toques = 0, ultimo = 0;
     const LIMITE = 3;
@@ -249,7 +252,7 @@
     const armar = () => { clearTimeout(relogio); relogio = null; if (papel !== "cliente" || rec.cadastro === false || info.cliente) return; relogio = setTimeout(() => { if (papel === "cliente" && !gate && !info.cliente) { gate = true; render(); } }, 30000); };
     window.LC_EMBED = { papel: () => papel, abrirIA: () => { if (papel !== "cliente" && !previa) return; aba = info.ia ? "ia" : "contato"; if (pedirCadastro()) return; aberto = true; render(); } };  // o tour 3D (iframe) chama abrirIA() no "Fale conosco"
     const fone = rec.whatsapp === false ? "" : String(info.whatsapp || "").replace(/\D/g, "");
-    const avHtml = () => (info.foto ? `<img class="av" src="${esc(info.foto)}" alt="">` : `${avHtml()}`);
+    const avHtml = () => (info.foto ? `<img class="av${info.foto_logo ? " logo" : ""}" src="${esc(info.foto)}" alt="">` : `<span class="av">${esc(ini(info.corretor))}</span>`);
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
@@ -265,7 +268,7 @@
     // 3ª interação: no celular conta o toque (pointerdown de dedo/caneta); no computador conta o CLIQUE completo do mouse (não tecla, não arrasto)
     document.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" || e.pointerType === "pen") interagiu(e); }, true);
     document.addEventListener("click", (e) => { if (e.pointerType === "mouse" || (!e.pointerType && !("ontouchstart" in window))) interagiu(e); }, true);
-    setInterval(() => { if (papel === "cliente" && !document.hidden) fetch(`/api/p/${code}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
+    setInterval(() => { if (papel === "cliente" && !document.hidden) fetch(`${API}/heartbeat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); }, 30000);
 
     const cadastro = () => `<div class="gate" ${gate ? "" : "hidden"} role="dialog" aria-modal="true" aria-labelledby="lc-reg-t"><form class="reg" novalidate>
       <p class="eyebrow">${esc(info.empresa || info.empreendimento)}</p><h2 id="lc-reg-t">${esc(t.reg_t)}</h2><p class="lead">${esc(t.reg_s(info.corretor))}</p>
@@ -285,7 +288,7 @@
 
     // ───── Proposta do cliente: unidades disponíveis com preço (tabela do painel) + condições que ele personaliza ─────
     let UN = null, P = { unit: "", modo: "direto", entradaPct: 15, n: 100, balN: 4, balPer: "anual", balPct: 10, chavesPct: 30, obs: "" };
-    const carregarUnidades = async () => { if (UN) return UN; try { const r = await fetch(`/api/p/${code}/unidades`); UN = r.ok ? await r.json() : { unidades: [] }; } catch { UN = { unidades: [] }; } if (!P.unit && UN.unidades[0]) P.unit = UN.unidades[0].id; return UN; };
+    const carregarUnidades = async () => { if (UN) return UN; try { const r = await fetch(`${API}/unidades`); UN = r.ok ? await r.json() : { unidades: [] }; } catch { UN = { unidades: [] }; } if (!P.unit && UN.unidades[0]) P.unit = UN.unidades[0].id; return UN; };
     const calc = () => { const u = (UN && UN.unidades.find((x) => x.id === P.unit)) || (UN && UN.unidades[0]); if (!u) return null;
       const price = u.price, entrada = price * P.entradaPct / 100, chaves = price * P.chavesPct / 100, balTot = P.balN ? price * P.balPct / 100 : 0, balV = P.balN ? balTot / P.balN : 0, resto = price - entrada - chaves - balTot;
       return { u, price, entrada, chaves, balTot, balV, resto, mensal: resto / P.n, ok: resto > 0 }; };
@@ -405,7 +408,7 @@
         <div class="dockbar"><button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
         <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}">${avHtml()}<span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button></div>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
-          <div class="hd">${avHtml()}<div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${previa ? " · visão da construtora" : ""}</span></div>
+          <div class="hd">${avHtml()}<div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${info.construtora ? "" : previa ? " · visão da construtora" : ""}</span></div>
             ${idiomas.length > 1 ? `<button class="lang" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="${esc(t.lang)}: ${esc(NOME[lang] || lang)}">${BAND[lang] || fl('<rect width="24" height="17" fill="#4d6460"/>')}</button>` : ""}
             <button class="x" aria-label="${esc(t.close)}">${svg("x")}</button></div>
           ${info.outro_corretor ? `<p class="warn" style="margin-top:10px">${esc(t.other(info.outro_corretor))}</p>` : ""}
@@ -423,7 +426,7 @@
       painel.addEventListener("keydown", (e) => { if (e.key === "Escape") q(".x").click(); });
       const lb = q(".lang"), ll = q(".langs");
       if (lb && ll) { lb.onclick = (ev) => { ev.stopPropagation(); ll.hidden = !ll.hidden; lb.setAttribute("aria-expanded", String(!ll.hidden)); if (!ll.hidden) ll.querySelector("[aria-pressed=true]")?.focus(); };
-        ll.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { lang = b.dataset.l; try { localStorage.setItem("lc_lang_" + code, lang); } catch { /* sem storage */ } render(); }));
+        ll.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { lang = b.dataset.l; try { localStorage.setItem("lc_lang_" + CHAVE, lang); } catch { /* sem storage */ } render(); }));
         painel.addEventListener("click", (ev) => { if (!ll.hidden && !ev.composedPath().includes(ll) && !ev.composedPath().includes(lb)) { ll.hidden = true; lb.setAttribute("aria-expanded", "false"); } }); }
       if (aba === "prop") ligarProposta();
       sh.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => { aba = b.dataset.a; render(); (sh.querySelector(".in input") || sh.querySelector("textarea"))?.focus(); }));
@@ -444,7 +447,7 @@
       const b = f.querySelector("button[type=submit]"); b.disabled = true;
       try { const r = await post("register", { nome: g("nome"), telefone: g("telefone"), email: g("email"), consentimento: true });
         info.cliente = r.cliente; info.corretor = r.corretor; info.whatsapp = r.whatsapp || info.whatsapp; gate = false;
-        try { const i2 = await (await fetch(`/api/p/${code}/info`)).json(); info.foto = i2.foto || ""; info.corretores = i2.corretores; } catch { /* segue sem foto */ } render(); }
+        try { const i2 = await (await fetch(`${API}/info`)).json(); info.foto = i2.foto || ""; info.corretores = i2.corretores; } catch { /* segue sem foto */ } render(); }
       catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; }
     }
     function pedirCadastro() { if (previa) return false; if (!info.cliente && rec.cadastro !== false) { gate = true; render(); return true; } return false; }

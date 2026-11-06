@@ -1182,13 +1182,28 @@ def r_pub_foto(h, u, q_, b, code):
     h.resp(200, base64.b64decode(dado), cab[5:].split(";")[0], {"Cache-Control": "private, max-age=300"}); return None
 
 
-def r_pub_unidades(h, u, q_, b, code):
-    """Unidades disponíveis com preço, para o simulador de proposta do cliente."""
-    L = link_publico(code); need(L, "Link indisponível.", 404)
-    rows = q("SELECT floor, unit, price FROM units WHERE property_id=? AND status='d' AND price>0 ORDER BY floor DESC, unit", (L["id"],))
-    meta = {x["unit"]: x for x in unidades_apresentacao(L)} if rows else {}
-    return {"ilustrativo": setting(f"precos_ilustrativos_{L['id']}") == "1",
+def unidades_publicas(prop):
+    """Unidades disponíveis com preço, para o simulador de proposta (link do corretor e pré-visualização)."""
+    rows = q("SELECT floor, unit, price FROM units WHERE property_id=? AND status='d' AND price>0 ORDER BY floor DESC, unit", (prop["id"],))
+    meta = {x["unit"]: x for x in unidades_apresentacao(prop)} if rows else {}
+    return {"ilustrativo": setting(f"precos_ilustrativos_{prop['id']}") == "1",
             "unidades": [{"id": r["unit"], "andar": r["floor"], "price": r["price"], "area": meta.get(r["unit"], {}).get("area", ""), "lado": meta.get(r["unit"], {}).get("lado", "")} for r in rows]}
+
+
+def r_pub_unidades(h, u, q_, b, code):
+    L = link_publico(code); need(L, "Link indisponível.", 404); return unidades_publicas(L)
+
+
+# ───────── pré-visualização (/pre/<id>/, aberta do painel): o mesmo widget, atendido pela CONSTRUTORA (sem corretor) ─────────
+def r_pre_info(h, u, q_, b, pid):
+    prop = prop_ou_404(pid); empresa = setting("business_name", "") or "Construtora"
+    return {"foto": setting("business_logo", "") or LOGO_PADRAO, "foto_logo": True, "proposta": bool(q("SELECT 1 FROM units WHERE property_id=? AND status='d' AND price>0", (prop["id"],), one=True)),
+            "empreendimento": prop["name"], "corretor": empresa, "corretores": [empresa], "whatsapp": prop["whatsapp"] or "", "ia": bool(prop["ai_on"]), "form": False,
+            "idiomas": json.loads(prop["languages"] or "[]"), "recursos": recursos_de(prop), "cliente": None, "empresa": empresa, "outro_corretor": False, "cartao": False,
+            "corretor_email": "", "pid": prop["id"], "dono": True, "equipe": True, "meu_link": False, "construtora": True}
+
+
+def r_pre_unidades(h, u, q_, b, pid): return unidades_publicas(prop_ou_404(pid))
 
 
 def r_pub_proposta(h, u, q_, b, code):
@@ -1235,7 +1250,7 @@ ROTAS = [
     ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER),
     ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB), ("POST", r"/api/p/([a-z0-9]+)/corretor", r_pub_corretor, PUB),
     ("PATCH", r"/api/brokers/(\d+)/cartao", r_cartao_edit, OWNER), ("POST", r"/api/brokers/(\d+)/cartao/liberar", r_cartao_liberar, OWNER),
-    ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/ia-teste", r_ia_teste, OWNER), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB), ("GET", r"/api/p/([a-z0-9]+)/foto", r_pub_foto, PUB), ("GET", r"/api/p/([a-z0-9]+)/unidades", r_pub_unidades, PUB), ("POST", r"/api/p/([a-z0-9]+)/proposta", r_pub_proposta, PUB),
+    ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/ia-teste", r_ia_teste, ANY), ("GET", r"/api/pre/(\d+)/info", r_pre_info, ANY), ("GET", r"/api/pre/(\d+)/unidades", r_pre_unidades, ANY), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB), ("GET", r"/api/p/([a-z0-9]+)/foto", r_pub_foto, PUB), ("GET", r"/api/p/([a-z0-9]+)/unidades", r_pub_unidades, PUB), ("POST", r"/api/p/([a-z0-9]+)/proposta", r_pub_proposta, PUB),
 ]
 ROTAS = [(m, re.compile("^" + p + "$"), f, r) for m, p, f, r in ROTAS]
 
@@ -1291,7 +1306,7 @@ class H(BaseHTTPRequestHandler):
                 f'<div style="max-width:420px;text-align:center"><h1 style="font:400 28px Georgia,serif;margin:0 0 8px">{titulo}</h1><p style="margin:0;opacity:.8">{texto}</p></div>')
         self.resp(code, html.encode("utf-8"), "text/html; charset=utf-8", {"Cache-Control": "no-store"})
 
-    def arquivo(self, caminho, injetar_code=None, voltar=False, recursos=None, casca=False):
+    def arquivo(self, caminho, injetar_code=None, voltar=False, recursos=None, casca=False, pre_pid=None):
         ext = caminho.suffix.lower()
         tipo = TIPOS.get(ext) or mimetypes.guess_type(str(caminho))[0] or "application/octet-stream"
         if (injetar_code or voltar) and ext == ".html":
@@ -1300,7 +1315,8 @@ class H(BaseHTTPRequestHandler):
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
             if casca: tag = '<script src="/painel/materiais.js?v=3"></script><script src="/painel/casca.js?v=5"></script>' + tag  # Bossa/Felicità: materiais (galeria, planta, antes/depois) + cabeçalho padrão; o Montemerano tem os seus
             # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=24" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=25" data-code="{injetar_code}" defer></script>'
+            elif pre_pid: tag += f'<script src="/painel/embed.js?v=25" data-pid="{pre_pid}" defer></script>'  # pré-visualização: selo e chat da construtora'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -1355,7 +1371,7 @@ class H(BaseHTTPRequestHandler):
                     return self.resp(200, json.dumps(D, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8", {"Cache-Control": "no-store"})
         eh_entrada = alvo == (pasta / entrada).resolve()
         if eh_entrada and recursos is not None: simular_se_demo(.5)  # demonstração: abrir uma apresentação também gera um cadastro simulado
-        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None, casca=eh_entrada and pasta.resolve() != (ROOT / APRESENTACAO).resolve())
+        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None, casca=eh_entrada and pasta.resolve() != (ROOT / APRESENTACAO).resolve(), pre_pid=pid if (eh_entrada and not injetar) else None)
 
     def apresentacao(self, code, rel):
         L = link_publico(code)
