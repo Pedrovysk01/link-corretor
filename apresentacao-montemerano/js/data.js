@@ -5,6 +5,9 @@ catch (err) { document.body.classList.add("erro"); throw err }
 export { D };
 export const EXP = D.experiencias, VIEWS = D.mapa.views;
 export const IMG = k => `media/hi/${k}.jpg`, IMGM = k => `media/hi/m-${k}.jpg`, TH = k => `media/hi/t-${k}.jpg`;
+// Panoramas 360° equirretangulares (2:1) por imagem de ambiente. Imagem com panorama abre girável.
+const PANOS = new Set(["living-estar", "living-jantar", "sacada", "suite"]);
+export const PANO = k => PANOS.has(k) ? `media/360/${k}.webp?v=4` : null;  // troque o ?v= ao substituir um panorama
 export const isMobile = () => matchMedia("(max-width:720px)").matches;
 export const reduceM = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 export const $ = id => document.getElementById(id);

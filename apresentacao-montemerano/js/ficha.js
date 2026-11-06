@@ -1,6 +1,6 @@
 import { IC } from "./icons.js";
 // Ficha lateral (no celular, folha que sobe): andares, apartamentos e chamarizes, com galeria, vídeo e plantas.
-import { D, IMG, IMGM, TH, $, esc, isMobile, reduceM } from "./data.js";
+import { D, IMG, IMGM, TH, PANO, $, esc, isMobile, reduceM } from "./data.js";
 import { state } from "./state.js";
 import { openViewer } from "./viewer.js";
 import { abrirTour, temTour } from "./tour.js";
@@ -100,7 +100,7 @@ const tourCta = (chave, titulo, sub) => temTour(chave) ? `<button class="tour-ct
 function galeriaHTML(f) {
   const G = f.g || [], o = f.video ? 1 : 0, nome = f.titulo;
   return `<div class="film" data-gal><div class="slides">${f.video ? `<video src="media/${f.video}.mp4" poster="media/${f.video}.jpg" muted loop playsinline autoplay></video>` : ""}
-    ${G.map(([p, l], i) => `<button data-zoom="${i}" aria-label="Ampliar: ${esc(l)}"><img loading="lazy" src="${IMGM(p)}" alt="${esc(nome)}: ${esc(l)}"></button>`).join("")}</div>
+    ${G.map(([p, l], i) => `<button data-zoom="${i}" aria-label="${PANO(p) ? "Ver em 360°" : "Ampliar"}: ${esc(l)}"${PANO(p) ? ' class="g360"' : ""}><img loading="lazy" src="${IMGM(p)}" alt="${esc(nome)}: ${esc(l)}">${PANO(p) ? `<span class="b360" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5c-5 0-9 2.2-9 5s4 5 9 5c.5 0 1-.03 1.5-.07M16 14.5c3-.7 5-2.4 5-4.5 0-2.8-4-5-9-5"/><path d="m11 12.5 2.5 2.4L11 17.4"/></svg>360°</span>` : ""}</button>`).join("")}</div>
     <span class="ilus">Imagens ilustrativas</span><button class="cnav p" aria-label="Imagem anterior">‹</button><button class="cnav n" aria-label="Próxima imagem">›</button><span class="ccount">1 / ${G.length + o}</span></div>
     <div class="cstrip">${f.video ? `<button class="v" data-go="0" aria-current="true" aria-label="Filme">${IC.play}</button>` : ""}${G.map(([p, l], i) => `<button data-go="${i + o}" aria-label="${esc(l)}"${!f.video && !i ? ' aria-current="true"' : ""}><img src="${TH(p)}" alt=""></button>`).join("")}</div>`;
 }
@@ -116,7 +116,7 @@ function bindGaleria(f) {
     if (vid) { if (i === 0) vid.play().catch(() => {}); else vid.pause() } }, 80) }, { passive: true });
   strip.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go) });
   sl.addEventListener("click", e => { const b = e.target.closest("[data-zoom]"); if (!b) return;
-    openViewer(f.g.map(([p, l]) => ({ src: IMG(p), label: l })), +b.dataset.zoom, f.titulo, "Villa Montemerano") });
+    openViewer(f.g.map(([p, l]) => ({ src: IMG(p), label: l, pano: PANO(p) })), +b.dataset.zoom, f.titulo, "Villa Montemerano") });
 }
 
 function andarAptosHTML(f) {

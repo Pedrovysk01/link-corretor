@@ -371,7 +371,7 @@ def dashboard(user, dias):
 
 def lista_links(user):
     sc, sa = escopo(user, "l.broker_id")
-    return q("SELECT l.id, l.code, l.channel, l.label, l.active, l.created, l.broker_id, u.name AS corretor, p.id AS property_id, p.name AS empreendimento, "
+    return q("SELECT l.id, l.code, l.channel, l.label, l.active, l.created, l.broker_id, u.name AS corretor, u.phone AS corretor_fone, p.id AS property_id, p.name AS empreendimento, "
              "(SELECT COUNT(*) FROM clicks c WHERE c.link_id=l.id) cliques, (SELECT COUNT(*) FROM visitors v WHERE v.first_link_id=l.id) clientes, "
              "(SELECT COUNT(*) FROM opens o WHERE o.link_id=l.id) aberturas, (SELECT MAX(o.ts) FROM opens o WHERE o.link_id=l.id) ultima "
              f"FROM links l JOIN users u ON u.id=l.broker_id JOIN properties p ON p.id=l.property_id WHERE 1=1{sc} ORDER BY l.id DESC", sa)
@@ -693,6 +693,11 @@ def foto_ok(v):
 def r_me_foto(h, u, q_, b): run("UPDATE users SET photo=? WHERE id=?", (foto_ok(b.get("foto")), u["id"])); return {"ok": True}
 
 
+def r_me_nome(h, u, q_, b):
+    nome = txt(b.get("nome"), 80, "o nome", True)
+    run("UPDATE users SET name=? WHERE id=?", (nome, u["id"])); return {"ok": True, "nome": nome}
+
+
 def r_foto(h, u, q_, b, uid):
     r = q("SELECT photo FROM users WHERE id=?", (int(uid),), one=True); need(r and r["photo"], "Sem foto.", 404)
     cab, dado = r["photo"].split(",", 1)
@@ -935,6 +940,65 @@ def r_pub_ask(h, u, q_, b, code):
     return {"resposta": resp, "motivo": None if resp else "falha"}
 
 
+def r_ia_teste(h, u, q_, b):
+    """Teste da IA no painel (celular simulado em Perguntas à IA): mesma IA do cliente, sem gravar e sem contar no teto do mês."""
+    need(rate_ok(f"iateste:{u['id']}", 10, 60), "Muitas perguntas em pouco tempo. Aguarde um instante.", 429)
+    try: pid = int(b.get("property_id"))
+    except (TypeError, ValueError): pid = 0
+    prop = q("SELECT * FROM properties WHERE id=?", (pid,), one=True); need(prop, "Empreendimento não encontrado.", 404)
+    need((prop["facts"] or "").strip(), "Preencha \"O que a IA sabe\" deste empreendimento para testar.")
+    pergunta = txt(b.get("pergunta"), 500, "a pergunta", True)
+    resp = perguntar_ia(prop, pergunta, "pt-BR", u["name"].split(" ")[0])
+    return {"resposta": resp, "motivo": None if resp else "falha"}
+
+
+# ───────── IA do cliente: a construtora usa a própria chave de API de uma LLM ─────────
+# Fica bloqueada até alguém digitar a senha que só a VGVX fornece (hash em settings "vgvx_unlock").
+# As chaves ficam em settings "ia_key_<provedor>" e nunca voltam inteiras para o navegador (só o final).
+IA_PROVEDORES = {"openai", "anthropic", "gemini", "groq", "mistral", "deepseek", "xai", "openrouter", "perplexity", "cohere", "together", "qwen"}
+
+
+def ia_cliente_estado():
+    prov = {}
+    for p in sorted(IA_PROVEDORES):
+        k = setting("ia_key_" + p, "") or ""
+        if k: prov[p] = {"final": k[-4:]}
+    return {"liberada": setting("ia_cliente_liberada") == "1", "ativo": setting("ia_provedor_ativo", "") or "", "provedores": prov}
+
+
+def r_ia_cliente(h, u, q_, b): return ia_cliente_estado()
+
+
+def r_ia_cliente_liberar(h, u, q_, b):
+    need(rate_ok(f"vgvx:{u['id']}", 5, 600), "Muitas tentativas. Aguarde 10 minutos.", 429)
+    guardado = setting("vgvx_unlock", "") or ""
+    if "$" not in guardado:  # senha inicial de liberação; a VGVX troca gravando outro hash em settings "vgvx_unlock"
+        s0, h0 = hash_pw("demo@1234"); guardado = f"{s0}${h0}"; set_setting("vgvx_unlock", guardado)
+    need("$" in guardado, "A liberação ainda não foi configurada. Fale com a VGVX.", 409)
+    salt, hs = guardado.split("$", 1)
+    need(check_pw(str(b.get("senha") or "").strip(), salt, hs), "Senha incorreta. Peça a senha de liberação à VGVX.", 403)
+    set_setting("ia_cliente_liberada", "1")
+    return ia_cliente_estado()
+
+
+def r_ia_cliente_chave(h, u, q_, b):
+    need(setting("ia_cliente_liberada") == "1", "Libere a IA do cliente com a senha da VGVX primeiro.", 403)
+    prov = str(b.get("provedor") or ""); need(prov in IA_PROVEDORES, "LLM desconhecida.")
+    chave = str(b.get("chave") or "").strip()
+    if not chave:  # remover
+        set_setting("ia_key_" + prov, "")
+        if setting("ia_provedor_ativo") == prov: set_setting("ia_provedor_ativo", "")
+        return ia_cliente_estado()
+    need(12 <= len(chave) <= 300 and not re.search(r"\s", chave), "Essa chave não parece válida. Copie de novo, sem espaços.")
+    set_setting("ia_key_" + prov, chave); set_setting("ia_provedor_ativo", prov)
+    return ia_cliente_estado()
+
+
+def r_ia_cliente_ativar(h, u, q_, b):
+    prov = str(b.get("provedor") or ""); need(prov in IA_PROVEDORES and setting("ia_key_" + prov), "Adicione a chave dessa LLM primeiro.")
+    set_setting("ia_provedor_ativo", prov); return ia_cliente_estado()
+
+
 def r_pub_message(h, u, q_, b, code):
     L = link_publico(code); v = visitante_do_cookie(h); need(L and v, "Faça o cadastro para enviar.", 401)
     msg = txt(b.get("mensagem"), 800, "a mensagem", True)
@@ -944,7 +1008,7 @@ def r_pub_message(h, u, q_, b, code):
 
 OWNER, ANY, PUB = "owner", "any", None
 ROTAS = [
-    ("GET", r"/api/me", r_me, PUB), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY), ("POST", r"/api/me/foto", r_me_foto, ANY), ("GET", r"/api/foto/(\d+)", r_foto, ANY),
+    ("GET", r"/api/me", r_me, PUB), ("GET", r"/api/ia-cliente", r_ia_cliente, OWNER), ("POST", r"/api/ia-cliente/liberar", r_ia_cliente_liberar, OWNER), ("POST", r"/api/ia-cliente/chave", r_ia_cliente_chave, OWNER), ("POST", r"/api/ia-cliente/ativar", r_ia_cliente_ativar, OWNER), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY), ("POST", r"/api/me/foto", r_me_foto, ANY), ("POST", r"/api/me/nome", r_me_nome, ANY), ("GET", r"/api/foto/(\d+)", r_foto, ANY),
     ("GET", r"/api/dashboard", r_dashboard, ANY), ("GET", r"/api/notify", r_notify, ANY),
     ("GET", r"/api/properties", r_props, ANY), ("POST", r"/api/properties", r_prop_new, OWNER), ("PATCH", r"/api/properties/(\d+)", r_prop_edit, OWNER), ("GET", r"/api/sources", r_sources, OWNER),
     ("GET", r"/api/brokers", r_brokers, OWNER), ("GET", r"/api/brokers/(\d+)", r_broker, OWNER), ("POST", r"/api/brokers", r_broker_new, OWNER), ("PATCH", r"/api/brokers/(\d+)", r_broker_edit, OWNER),
@@ -954,7 +1018,7 @@ ROTAS = [
     ("GET", r"/api/settings", r_settings, OWNER), ("PATCH", r"/api/settings", r_settings_edit, OWNER),
     ("GET", r"/api/p/([a-z0-9]+)/info", r_pub_info, PUB), ("POST", r"/api/p/([a-z0-9]+)/register", r_pub_register, PUB), ("POST", r"/api/p/([a-z0-9]+)/heartbeat", r_pub_heartbeat, PUB), ("POST", r"/api/p/([a-z0-9]+)/corretor", r_pub_corretor, PUB),
     ("PATCH", r"/api/brokers/(\d+)/cartao", r_cartao_edit, OWNER), ("POST", r"/api/brokers/(\d+)/cartao/liberar", r_cartao_liberar, OWNER),
-    ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB),
+    ("POST", r"/api/p/([a-z0-9]+)/ask", r_pub_ask, PUB), ("POST", r"/api/ia-teste", r_ia_teste, OWNER), ("POST", r"/api/p/([a-z0-9]+)/message", r_pub_message, PUB),
 ]
 ROTAS = [(m, re.compile("^" + p + "$"), f, r) for m, p, f, r in ROTAS]
 

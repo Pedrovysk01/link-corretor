@@ -6,6 +6,14 @@
 const IDIOMAS_IA = [["pt-BR", "br", "Português"], ["en", "us", "English"], ["es", "es", "Español"], ["zh", "cn", "中文"], ["hi", "in", "हिन्दी"], ["ar", "sa", "العربية"], ["fr", "fr", "Français"], ["bn", "bd", "বাংলা"], ["ru", "ru", "Русский"]];
 const bandeira = (pais) => h("img", { class: "bandeira", src: `vendor/bandeiras/${pais}.png`, alt: "", width: 20, height: 15, loading: "lazy" });  // PNG local: o Windows não desenha emoji de bandeira
 const ICONES = {
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  chev: '<path d="M6 9l6 6 6-6"/>',
+  life: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>',
+  cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/><path d="M22 9v6"/>',
+  book: '<path d="M12 6c-2-1.5-5-2-9-2v15c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2z"/><path d="M12 6v15"/>',
+  hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   dash: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
   building: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/>',
@@ -24,9 +32,12 @@ const ICONES = {
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>', check: '<path d="M5 12l5 5 9-10"/>', back: '<path d="M15 5l-7 7 7 7"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>', phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>',
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  play: '<path d="M8 5v14l11-7z"/>',
+  barras: '<path d="M6 20V11M12 20V4M18 20v-6"/>', linha: '<path d="M3 17l5-6 4 3 8-9"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="20" cy="5" r="1"/>',
   swap: '<path d="M4 7h12l-3-3M20 17H8l3 3"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 };
 const ic = (n) => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("class", "ic"); s.setAttribute("aria-hidden", "true"); s.innerHTML = ICONES[n] || ""; return s; };
+const tituloCard = (icone, texto) => h("h2", { class: "card-titulo" }, h("span", { class: "ic-box" }, ic(icone)), texto);
 const LOGO = () => h("span", { class: "ic-box" }, ic("link"));
 
 function h(tag, props, ...kids) {
@@ -72,7 +83,7 @@ function avisoCliente(l) {
     h("span", null, l.empreendimento),
     h("small", null, dono() ? `Veio do corretor ${l.corretor}${l.canal ? " · " + l.canal : ""}` : "Veio do seu link"),
     h("a", { class: "aviso-ver", href: `#/cliente/${l.id}`, onclick: () => { a.remove(); visto(l.id); } }, "Ver cliente"));
-  $("#avisos").append(a); setTimeout(() => a.remove(), 60000);
+  $("#avisos").append(a); avisosNoTopo(); setTimeout(() => a.remove(), 60000);
 }
 function visto(id) { S.pendentes = S.pendentes.filter((x) => x.id !== id); pintarSino(); }
 function pintarSino() {
@@ -86,7 +97,10 @@ function pintarSinoPainel() {
   p.replaceChildren(h("div", { class: "row between", style: "padding:4px 8px 8px" }, h("strong", null, `${S.pendentes.length} cliente(s) novo(s)`), h("button", { class: "btn ghost sm", type: "button", onclick: () => { S.pendentes = []; pintarSino(); p.hidden = true; } }, "Limpar")),
     ...S.pendentes.map((l) => h("a", { class: "sino-item", href: `#/cliente/${l.id}`, onclick: () => { visto(l.id); p.hidden = true; } }, avatar(l.name, "sm"), h("div", { style: "min-width:0" }, h("b", { class: "wrap" }, l.name), h("span", { class: "muted small" }, `${l.empreendimento}${dono() ? " · " + l.corretor : ""} · ${quandoMin(l.minutos)}`)))));
 }
-function aviso(msg, erro) { const a = h("div", { class: "aviso" + (erro ? " erro" : ""), role: erro ? "alert" : "status" }, msg); $("#avisos").append(a); setTimeout(() => a.remove(), erro ? 6500 : 4500); }
+// Os avisos ficam na "camada superior" do navegador (popover manual): um <dialog> modal também fica nela e nenhum z-index vence essa camada,
+// então sem isto o aviso (erro, "Copiado.", cliente novo) aparecia ATRÁS da tela escura. Reabrir traz o contêiner para a frente.
+function avisosNoTopo() { const c = document.getElementById("avisos"); try { if (c && c.showPopover) { if (c.matches(":popover-open")) c.hidePopover(); c.showPopover(); } } catch { /* navegador sem popover: fica como antes */ } }
+function aviso(msg, erro) { const a = h("div", { class: "aviso" + (erro ? " erro" : ""), role: erro ? "alert" : "status" }, msg); $("#avisos").append(a); avisosNoTopo(); setTimeout(() => a.remove(), erro ? 6500 : 4500); }
 async function copiar(txt, ok = "Copiado.") {
   try { await navigator.clipboard.writeText(txt); }
   catch { const t = h("textarea", { style: "position:fixed;opacity:0" }); t.value = txt; document.body.append(t); t.select(); try { document.execCommand("copy"); } catch { /* sem clipboard */ } t.remove(); }
@@ -136,7 +150,7 @@ function dialogo(titulo, corpo, botoes, { onSubmit } = {}) {
         try { await onSubmit(new FormData(e.target), fechar); } catch (x) { erro.textContent = x.message; } sub && (sub.disabled = false); } }, topo, miolo, rodape)
     : h("div", { class: "dlg" }, topo, miolo, rodape);
   dlg.append(wrap); dlg.addEventListener("click", (e) => { if (e.target === dlg) fechar(); }); dlg.addEventListener("cancel", () => setTimeout(() => dlg.remove(), 0));
-  document.body.append(dlg); dlg.showModal(); return { fechar, dlg, erro };
+  document.body.append(dlg); dlg.showModal(); avisosNoTopo(); return { fechar, dlg, erro };
 }
 const btnFechar = (txt = "Cancelar") => h("button", { type: "button", class: "btn", onclick: (e) => { const d = e.target.closest("dialog"); d.close(); d.remove(); } }, txt);
 const btnOk = (txt) => h("button", { type: "submit", class: "btn primary" }, txt);
@@ -215,16 +229,129 @@ function coresDaLogo(src) {
     }; img.onerror = () => res(null); img.src = src;
   });
 }
+// ───────── Tutorial: passo a passo pelas telas + dúvidas frequentes (aberto pelo menu da conta) ─────────
+function telaTutorial() {
+  const D = dono();
+  const passos = [
+    { r: "", i: "dash", t: "Resumo", sub: "A visão geral do seu período.", itens: [
+      "No alto, os números do período: clientes novos, aberturas da apresentação, quem voltou a abrir e quem ainda está esperando atendimento.",
+      "Troque o período no seletor do canto (7, 14, 30 ou 90 dias).",
+      "Os gráficos mostram clientes e aberturas por dia. Pontos vermelhos são dias abaixo da média.",
+      D ? "O ranking mostra os corretores com mais clientes, aberturas e vendas fechadas." : "Abaixo aparecem seus clientes mais recentes e o que eles perguntaram à IA."] },
+    D && { r: "empreendimentos", i: "building", t: "Empreendimentos", sub: "Cada empreendimento tem a sua apresentação 3D e o que a IA sabe sobre ele.", itens: [
+      "Clique em Novo empreendimento para cadastrar nome, cidade e a apresentação.",
+      "Em Editar, preencha O que a IA sabe: tipologias, metragens, preços, condições, áreas comuns. A IA responde só com esse texto.",
+      "Também em Editar, em Recursos na apresentação, ligue ou desligue posição solar, mapa, simulador, tabela de unidades, WhatsApp do corretor, IA e cadastro do cliente.",
+      "Ver apresentação abre a apresentação sem contar abertura, para você conferir."] },
+    D && { r: "corretores", i: "users", t: "Corretores", sub: "Quem atende os clientes.", itens: [
+      "Clique em Novo corretor. A senha de acesso aparece uma vez na tela: copie e envie a ele.",
+      "Toque num corretor para ver os clientes dele, os links e os dados para proposta.",
+      "Nova senha gera outra senha se ele esquecer. A antiga para de funcionar na hora.",
+      "Desativar o corretor corta o acesso dele, mas o histórico continua."] },
+    { r: "links", i: "link", t: D ? "Links" : "Meus links", sub: "O link é o que leva o cliente até a apresentação, no nome do corretor.", itens: [
+      "Cada link junta um corretor, um empreendimento e um canal (WhatsApp, Instagram, QR Code, e-mail, site).",
+      "Copiar: copia o endereço para colar onde quiser.",
+      "QR: mostra o QR Code para imprimir no folder, na placa ou mostrar no celular.",
+      "WhatsApp: abre o WhatsApp com uma mensagem pronta e o link. É só escolher o contato.",
+      "Pausar: o link deixa de abrir a apresentação. Reativar liga de novo. O histórico continua."] },
+    { r: "clientes", i: "people", t: "Clientes", sub: D ? "Todos os clientes, com o corretor de origem." : "Os clientes que vieram dos seus links.", itens: [
+      "O cliente entra aqui sozinho: na terceira interação com a apresentação ele informa nome e WhatsApp ou e-mail.",
+      "Use a busca e os filtros para achar alguém. Exportar CSV baixa a lista para planilha.",
+      "Mude a situação conforme o atendimento: Novo, Contatado, Visita marcada, Proposta, Fechado ou Perdido.",
+      "Abra o cliente para ver cada abertura (quando, de que aparelho, por quanto tempo), o que perguntou à IA, o recado e as suas anotações.",
+      D ? "Só o dono pode transferir um cliente para outro corretor, na página do cliente." : "Toque em WhatsApp para falar com o cliente com uma mensagem já pronta."] },
+    { r: "perguntas", i: "chat", t: "Perguntas à IA", sub: "O que os clientes querem saber.", itens: [
+      "Cada conversa mostra quem perguntou, por qual corretor veio e o que a IA respondeu.",
+      "Quando a IA não sabe, ela diz que vai deixar com o corretor. Use isso para retornar ao cliente.",
+      D ? "Pergunta repetida que a IA não soube responder? Complete o texto O que a IA sabe do empreendimento." : "Perguntas sem resposta são um ótimo motivo para ligar para o cliente."] },
+    D && { r: "config", i: "sliders", t: "Configurações", sub: "Dados da empresa e regras do painel.", itens: [
+      "Nome e logo da empresa aparecem no painel, no cadastro do cliente e no aceite. As cores do painel podem vir da logo.",
+      "Aviso de cliente novo: quantos minutos depois do cadastro o painel avisa (padrão 5). Cliente que volta a abrir avisa na hora.",
+      "Perguntas à IA por mês: o teto por empreendimento. Passou do teto, a IA para e manda falar com o corretor.",
+      "Regra da comissão explica a quem pertence cada cliente."] },
+    { r: "conta", i: "user", t: "Minha conta e menu", sub: "Clique no seu nome, no topo, para abrir o menu.", itens: [
+      "Em Minha conta você coloca sua foto e troca a senha.",
+      "No menu, Aa troca a fonte, A- e A+ diminuem ou aumentam o texto, e a chave sol/lua liga o modo escuro.",
+      "Visual V1 volta para o visual antigo do painel; o mesmo botão traz o visual novo de volta.",
+      "Sair encerra a sessão neste aparelho."] },
+  ].filter(Boolean);
+  const duvidas = [
+    ["De quem é o cliente?", "Do primeiro corretor por quem ele se identificou (pelo WhatsApp ou, se não tiver, pelo e-mail). Se depois ele abrir o link de outro corretor, a abertura fica registrada como \"outro link\", mas o cliente continua com o primeiro. Só o dono transfere."],
+    ["Quando o cliente precisa se cadastrar?", "Na terceira interação com a apresentação (toque, clique ou tecla), ou quando ele tenta usar a IA ou deixar um recado. Depois disso, no mesmo aparelho, ele abre direto por um ano."],
+    ["Recarregar a página conta como outra abertura?", "Não. Recarregar dentro de 20 minutos não conta de novo. Abrir por outro link conta."],
+    ["Quando aparece o aviso de cliente novo?", "Alguns minutos depois que o cliente abriu e se cadastrou (5 minutos, ou o que estiver em Configurações). Cliente que volta a abrir avisa na hora. O sino no topo guarda a lista."],
+    ["O que acontece quando pauso um link?", "Quem abrir esse link não vê mais a apresentação. Nada se perde: clientes e aberturas continuam no painel, e você pode reativar quando quiser."],
+    ["E se a IA não souber responder?", "Ela responde só com o que está em O que a IA sabe do empreendimento. Quando não sabe, diz que vai deixar a pergunta com o corretor, e a pergunta aparece em Perguntas à IA."],
+    ["Posso ver a apresentação sem contar abertura?", "Sim. Em Empreendimentos, use Ver apresentação. Na tela inicial da apresentação, o botão Corretor também abre sem coletar nada."],
+    ["O corretor vê os clientes dos outros?", "Não. Cada corretor vê só os clientes que vieram dos links dele. O dono vê todos."],
+    ["Como levo os clientes para uma planilha?", "Em Clientes, use Exportar CSV (respeita a busca e os filtros). Na página do corretor há o CSV só dos clientes dele."],
+    ["Um corretor esqueceu a senha. E agora?", "O dono abre o corretor e usa Nova senha. A senha antiga para de funcionar e a nova aparece na tela para enviar a ele."],
+  ].filter(([q]) => D || !/esqueceu a senha|sem contar abertura/.test(q));
+  // Player do passo: capa gerada em CSS + botão de play vermelho. Quando o vídeo existir, é só preencher `video: "arquivo.mp4"` no passo.
+  const player = (p) => {
+    const fig = h("figure", { class: "tut-video" });
+    const capa = h("button", { type: "button", class: "tut-capa", "aria-label": `Assistir ao vídeo: ${p.t}`,
+      onclick: () => { if (!p.video) { aviso("O vídeo deste passo estará disponível em breve."); return; }
+        const v = h("video", { class: "tut-vid", controls: true, autoplay: true, playsinline: true, src: p.video, "aria-label": `Vídeo: ${p.t}` }); capa.replaceWith(v); v.play?.().catch(() => {}); } },
+      h("span", { class: "tut-capa-ic", "aria-hidden": "true" }, ic(p.i)), h("span", { class: "tut-capa-t" }, p.t), h("span", { class: "tut-play", "aria-hidden": "true" }, ic("play")));
+    fig.append(capa); return fig;
+  };
+  const passo = (p, n) => h("article", { class: "card tut-passo" },
+    h("div", { class: "tut-cab" }, h("span", { class: "tut-n", "aria-hidden": "true" }, "Passo " + (n + 1) + " de " + passos.length),
+      h("h2", { class: "card-titulo", style: "margin:0" }, h("span", { class: "ic-box" }, ic(p.i)), p.t), h("p", { class: "muted" }, p.sub)),
+    h("ol", { class: "tut-lista" }, p.itens.map((x) => h("li", null, x))),
+    h("div", null, h("a", { class: "btn sm", href: "#/" + p.r }, "Abrir " + p.t + " →")));
+  // cada passo = 2 caixas lado a lado: o texto e, ao lado, a caixa só com o player de vídeo
+  const linhaPasso = (p, n) => [passo(p, n), h("div", { class: "card tut-video-card" }, player(p))];
+  return h("div", { class: "stack" }, cabeca("Tutorial", "Um passeio pelas telas do painel, na ordem em que você vai usar."),
+    h("div", { class: "tut-grade" }, passos.map(linhaPasso),
+      h("div", { class: "card stack tut-faq-card" }, tituloCard("chat", "Dúvidas frequentes"),
+        h("div", { class: "tut-faq" }, duvidas.map(([q, a]) => h("details", null, h("summary", null, q), h("p", { class: "muted" }, a)))))));
+}
+// ───────── menu da conta (clique no nome, no topo) — sempre escuro ─────────
+const prefs = { get: (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch { /* sem storage */ } } };
+function aplicarTexto() { const r = document.documentElement; r.dataset.fonte = prefs.get("lc.fonte", "sans"); r.style.fontSize = Math.round(+prefs.get("lc.escala", "1") * 100) + "%"; }
+aplicarTexto();
+function menuUsuario() {
+  const caixa = h("div", { class: "menu-usuario", id: "menu-usuario", hidden: true, role: "menu", "aria-label": "Menu da conta" });
+  const fechar = () => { caixa.hidden = true; $("#user-btn")?.setAttribute("aria-expanded", "false"); };
+  const pintar = () => {
+    const fonte = prefs.get("lc.fonte", "sans"), esc = +prefs.get("lc.escala", "1"), escuro = document.documentElement.dataset.modo === "dark", v1 = visualAtual() === "classico";
+    const fbtn = (k, cls, label) => h("button", { type: "button", class: "mu-f" + cls, "aria-pressed": String(fonte === k), "aria-label": label, title: label, onclick: () => { prefs.set("lc.fonte", k === "sans" ? "" : k); aplicarTexto(); pintar(); } }, "Aa");
+    const tam = (d, txt, label) => h("button", { type: "button", class: "mu-f", "aria-label": label, title: label, disabled: d < 0 ? esc <= .875 : esc >= 1.25, onclick: () => { const n = Math.min(1.25, Math.max(.875, esc + d)); prefs.set("lc.escala", n === 1 ? "" : String(n)); aplicarTexto(); pintar(); } }, txt);
+    const item = (i, txt, fn, cls) => h("button", { type: "button", class: "mu-item" + (cls ? " " + cls : ""), role: "menuitem", onclick: () => { fechar(); fn(); } }, h("span", { class: "ic-box" }, ic(i)), h("span", null, txt));
+    const embreve = (t) => () => aviso(t + ": em breve.");
+    caixa.replaceChildren(
+      // 1) quem sou eu: foto com anel, nome, e-mail e o papel (Dono / Corretor)
+      h("div", { class: "mu-topo" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "mu-id" }, h("b", { class: "wrap" }, S.me.name), h("small", { class: "wrap" }, S.me.email)), h("span", { class: "mu-papel" }, dono() ? "Dono" : "Corretor")),
+      // 2) faixa única: fonte (Aa, Aa serifa, A-, A+) e modo escuro
+      h("div", { class: "mu-barra" },
+        h("div", { class: "mu-fontes", role: "group", "aria-label": "Texto" }, fbtn("sans", "", "Fonte padrão"), fbtn("serif", " serif", "Fonte com serifa"), tam(-.125, "A-", "Diminuir texto"), tam(.125, "A+", "Aumentar texto")),
+        h("span", { class: "mu-sep", "aria-hidden": "true" }),
+        h("div", { class: "mu-modo" }, ic("sun"), h("button", { type: "button", class: "mu-switch", role: "switch", "aria-checked": String(escuro), "aria-label": "Modo escuro", onclick: () => { prefs.set("lc.modo", escuro ? "light" : "dark"); if (window.LC_APLICAR_MODO) window.LC_APLICAR_MODO(); pintar(); } }, h("span")), ic("moon"))),
+      // 3) atalhos em cartões, 2 por linha; o texto fica embaixo do ícone
+      h("div", { class: "mu-grade" },
+        item("user", "Minha conta", () => { location.hash = "#/conta"; }),
+        item("life", "Suporte", embreve("Suporte")),
+        item("cap", "Tutoriais", () => { location.hash = "#/tutorial"; }),
+        item("book", "Documentação", embreve("Documentação")),
+        item("hist", v1 ? "Visual novo" : "Visual V1", () => { const k = v1 ? "novo" : "classico"; prefs.set("lc.visual", k === "novo" ? "" : k); const l = document.getElementById("tema-novo"); if (l) l.disabled = k === "classico"; aviso(k === "novo" ? "Visual novo ligado." : "Visual V1 ligado."); }),
+        item("out", "Sair", sair, "sair")));
+  };
+  caixa.alternar = () => { if (caixa.hidden) { pintar(); caixa.hidden = false; $("#user-btn")?.setAttribute("aria-expanded", "true"); caixa.querySelector(".mu-item")?.focus(); } else fechar(); };
+  return caixa;
+}
+document.addEventListener("click", (e) => { const m = $("#menu-usuario"); if (m && !m.hidden && !e.composedPath().some((n) => n.id === "menu-usuario" || n.id === "user-btn")) {  // composedPath: o menu se redesenha ao clicar, o alvo pode já ter saído da página
+    m.hidden = true; $("#user-btn")?.setAttribute("aria-expanded", "false"); } });
+document.addEventListener("keydown", (e) => { const m = $("#menu-usuario"); if (e.key === "Escape" && m && !m.hidden) { m.hidden = true; const b = $("#user-btn"); if (b) { b.setAttribute("aria-expanded", "false"); b.focus(); } } });
 function casca() {
   const itens = menu(), atual = rotaAtual();
   const link = (m) => h("a", { href: "#/" + m.r, "aria-current": m.r === atual ? "page" : null, title: m.t, onclick: () => document.body.classList.remove("sb-open") }, ic(m.i), h("span", null, m.t));
   const mini = document.body.classList.contains("sb-mini");
   const lateral = h("aside", { class: "side", id: "menu-lateral" },
     h("a", { class: "brand", href: "#/", "aria-label": S.empresa || "Início" }, logoEmpresa(), h("span", null, S.empresa || "Link Corretor")),
-    h("div", { class: "nav-label" }, "Menu"),
     h("nav", { class: "nav", "aria-label": "Principal" }, itens.map(link)),
     h("div", { class: "foot" },
-      h("div", { class: "quem" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { style: "min-width:0" }, h("strong", { class: "wrap" }, S.me.name), h("span", { class: "muted" }, dono() ? "Dono" : "Corretor"))),
       h("button", { type: "button", class: "sb-hide", "aria-label": mini ? "Mostrar barra" : "Ocultar barra", title: mini ? "Mostrar barra" : "Ocultar barra", onclick: () => { const on = !document.body.classList.contains("sb-mini"); document.body.classList.toggle("sb-mini", on); try { on ? localStorage.setItem("lc_sbmini", "1") : localStorage.removeItem("lc_sbmini"); } catch { /* sem storage */ } casca(); rotear(); } }, ic(mini ? "panelR" : "panelL"), h("span", null, mini ? "Mostrar barra" : "Ocultar barra"))));
   const topo = h("header", { class: "topo" },
     h("div", { class: "esq" },
@@ -233,8 +360,11 @@ function casca() {
     h("div", { class: "dir" },
       h("button", { class: "icon-btn sino", id: "sino", type: "button", hidden: !S.pendentes.length, "aria-haspopup": "true", "aria-expanded": "false", "aria-label": "Avisos", title: "Clientes novos", onclick: (e) => { const p = $("#sino-painel"); p.hidden = !p.hidden; e.currentTarget.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("#avisos").querySelectorAll(".aviso-cliente").forEach((a) => a.remove()); pintarSinoPainel(); } } }, ic("bell"), h("span", { class: "badge", "aria-hidden": "true" }, "0")),  // abrir o sino recolhe os cartões: a lista tem todos
       h("div", { class: "card sino-painel", id: "sino-painel", hidden: true, role: "dialog", "aria-label": "Clientes novos" }),
-      h("a", { class: "user-btn", href: "#/conta", title: "Minha conta" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { style: "min-width:0" }, h("b", null, S.me.name), h("small", null, S.me.email))),
-      h("button", { class: "icon-btn", "aria-label": "Sair", title: "Sair", onclick: sair }, ic("out"))));
+      h("div", { class: "conta-grupo" }, h("button", { type: "button", class: "user-btn", id: "user-btn", title: "Menu da conta", "aria-haspopup": "menu", "aria-expanded": "false", "aria-controls": "menu-usuario", onclick: () => { const m = $("#menu-usuario"); if (m) m.alternar(); } }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { style: "min-width:0" }, h("b", null, S.me.name), h("small", null, S.me.email))),
+      menuUsuario(),
+      h("button", { class: "icon-btn", "aria-label": "Sair", title: "Sair", onclick: sair }, ic("out")))),
+    // cantos da moldura: a curva do conteúdo fica SEMPRE à vista (mesmo rolando) e recebe o mesmo holofote da moldura
+    h("span", { class: "canto", "aria-hidden": "true" }), h("span", { class: "canto d", "aria-hidden": "true" }));
   const scrim = h("div", { class: "scrim", onclick: () => document.body.classList.remove("sb-open") });
   const main = h("div", { class: "main" }, topo, h("main", { id: "conteudo", tabindex: "-1" }));
   $("#raiz").replaceChildren(scrim, lateral, main); pintarSino();
@@ -310,7 +440,7 @@ function entrada() {
 function telaLogin() {
   const erro = h("p", { class: "err", role: "alert" });
   return h("div", { class: "entrada" }, h("form", { class: "card", novalidate: true, onsubmit: async (e) => { e.preventDefault(); erro.textContent = ""; const f = new FormData(e.target);
-    try { const r = await api("POST", "/api/login", { email: f.get("email"), senha: f.get("senha") }); S.me = r.user; iniciar(); } catch (x) { erro.textContent = x.message; } } },
+    try { await api("POST", "/api/login", { email: f.get("email"), senha: f.get("senha") }); entrada(); /* relê /api/me: antes do login o servidor não manda a logo */ } catch (x) { erro.textContent = x.message; } } },
     h("div", { class: "logo logo-entrada" }, h("img", { src: "/painel/logo-justus.png", alt: "Justus Incorporadora", class: "logo-img shape-wide" })), h("div", null, h("h1", null, "Entrar"), h("p", { class: "muted" }, S.empresa || "Clientes por corretor")),
     campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campo("Senha", h("input", { type: "password", name: "senha", autocomplete: "current-password", required: true })),
     erro, h("button", { class: "btn primary", type: "submit" }, "Entrar")));
@@ -328,7 +458,7 @@ function telaSetup() {
 
 // ───────── roteador ─────────
 const TELAS = { "": ["Resumo", telaResumo], clientes: ["Clientes", telaClientes], cliente: ["Cliente", telaCliente], corretores: ["Corretores", telaCorretores, true], corretor: ["Corretor", telaCorretor, true],
-  empreendimentos: ["Empreendimentos", telaProps, true], links: ["Links", telaLinks], perguntas: ["Perguntas à IA", telaPerguntas], config: ["Configurações", telaConfig, true], conta: ["Minha conta", telaConta] };
+  empreendimentos: ["Empreendimentos", telaProps, true], links: ["Links", telaLinks], perguntas: ["Perguntas à IA", telaPerguntas], config: ["Configurações", telaConfig, true], conta: ["Minha conta", telaConta], tutorial: ["Tutorial", telaTutorial] };
 async function rotear() {
   if (!S.me) return;
   let [r, arg] = partes();
@@ -347,9 +477,12 @@ const voltar = (rota, txt) => h("a", { class: "voltar", href: "#/" + rota }, ic(
 // ───────── componentes de pessoa ─────────
 // Selo de quem atende o cliente: o corretor de origem ou, se a comissão foi dividida, cada corretor com a sua parte
 function seloAtendimento(d) {
-  const lista = d.shares && d.shares.length ? d.shares.map((x) => ({ id: x.broker_id, nome: x.name, foto: x.tem_foto, pct: x.pct })) : [{ id: d.broker_id, nome: d.corretor, foto: d.corretor_tem_foto, pct: null }];
+  const lista = d.shares && d.shares.length ? d.shares.map((x) => ({ id: x.broker_id, nome: x.name, foto: x.tem_foto, pct: x.pct })) : [{ id: d.broker_id, nome: d.corretor, foto: d.corretor_tem_foto, pct: 100 }];
+  // dono: abre a divisão da comissão já com um segundo corretor (50% / 50%), para ele ajustar quanto vai para cada um
+  const adicionar = async (e) => { const b = e.currentTarget; b.disabled = true; try { dividir(d, await api("GET", "/api/brokers"), { adicionar: true }); } catch (x) { aviso(x.message, true); } b.disabled = false; };
   return h("div", { class: "selos" }, h("span", { class: "eyebrow" }, lista.length > 1 ? "Corretores que atendem" : "Corretor que atende"),
-    h("div", { class: "selos-l" }, lista.map((x) => h(dono() ? "a" : "span", { class: "selo", href: dono() ? "#/corretor/" + x.id : null }, avatar(x.nome, "sm", fotoDe(x.id, x.foto)), h("span", { class: "selo-n" }, x.nome), x.pct != null && h("span", { class: "selo-p" }, x.pct + "%")))));
+    h("div", { class: "selos-l" }, lista.map((x) => h(dono() ? "a" : "span", { class: "selo", href: dono() ? "#/corretor/" + x.id : null }, avatar(x.nome, "sm", fotoDe(x.id, x.foto)), h("span", { class: "selo-n" }, x.nome), h("span", { class: "selo-p" }, x.pct + "%")))),
+    dono() && lista.length < 6 && h("div", { class: "selos-add" }, h("button", { type: "button", class: "btn sm", onclick: adicionar }, ic("plus"), "Adicionar corretor"), h("span", { class: "muted small" }, "Você define quantos % da comissão vão para cada um.")));
 }
 function detalheInline(c) {
   return api("GET", "/api/clientes/" + c.id).then((d) => h("div", { class: "det-grid" },
@@ -421,8 +554,9 @@ function tabelaClientes(cs, { semCorretor } = {}) {
 }
 
 // ───────── resumo ─────────
-function grafico(serie, chave, rotulo) {
-  // Linha ligando os dias; trecho que CHEGA a um dia baixo (menos da metade da média do período) muda de cor.
+function grafico(serie, chave, rotulo, modo = "linha") {
+  // modo "linha": linha ligando os dias; trecho que CHEGA a um dia baixo (menos da metade da média do período) muda de cor.
+  // modo "barras": um palito por dia, vermelho nos dias baixos. Mesma média, mesmos rótulos e legenda.
   const W = 600, H = 130, pad = 22, top = 24, n = serie.length, max = Math.max(1, ...serie.map((d) => d[chave]));
   const total = serie.reduce((a, d) => a + d[chave], 0), media = total / Math.max(1, n), limite = media * 0.5;
   const baixo = (v) => media > 0 && v < limite;
@@ -432,40 +566,67 @@ function grafico(serie, chave, rotulo) {
   svg.setAttribute("viewBox", `0 0 ${W} ${H + pad}`); svg.setAttribute("class", "chart"); svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", `${rotulo} por dia: total ${total}, média ${media.toFixed(1).replace(".", ",")}; ${serie.filter((d) => baixo(d[chave])).length} dias abaixo da metade da média`);
   let s = `<line class="gl" x1="0" x2="${W}" y1="${H}" y2="${H}"/>`;
-  s += `<polygon class="area" points="${X(0)},${H} ${serie.map((d, i) => `${X(i)},${Y(d[chave])}`).join(" ")} ${X(n - 1)},${H}"/>`;
+  const barras = modo === "barras", bw = Math.max(2, Math.min(18, ((W - 16) / Math.max(1, n)) * 0.62));
+  if (!barras) s += `<polygon class="area" points="${X(0)},${H} ${serie.map((d, i) => `${X(i)},${Y(d[chave])}`).join(" ")} ${X(n - 1)},${H}"/>`;
+  if (barras) serie.forEach((d, i) => { const v = d[chave], y = Y(v), alt = Math.max(v > 0 ? 2 : 0.8, H - y); s += `<rect class="gbar ${baixo(v) ? "lo" : "ok"}" x="${(X(i) - bw / 2).toFixed(1)}" y="${(H - alt).toFixed(1)}" width="${bw.toFixed(1)}" height="${alt.toFixed(1)}" rx="${Math.min(3, bw / 2).toFixed(1)}"><title>${dia(d)}: ${v}${baixo(v) ? " (baixo)" : ""}</title></rect>`; });
   if (media > 0) s += `<line class="avg" x1="0" x2="${W}" y1="${Y(media)}" y2="${Y(media)}"/><text class="ax" x="0" y="${Math.max(10, Y(media) - 4)}">média ${media.toFixed(1).replace(".", ",")}</text>`;
-  for (let i = 1; i < n; i++) s += `<line class="seg ${baixo(serie[i][chave]) ? "lo" : "ok"}" x1="${X(i - 1)}" y1="${Y(serie[i - 1][chave])}" x2="${X(i)}" y2="${Y(serie[i][chave])}"/>`;
-  serie.forEach((d, i) => { if (n <= 45 || baixo(d[chave])) s += `<circle class="pt ${baixo(d[chave]) ? "lo" : "ok"}" cx="${X(i)}" cy="${Y(d[chave])}" r="${n <= 45 ? 3.4 : 2.4}"><title>${dia(d)}: ${d[chave]}${baixo(d[chave]) ? " (baixo)" : ""}</title></circle>`; });
+  if (!barras) for (let i = 1; i < n; i++) s += `<line class="seg ${baixo(serie[i][chave]) ? "lo" : "ok"}" x1="${X(i - 1)}" y1="${Y(serie[i - 1][chave])}" x2="${X(i)}" y2="${Y(serie[i][chave])}"/>`;
+  if (!barras) serie.forEach((d, i) => { if (n <= 45 || baixo(d[chave])) s += `<circle class="pt ${baixo(d[chave]) ? "lo" : "ok"}" cx="${X(i)}" cy="${Y(d[chave])}" r="${n <= 45 ? 3.4 : 2.4}"><title>${dia(d)}: ${d[chave]}${baixo(d[chave]) ? " (baixo)" : ""}</title></circle>`; });
   const lab = (i, anc) => `<text class="ax" x="${X(i)}" y="${H + 16}" text-anchor="${anc}">${dia(serie[i])}</text>`;
   s += lab(0, "start") + lab(n - 1, "end");
   s += `<g class="leg"><circle class="pt ok" cx="${W - 150}" cy="8" r="4"/><text class="ax" x="${W - 142}" y="12">normal</text><circle class="pt lo" cx="${W - 84}" cy="8" r="4"/><text class="ax" x="${W - 76}" y="12">baixo</text></g>`;
   svg.innerHTML = s; return svg;
 }
+// Cartão do gráfico diário com escolha Palitos/Linha (lembrada por gráfico neste navegador). padrao: "barras" | "linha"
+function cartaoGrafico(icone, titulo, serie, chave, rotulo, padrao, vazioNode) {
+  const lsk = "lc_graf_" + chave, atual = () => { try { const v = localStorage.getItem(lsk); return v === "barras" || v === "linha" ? v : padrao; } catch { return padrao; } };
+  if (vazioNode) return h("div", { class: "card" }, tituloCard(icone, titulo), vazioNode);
+  const area = h("div", { class: "graf-area" }, grafico(serie, chave, rotulo, atual()));
+  const btn = (val, nome) => h("button", { type: "button", class: "gmodo", "aria-pressed": String(atual() === val), "aria-label": `Gráfico de ${nome}`, title: nome, "data-modo": val,
+    onclick: (e) => { try { localStorage.setItem(lsk, val); } catch { /* sem storage */ } area.replaceChildren(grafico(serie, chave, rotulo, val)); e.currentTarget.parentNode.querySelectorAll(".gmodo").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.modo === val))); } }, ic(val === "barras" ? "barras" : "linha"));
+  return h("div", { class: "card" }, h("div", { class: "card-topo" }, tituloCard(icone, titulo), h("div", { class: "gmodos", role: "group", "aria-label": "Tipo de gráfico" }, btn("barras", "Palitos"), btn("linha", "Linha"))), area);
+}
 async function telaResumo() {
   const dias = Number(sessionStorage.getItem("lc_dias") || 30);
   const d = await api("GET", `/api/dashboard?dias=${dias}`), t = d.totais;
   const sel = h("select", { "aria-label": "Período", onchange: (e) => { sessionStorage.setItem("lc_dias", e.target.value); rotear(); } }, [7, 14, 30, 90].map((n) => h("option", { value: n, selected: n === dias }, `Últimos ${n} dias`)));
-  const kpi = (n, l, href) => h(href ? "a" : "div", { class: "card kpi", href }, h("span", { class: "n" }, fmtN(n)), h("span", { class: "l" }, l));
+  // capa: foto horizontal em cinza no topo do cartão; acende (colorida) no hover. Sem o arquivo, o cartão fica sem capa.
+  const kpi = (n, l, href, capa) => h(href ? "a" : "div", { class: "card kpi" + (capa ? " com-capa" : ""), href },
+    capa && h("img", { class: "kpi-capa", src: `img/kpi/${capa}.jpg?v=1`, alt: "", loading: "lazy", decoding: "async", onerror: (e) => { const c = e.target.closest(".kpi"); e.target.remove(); c && c.classList.remove("com-capa"); } }),
+    h("span", { class: "n" }, fmtN(n)), h("span", { class: "l" }, l));
   const el = h("div", { class: "stack" }, cabeca(dono() ? "Resumo" : `Olá, ${S.me.name.split(" ")[0]}`, dono() ? S.empresa : "Seus clientes", sel),
-    h("div", { class: "kpis" }, kpi(t.clientes, `Clientes novos (${dias} dias)`, "#/clientes"), kpi(t.aberturas, "Aberturas da apresentação"), kpi(t.retornos, "Voltaram a abrir"), kpi(t.novos_para_atender, "Novos para atender", "#/clientes?status=novo")));
-  if (!t.total_clientes) el.append(h("div", { class: "card" }, h("h2", null, "Como funciona"), h("div", { class: "passos" },
+    h("div", { class: "kpis" }, kpi(t.clientes, `Clientes novos (${dias} dias)`, "#/clientes", "clientes-novos"), kpi(t.aberturas, "Aberturas da apresentação", null, "aberturas"), kpi(t.retornos, "Voltaram a abrir", null, "voltaram"), kpi(t.novos_para_atender, "Novos para atender", "#/clientes?status=novo", "atender")));
+  if (!t.total_clientes) el.append(h("div", { class: "card" }, tituloCard("check", "Como funciona"), h("div", { class: "passos" },
     passo(true, "Cada corretor tem links por empreendimento", "O cliente abre o link e se identifica com nome e WhatsApp ou e-mail."),
     passo(true, "Toda abertura fica no nome do cliente", "Quantas vezes abriu, quando e por quanto tempo."),
     passo(true, "O cliente pertence ao primeiro corretor", "A apresentação mostra o tempo todo quem está atendendo. É a prova para a comissão."))));
   el.append(h("div", { class: "cols2" },
-    h("div", { class: "card" }, h("h2", null, "Clientes novos por dia"), t.clientes ? grafico(d.serie, "clientes", "Clientes") : vazio("people", "Ainda sem clientes", "Quando alguém se cadastrar por um link, aparece aqui.")),
-    h("div", { class: "card" }, h("h2", null, "Aberturas por dia"), t.aberturas ? grafico(d.serie, "aberturas", "Aberturas") : vazio("eye", "Ainda sem aberturas"))));
-  const max = Math.max(1, ...d.ranking.map((r) => r.clientes));
+    cartaoGrafico("people", "Clientes novos por dia", d.serie, "clientes", "Clientes", "barras", t.clientes ? null : vazio("people", "Ainda sem clientes", "Quando alguém se cadastrar por um link, aparece aqui.")),
+    cartaoGrafico("eye", "Aberturas por dia", d.serie, "aberturas", "Aberturas", "linha", t.aberturas ? null : vazio("eye", "Ainda sem aberturas"))));
+  const top5 = d.ranking.slice(0, 5);  // o ranking do Resumo mostra os 5 primeiros; "Ver todos" abre a lista completa
+  const max = Math.max(1, ...top5.map((r) => r.clientes));
+  // "Por empreendimento": caixa pequena com a miniatura de cada empreendimento, 2 por linha. Número ímpar (ex.: só 1) ganha o "+" para fechar a linha.
+  const meta = {};
+  if (dono()) { try { (await api("GET", "/api/properties")).forEach((p) => { meta[p.id] = p; }); } catch { /* sem os detalhes: miniatura sem foto */ } }
+  const miniEmp = (e) => { const p = meta[e.id] || {};
+    return h("a", { class: "emp-mini-it", href: "#/clientes?empreendimento=" + e.id, title: `Ver os clientes de ${e.name}` },
+      p.capa ? h("img", { class: "emp-mini-img", src: p.capa, alt: "", loading: "lazy", decoding: "async" }) : h("span", { class: "emp-mini-img", "aria-hidden": "true" }, ic("building")),
+      h("span", { class: "emp-mini-n wrap" }, e.name), h("span", { class: "emp-mini-s" }, `${fmtN(e.clientes)} clientes · ${fmtN(e.aberturas)} aberturas`));
+  };
+  const novoEmp = dono() && d.empreendimentos.length % 2 === 1 ? h("button", { type: "button", class: "emp-mini-it emp-mini-novo", onclick: () => formProp(), "aria-label": "Novo empreendimento" },
+    h("span", { class: "emp-mini-img", "aria-hidden": "true" }, ic("plus")), h("span", { class: "emp-mini-n" }, "Novo empreendimento"), h("span", { class: "emp-mini-s" }, "Cadastre outra apresentação")) : null;
+  const cardEmp = h("div", { class: "card" }, tituloCard("building", "Por empreendimento"),
+    d.empreendimentos.length ? h("div", { class: "emp-mini" }, d.empreendimentos.map(miniEmp), novoEmp) : vazio("building", "Sem empreendimentos"));
   el.append(h("div", { class: "cols2" },
-    dono() && h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", null, "Corretores"), h("a", { href: "#/corretores" }, "Ver todos")),
-      d.ranking.length ? h("div", { class: "stack", style: "gap:12px;margin-top:12px" }, d.ranking.map((r, i) => h("a", { class: "rank", href: "#/corretor/" + r.id },
+    dono() && h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("users", "Corretores"), h("a", { href: "#/corretores" }, "Ver todos")),
+      top5.length ? h("div", { class: "stack", style: "gap:12px;margin-top:12px" }, top5.map((r, i) => h("a", { class: "rank", href: "#/corretor/" + r.id },
         avatar(r.name, "sm"), h("div", { style: "flex:1;min-width:0" }, h("div", { class: "row between" }, h("span", { class: "cell-main wrap" }, `${i + 1}. ${r.name}`), h("span", { class: "muted small" }, `${fmtN(r.clientes)} clientes · ${fmtN(r.aberturas)} aberturas${r.fechados ? " · " + r.fechados + " fechado(s)" : ""}`)),
           h("div", { class: "bar", style: "margin-top:6px" }, h("i", { style: `width:${Math.round((r.clientes / max) * 100)}%` })))))) : vazio("users", "Nenhum corretor ainda", null, h("a", { class: "btn primary", href: "#/corretores" }, "Cadastrar corretor"))),
-    h("div", { class: "card" }, h("h2", null, "Por empreendimento"), d.empreendimentos.length ? h("div", { class: "stack", style: "gap:12px" }, d.empreendimentos.map((p) =>
-      h("a", { class: "row between", href: "#/clientes?empreendimento=" + p.id, style: "text-decoration:none;color:inherit" }, h("span", { class: "cell-main wrap" }, p.name), h("span", { class: "muted small" }, `${fmtN(p.clientes)} clientes · ${fmtN(p.aberturas)} aberturas`)))) : vazio("building", "Sem empreendimentos"))));
+    cardEmp,
+  ));
   el.append(h("div", { class: "cols2" },
-    h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", null, "Clientes recentes"), h("a", { href: "#/clientes" }, "Ver todos")), d.recentes.length ? listaPessoas(d.recentes) : vazio("people", "Nenhum cliente ainda")),
-    h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", null, "O que perguntam à IA"), h("a", { href: "#/perguntas" }, "Ver todas")),
+    h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("people", "Clientes recentes"), h("a", { href: "#/clientes" }, "Ver todos")), d.recentes.length ? listaPessoas(d.recentes) : vazio("people", "Nenhum cliente ainda")),
+    h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("chat", "O que perguntam à IA"), h("a", { href: "#/perguntas" }, "Ver todas")),
       d.perguntas_recentes.length ? h("div", { style: "margin-top:4px" }, d.perguntas_recentes.map((l) => h("div", { class: "qa" }, h("span", { class: "q wrap" }, l.question), h("span", { class: "muted small" }, `${l.cliente} · ${l.empreendimento} · ${quando(l.ts)}`)))) : vazio("chat", "Nenhuma pergunta ainda"))));
   return el;
 }
@@ -507,18 +668,20 @@ async function telaCliente(id) {
     h("div", { class: "kpis" }, h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(c.aberturas)), h("span", { class: "l" }, "aberturas")), h("div", { class: "card kpi" }, h("span", { class: "n" }, c.primeira ? quando(c.primeira) : "—"), h("span", { class: "l" }, "primeira abertura")),
       h("div", { class: "card kpi" }, h("span", { class: "n" }, c.ultima ? quando(c.ultima) : "—"), h("span", { class: "l" }, "última vez")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(c.perguntas)), h("span", { class: "l" }, "perguntas à IA"))),
     h("div", { class: "cols2" },
-      h("div", { class: "card" }, h("h2", null, "Histórico de aberturas"), c.historico.length ? h("div", { class: "timeline" }, c.historico.map((o) => h("div", { class: "tl" }, h("span", { class: "tl-dot" + (o.broker_id !== c.broker_id ? " warn" : "") }),
+      h("div", { class: "card" }, tituloCard("clock", "Histórico de aberturas"), c.historico.length ? h("div", { class: "timeline" }, c.historico.map((o) => h("div", { class: "tl" }, h("span", { class: "tl-dot" + (o.broker_id !== c.broker_id ? " warn" : "") }),
         h("div", null, h("div", { class: "cell-main" }, dataHora(o.ts)), h("div", { class: "muted small wrap" }, [o.empreendimento, o.device, o.segundos > 30 ? "ficou " + dur(o.segundos) : null, o.broker_id !== c.broker_id ? "link de " + o.corretor : CANAIS[o.channel]].filter(Boolean).join(" · ")))))) : vazio("eye", "Nenhuma abertura registrada")),
       h("div", { class: "stack" },
-        h("div", { class: "card" }, h("h2", null, "Recado do cliente"), h("p", { class: "wrap muted", style: "white-space:pre-wrap" }, c.message || "Não deixou recado.")),
+        h("div", { class: "card" }, tituloCard("chat", "Recado do cliente"), h("p", { class: "wrap muted", style: "white-space:pre-wrap" }, c.message || "Não deixou recado.")),
         h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); await api("PATCH", `/api/clientes/${c.id}`, { notes: new FormData(e.target).get("notes") }); aviso("Anotações salvas."); } },
-          h("h2", null, "Anotações"), h("textarea", { name: "notes", rows: 5, maxlength: 2000, "aria-label": "Anotações" }, c.notes || ""), h("div", null, h("button", { class: "btn", type: "submit" }, "Salvar anotações"))),
-        c.perguntas_lista.length ? h("div", { class: "card" }, h("h2", null, "O que perguntou à IA"), c.perguntas_lista.map((x) => h("div", { class: "qa" }, h("span", { class: "q wrap" }, x.question), x.answer && h("span", { class: "a wrap" }, x.answer), h("span", { class: "muted small" }, quando(x.ts))))) : null)));
+          tituloCard("edit", "Anotações"), h("textarea", { name: "notes", rows: 5, maxlength: 2000, "aria-label": "Anotações" }, c.notes || ""), h("div", null, h("button", { class: "btn", type: "submit" }, "Salvar anotações"))),
+        c.perguntas_lista.length ? h("div", { class: "card" }, tituloCard("chat", "O que perguntou à IA"), c.perguntas_lista.map((x) => h("div", { class: "qa" }, h("span", { class: "q wrap" }, x.question), x.answer && h("span", { class: "a wrap" }, x.answer), h("span", { class: "muted small" }, quando(x.ts))))) : null)));
   return el;
 }
-function dividir(c, bs) {
+function dividir(c, bs, { adicionar } = {}) {
   const ativos = bs.filter((b) => b.active);
   const linhas = (c.shares && c.shares.length ? c.shares : [{ broker_id: c.broker_id, pct: 100 }]).map((s) => ({ ...s }));
+  const igual = () => { const n = linhas.length, base = Math.floor(100 / n); linhas.forEach((l, i) => { l.pct = base + (i < 100 - base * n ? 1 : 0); }); };  // 100 / n, sobra nos primeiros
+  if (adicionar && linhas.length < 6) { const b = ativos.find((x) => !linhas.some((l) => l.broker_id === x.id)); if (b) { linhas.push({ broker_id: b.id, pct: 0 }); igual(); } }
   const lista = h("div", { class: "stack", style: "gap:8px" }), soma = h("p", { class: "small" });
   function atualizar() { const s = linhas.reduce((a, l) => a + (l.pct || 0), 0); soma.textContent = `Soma: ${s}%` + (s === 100 ? "" : " — precisa dar 100%"); soma.className = "small " + (s === 100 ? "muted" : "err"); soma.style.display = "block"; }
   function desenhar() {
@@ -530,7 +693,8 @@ function dividir(c, bs) {
   }
   desenhar();
   dialogo("Dividir comissão", [h("p", { class: "muted" }, `Quem recebe a comissão de ${c.name}. Os corretores da divisão passam a ver este cliente. A origem continua ${c.corretor}.`), lista, soma,
-    h("div", null, h("button", { type: "button", class: "btn sm", onclick: () => { if (linhas.length >= 6) return; const b = ativos.find((x) => !linhas.some((l) => l.broker_id === x.id)) || ativos[0]; linhas.push({ broker_id: b.id, pct: 0 }); desenhar(); } }, ic("plus"), "Adicionar corretor")),
+    h("div", { class: "row", style: "gap:8px" }, h("button", { type: "button", class: "btn sm", onclick: () => { if (linhas.length >= 6) return; const b = ativos.find((x) => !linhas.some((l) => l.broker_id === x.id)) || ativos[0]; linhas.push({ broker_id: b.id, pct: 0 }); desenhar(); } }, ic("plus"), "Adicionar corretor"),
+      h("button", { type: "button", class: "btn sm ghost", onclick: () => { igual(); desenhar(); } }, "Dividir igualmente")),
     h("p", { class: "hint" }, "Para voltar a 100% do corretor de origem, deixe só ele com 100.")],
     [btnFechar(), btnOk("Salvar divisão")], { onSubmit: async (f, fechar) => {
       const sh = linhas.filter((l) => l.pct > 0).map((l) => ({ broker_id: l.broker_id, pct: l.pct }));
@@ -550,9 +714,11 @@ async function telaCorretores() {
   if (!bs.length) { el.append(h("div", { class: "card" }, vazio("users", "Nenhum corretor ainda", "Cadastre o primeiro. Você define a senha ou deixa o painel gerar uma."))); return el; }
   if (vista("corretores") === "tabela") {
     el.append(h("div", { class: "card" }, h("p", { class: "muted small", style: "margin-bottom:8px" }, "Clique numa linha para ver os clientes do corretor aqui mesmo."), tabela([
-      { t: "Corretor", v: (b) => h("div", { class: "row", style: "gap:10px;flex-wrap:nowrap" }, avatar(b.name, "sm"), h("div", { style: "min-width:0" }, h("a", { class: "cell-main wrap", href: "#/corretor/" + b.id }, b.name), h("div", { class: "cell-sub wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · ")))), cls: "main-cell" },
+      { t: "Corretor", v: (b) => h("div", { class: "row", style: "gap:10px;flex-wrap:nowrap" }, avatar(b.name, "sm", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0" }, h("a", { class: "cell-main wrap", href: "#/corretor/" + b.id }, b.name), h("div", { class: "cell-sub wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · ")))), cls: "main-cell" },
       { t: "Clientes", v: (b) => fmtN(b.clientes), cls: "num" }, { t: "Novos", v: (b) => fmtN(b.novos), cls: "num" }, { t: "Aberturas", v: (b) => fmtN(b.aberturas), cls: "num" }, { t: "Fechados", v: (b) => fmtN(b.fechados), cls: "num" },
       { t: "Links", v: (b) => fmtN(b.links), cls: "num" }, { t: "Última abertura", v: (b) => quando(b.ultima) }, { t: "Situação", v: (b) => pill(b.active ? "Ativo" : "Desativado", b.active ? "on" : "off") },
+      // atalho do WhatsApp do corretor (o mesmo ícone do cartão), sem abrir a linha
+      { t: "WhatsApp", v: (b) => (b.whatsapp || b.phone) ? h("a", { class: "btn-wa", href: wa(b.whatsapp || b.phone, `Olá ${b.name.split(" ")[0]}, tudo bem?`), target: "_blank", rel: "noopener", title: "Chamar " + b.name + " no WhatsApp", "aria-label": "Chamar " + b.name + " no WhatsApp" }, icWa()) : h("span", { class: "muted" }, "—"), cls: "acoes" },
     ], bs, async (b) => { const d = await api("GET", "/api/brokers/" + b.id); return d.clientes_lista.length ? tabelaClientes(d.clientes_lista, { semCorretor: true }) : h("p", { class: "muted small" }, "Nenhum cliente ainda."); })));
     return el;
   }
@@ -579,12 +745,12 @@ async function telaCorretor(id) {
         h("a", { class: "btn sm", href: "/clientes.csv?corretor=" + b.id, download: "clientes.csv" }, ic("down"), "CSV dos clientes")))),
     h("div", { class: "kpis" }, h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.clientes)), h("span", { class: "l" }, "clientes")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.novos)), h("span", { class: "l" }, "novos para atender")),
       h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.aberturas)), h("span", { class: "l" }, "aberturas")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.fechados)), h("span", { class: "l" }, "fechados"))),
-    h("div", { class: "card" }, h("h2", null, "Dados para proposta"), b.cartao ? h("div", { class: "cartao-c" }, h("img", { class: "assin", src: b.cartao.signature, alt: "Assinatura digital de " + b.cartao.name }),
+    h("div", { class: "card" }, tituloCard("user", "Dados para proposta"), b.cartao ? h("div", { class: "cartao-c" }, h("img", { class: "assin", src: b.cartao.signature, alt: "Assinatura digital de " + b.cartao.name }),
       h("div", null, h("b", { class: "wrap" }, b.cartao.name), h("p", { class: "muted wrap" }, [fone(b.cartao.phone), b.cartao.email].filter(Boolean).join(" · ")), h("p", { class: "muted small" }, "Cadastrado em " + dataHora(b.cartao.created) + " · o corretor não consegue alterar; só você."),
         h("div", { class: "row", style: "margin-top:10px" }, h("button", { class: "btn sm", onclick: () => formCartao(b) }, ic("edit"), "Editar contato"),
           h("button", { class: "btn sm", onclick: async () => { if (!confirm("Apagar os dados e a assinatura? O popup abrirá uma única vez para o corretor preencher de novo.")) return; await api("POST", `/api/brokers/${b.id}/cartao/liberar`, {}); aviso("Liberado: o corretor preenche de novo no próximo acesso."); rotear(); } }, "Liberar novo cadastro")))) : h("p", { class: "muted" }, "Ainda não cadastrou. Na primeira vez que ele escolher o perfil Corretor numa apresentação, o popup pede nome, telefone, e-mail e assinatura digital — uma única vez. Depois, só você altera aqui.")),
-    h("div", { class: "card" }, h("h2", null, `Clientes de ${b.name.split(" ")[0]}`), b.clientes_lista.length ? listaPessoas(b.clientes_lista, { semCorretor: true }) : vazio("people", "Nenhum cliente ainda", "Quando alguém se identificar num link dele, aparece aqui.")),
-    h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", null, "Links"), h("button", { class: "btn sm", onclick: () => formLink(null, [b], b.id) }, ic("plus"), "Novo link")), b.links.length ? tabelaLinks(b.links, true) : h("p", { class: "muted" }, "Sem links ainda.")));
+    h("div", { class: "card" }, tituloCard("people", `Clientes de ${b.name.split(" ")[0]}`), b.clientes_lista.length ? listaPessoas(b.clientes_lista, { semCorretor: true }) : vazio("people", "Nenhum cliente ainda", "Quando alguém se identificar num link dele, aparece aqui.")),
+    h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("link", "Links"), h("button", { class: "btn sm", onclick: () => formLink(null, [b], b.id) }, ic("plus"), "Novo link")), b.links.length ? tabelaLinks(b.links, true) : h("p", { class: "muted" }, "Sem links ainda.")));
   return el;
 }
 function mostrarSenha(nome, email, senha) {
@@ -635,7 +801,7 @@ async function telaProps() {
     ], props, async (p) => { const cs = await api("GET", "/api/clientes?empreendimento=" + p.id); return cs.length ? tabelaClientes(cs) : h("p", { class: "muted small" }, "Nenhum cliente ainda."); })));
     return el;
   }
-  el.append(h("div", { class: "props" }, props.map((p) => h("article", { class: "card prop" + (p.capa ? " com-capa" : "") }, p.capa && h("img", { class: "prop-capa", src: p.capa, alt: "", loading: "lazy" }),
+  el.append(h("div", { class: "props emp" }, props.map((p) => h("article", { class: "card prop" + (p.capa ? " com-capa" : "") }, p.capa && h("img", { class: "prop-capa", src: p.capa, alt: "", loading: "lazy" }),
     h("div", { class: "row between", style: "align-items:flex-start" }, h("div", { style: "min-width:0" }, h("h2", { class: "wrap", style: "margin:0" }, p.name), h("span", { class: "muted small wrap" }, p.city || "Cidade não informada")), pill(p.active ? "Ativo" : "Pausado", p.active ? "on" : "off")),
     h("div", { class: "chips" }, p.tem_apresentacao ? pill(p.external_url ? "Link externo" : "Apresentação 3D", "on") : pill("Sem apresentação", "warn"), pill(p.ai_on ? "IA ligada" : "IA desligada"), pill(p.languages.map((l) => l.split("-")[0].toUpperCase()).join(" · "))),
     h("div", { class: "stats" }, h("div", null, h("b", null, fmtN(p.clientes)), h("span", null, "clientes")), h("div", null, h("b", null, fmtN(p.aberturas)), h("span", null, "aberturas")), h("div", null, h("b", null, fmtN(p.links)), h("span", null, "links"))),
@@ -662,20 +828,38 @@ async function formProp(p) {
 }
 
 // ───────── links ─────────
-function tabelaLinks(links, compacto) {
-  return h("table", { class: "t" }, h("thead", null, h("tr", null, ["Link", !compacto && dono() ? "Corretor" : null, "Canal", "Cliques", "Clientes", "Aberturas", ""].filter((x) => x !== null).map((t) => h("th", { class: ["Cliques", "Clientes", "Aberturas"].includes(t) ? "num" : "" }, t)))),
+function tabelaLinks(links, compacto, info) {
+  return h("table", { class: "t" }, h("thead", null, h("tr", null, ["Link", !compacto && dono() ? "Corretor" : null, "Canal", "Cliques", "Clientes", "Aberturas", ""].filter((x) => x !== null).map((t) => h("th", { class: ["Cliques", "Clientes", "Aberturas"].includes(t) ? "num" : t ? "" : "th-info" }, t || (info ? lupaInfo(info) : ""))))),
     h("tbody", null, links.map((l) => h("tr", { class: l.active ? "" : "muted" },
       h("td", { class: "main-cell" }, h("div", { class: "cell-main wrap" }, l.empreendimento, !l.active && " ", !l.active && pill("pausado", "off")), h("div", { class: "cell-sub wrap mono" }, [l.label, `/r/${l.code}`].filter(Boolean).join(" · "))),
       !compacto && dono() && h("td", { "data-l": "Corretor", class: "wrap" }, l.corretor), h("td", { "data-l": "Canal" }, CANAIS[l.channel] || l.channel),
       h("td", { class: "num", "data-l": "Cliques" }, fmtN(l.cliques)), h("td", { class: "num", "data-l": "Clientes" }, fmtN(l.clientes)), h("td", { class: "num", "data-l": "Aberturas" }, fmtN(l.aberturas)),
-      h("td", { class: "acoes" }, h("button", { class: "btn sm", onclick: () => copiar(urlLink(l.code), "Link copiado.") }, ic("copy"), "Copiar"), h("button", { class: "btn sm", onclick: () => mostrarQr(l) }, ic("qr"), "QR"),
-        h("a", { class: "btn sm", target: "_blank", rel: "noopener", href: wa("", `Olá! Preparei uma apresentação interativa do ${l.empreendimento} para você: ${urlLink(l.code)}`) }, ic("send"), "WhatsApp"),
-        h("button", { class: "btn sm ghost", onclick: async () => { await api("PATCH", `/api/links/${l.id}`, { active: !l.active }); aviso(l.active ? "Link pausado." : "Link reativado."); rotear(); } }, l.active ? "Pausar" : "Reativar"))))));
+      h("td", { class: "acoes" }, h("div", { class: "acoes-in" }, h("button", { class: "btn sm", onclick: () => copiar(urlLink(l.code), "Link copiado.") }, ic("copy"), "Copiar"), h("button", { class: "btn sm", onclick: () => mostrarQr(l) }, ic("qr"), "QR"),
+        dono() ? h("button", { class: "btn sm", title: "Reenviar o link e o QR Code ao corretor", onclick: () => enviarAoCorretor(l) }, ic("send"), "WhatsApp")
+          : h("a", { class: "btn sm", target: "_blank", rel: "noopener", href: wa("", `Olá! Preparei uma apresentação interativa do ${l.empreendimento} para você: ${urlLink(l.code)}`) }, ic("send"), "WhatsApp"),
+        h("button", { class: "btn sm ghost", onclick: async () => { await api("PATCH", `/api/links/${l.id}`, { active: !l.active }); aviso(l.active ? "Link pausado." : "Link reativado."); rotear(); } }, l.active ? "Pausar" : "Reativar")))))));
+}
+// lupa no canto do cabeçalho: abre uma caixinha com a explicação (no lugar de um subtítulo comprido)
+function lupaInfo(texto, rotulo = "Sobre esta tabela") {
+  // abre ao clicar (fica aberta até clicar de novo ou fora) e, em aparelho com mouse, também ao passar o mouse (fecha ao sair)
+  const caixa = h("div", { class: "info-pop", role: "tooltip", hidden: true }, texto);
+  let fixa = false;
+  const mostrar = (v) => { caixa.hidden = !v; btn.setAttribute("aria-expanded", String(v)); };
+  const btn = h("button", { type: "button", class: "info-btn", "aria-label": rotulo, "aria-expanded": "false", title: rotulo,
+    onclick: (e) => { e.stopPropagation(); fixa = !fixa; mostrar(fixa); } }, ic("search"));
+  const fechar = (e) => { if (!caixa.isConnected) { document.removeEventListener("click", fechar); return; } if (!caixa.hidden && !caixa.contains(e.target)) { fixa = false; mostrar(false); } };
+  document.addEventListener("click", fechar);
+  const caixaWrap = h("div", { class: "info-wrap" }, btn, caixa);
+  const comMouse = () => matchMedia("(hover:hover)").matches;
+  let t = 0;  // pequeno atraso ao sair: dá tempo de o mouse atravessar o vão entre a lupa e a caixinha
+  caixaWrap.addEventListener("mouseenter", () => { clearTimeout(t); if (comMouse()) mostrar(true); });
+  caixaWrap.addEventListener("mouseleave", () => { if (comMouse() && !fixa) { clearTimeout(t); t = setTimeout(() => { if (!fixa) mostrar(false); }, 220); } });
+  return caixaWrap;
 }
 async function telaLinks() {
   const [links, props, bs] = await Promise.all([api("GET", "/api/links"), api("GET", "/api/properties"), dono() ? api("GET", "/api/brokers") : []]);
-  const el = h("div", { class: "stack" }, cabeca(dono() ? "Links" : "Meus links", "Cada link identifica o corretor e o canal. O cliente se cadastra na primeira abertura.", h("button", { class: "btn primary", onclick: () => formLink(props.filter((p) => p.active), bs) }, ic("plus"), "Novo link")));
-  el.append(h("div", { class: "card" }, links.length ? tabelaLinks(links) : vazio("link", "Nenhum link ainda", "Crie um por empreendimento e canal (WhatsApp, Instagram, QR…)."))); return el;
+  const el = h("div", { class: "stack" }, cabeca(dono() ? "Links acessados" : "Meus links", dono() ? "Todos os acessos, pelo link de cada corretor." : "Cada link identifica você e o canal.", h("button", { class: "btn primary", onclick: () => formLink(props.filter((p) => p.active), bs) }, ic("plus"), "Novo link")));
+  el.append(h("div", { class: "card" }, links.length ? tabelaLinks(links, false, dono() ? "A contagem de todos os acessos, separada pelo link de cada corretor: cliques, clientes que se cadastraram e aberturas da apresentação. Se um corretor perder o link dele, reenvie por aqui: o QR Code já leva o link escrito, e o WhatsApp abre a conversa com o próprio corretor." : "Cliques, clientes que se cadastraram e aberturas de cada um dos seus links. O cliente se cadastra na primeira abertura.") : vazio("link", "Nenhum link ainda", "Crie um por empreendimento e canal (WhatsApp, Instagram, QR…)."))); return el;
 }
 async function formLink(props, bs, brokerFixo) {
   props = props || (await api("GET", "/api/properties")).filter((p) => p.active);
@@ -690,21 +874,98 @@ async function formLink(props, bs, brokerFixo) {
 function svgQr(url) { const q = qrcode(0, "M"); q.addData(url); q.make(); return q.createSvgTag({ cellSize: 6, margin: 0, scalable: true }); }
 function mostrarQr(l, novo) {
   const url = urlLink(l.code), caixaQr = h("div", { class: "qr", role: "img", "aria-label": `QR Code do link de ${l.empreendimento}` }); caixaQr.innerHTML = svgQr(url);
-  dialogo(novo ? "Link criado" : "QR Code do link", [h("p", { class: "muted" }, `${l.empreendimento} · ${CANAIS[l.channel] || l.channel}${l.label ? " · " + l.label : ""}`), caixaQr, h("div", { class: "linkbox" }, h("code", null, url), h("button", { class: "btn sm", onclick: () => copiar(url, "Link copiado.") }, ic("copy"), "Copiar"))],
-    [h("button", { type: "button", class: "btn", onclick: () => baixarQr(caixaQr, `qr-${l.code}.png`) }, ic("down"), "Baixar PNG"), h("a", { class: "btn primary", target: "_blank", rel: "noopener", href: wa("", `Olá! Preparei uma apresentação interativa do ${l.empreendimento} para você: ${url}`) }, ic("send"), "Enviar no WhatsApp")]);
+  const enviar = dono()
+    ? h("button", { type: "button", class: "btn primary", onclick: () => enviarAoCorretor(l) }, ic("send"), "Enviar ao corretor")
+    : h("a", { class: "btn primary", target: "_blank", rel: "noopener", href: wa("", `Olá! Preparei uma apresentação interativa do ${l.empreendimento} para você: ${url}`) }, ic("send"), "Enviar no WhatsApp");
+  dialogo(novo ? "Link criado" : "QR Code do link", [h("p", { class: "muted" }, `${l.empreendimento} · ${l.corretor ? l.corretor + " · " : ""}${CANAIS[l.channel] || l.channel}${l.label ? " · " + l.label : ""}`), caixaQr, h("div", { class: "linkbox" }, h("code", null, url), h("button", { class: "btn sm", onclick: () => copiar(url, "Link copiado.") }, ic("copy"), "Copiar")),
+    h("p", { class: "muted small" }, "A imagem baixada já leva o link escrito embaixo do QR Code.")],
+    [h("button", { type: "button", class: "btn", onclick: () => baixarQr(l) }, ic("down"), "Baixar PNG"), enviar]);
 }
-function baixarQr(caixaQr, nome) {
-  const svg = caixaQr.querySelector("svg"), vb = svg.viewBox.baseVal.width || 200, img = new Image(), xml = new XMLSerializer().serializeToString(svg);
-  img.onload = () => { const c = h("canvas", { width: 1024, height: 1024 }), x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, 1024, 1024); x.imageSmoothingEnabled = false; x.drawImage(img, 32, 32, 960, 960);
-    c.toBlob((b) => { const a = h("a", { href: URL.createObjectURL(b), download: nome }); document.body.append(a); a.click(); a.remove(); }, "image/png"); };
-  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml.replace("<svg", `<svg width="${vb}" height="${vb}"`));
+// PNG do QR com o link escrito embaixo (e de quem é o link): serve para imprimir ou reenviar ao corretor
+function qrPng(l) {
+  const url = urlLink(l.code), tmp = h("div"); tmp.innerHTML = svgQr(url);
+  const svg = tmp.querySelector("svg"), vb = svg.viewBox.baseVal.width || 200, img = new Image(), xml = new XMLSerializer().serializeToString(svg);
+  return new Promise((res, rej) => {
+    img.onload = () => {
+      const W = 1024, c = h("canvas", { width: W, height: W + 170 }), x = c.getContext("2d");
+      x.fillStyle = "#fff"; x.fillRect(0, 0, W, W + 170); x.imageSmoothingEnabled = false; x.drawImage(img, 64, 64, W - 128, W - 128);
+      x.fillStyle = "#0f172a"; x.textAlign = "center"; x.textBaseline = "alphabetic";
+      x.font = "600 44px Figtree, system-ui, sans-serif"; x.fillText(url.replace(/^https?:\/\//, ""), W / 2, W + 20, W - 80);
+      x.fillStyle = "#5f6f83"; x.font = "400 34px Figtree, system-ui, sans-serif"; x.fillText([l.empreendimento, l.corretor, CANAIS[l.channel] || l.channel].filter(Boolean).join(" · "), W / 2, W + 80, W - 80);
+      c.toBlob((b) => (b ? res(b) : rej(new Error("png"))), "image/png");
+    };
+    img.onerror = rej;
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml.replace("<svg", `<svg width="${vb}" height="${vb}"`));
+  });
+}
+async function baixarQr(l) {
+  const b = await qrPng(l), a = h("a", { href: URL.createObjectURL(b), download: `qr-${l.code}.png` }); document.body.append(a); a.click(); a.remove();
+}
+// Dono reenvia o link ao próprio corretor: abre o WhatsApp dele com o link na mensagem e o QR Code pronto para colar (ou compartilhar, no celular)
+async function enviarAoCorretor(l) {
+  const url = urlLink(l.code), nome = (l.corretor || "").split(" ")[0];
+  const texto = `Olá${nome ? ", " + nome : ""}! Este é o seu link do ${l.empreendimento} (${CANAIS[l.channel] || l.channel}${l.label ? " · " + l.label : ""}): ${url}\nTudo o que o cliente fizer por ele fica no seu nome. O QR Code com o mesmo link vai em seguida.`;
+  const celular = matchMedia("(pointer: coarse)").matches && !!navigator.canShare;
+  const aba = celular ? null : window.open("", "_blank");  // abre já no clique: depois de esperar o PNG o navegador bloquearia
+  let png = null; try { png = await qrPng(l); } catch { /* segue só com o link */ }
+  const arquivo = png && new File([png], `qr-${l.code}.png`, { type: "image/png" });
+  if (celular && arquivo && navigator.canShare({ files: [arquivo] })) {
+    try { await navigator.share({ files: [arquivo], text: texto }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  let copiou = false;
+  if (png && navigator.clipboard && window.ClipboardItem) { try { await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]); copiou = true; } catch { /* sem permissão */ } }
+  if (!l.corretor_fone) aviso(`${l.corretor || "Este corretor"} não tem telefone cadastrado: escolha o contato no WhatsApp.`, true);
+  const destino = wa(l.corretor_fone || "", texto);
+  if (aba) { aba.opener = null; aba.location.href = destino; } else window.open(destino, "_blank", "noopener");
+  if (copiou) aviso("QR Code copiado. Na conversa do WhatsApp, cole (Ctrl+V) para enviar a imagem.");
+  else if (png) { baixarQr(l); aviso("QR Code baixado. Anexe a imagem na conversa do WhatsApp."); }
 }
 
 // ───────── perguntas, configurações, conta ─────────
+// ───────── Perguntas à IA: iPhone 17 com a caixa que o cliente vê, para testar a IA (só dono) ─────────
+function simuladorIA() {
+  const mock = h("div", { class: "sim-mock" });
+  const box = h("aside", { class: "sim-ia", "aria-label": "Teste da IA como o cliente vê (não entra no histórico nem no limite do mês)" }, mock);
+  api("GET", "/api/properties").then((todos) => {
+    const ps = todos.filter((p) => p.active);
+    if (!ps.length || !window.DeviceMockup) { mock.replaceChildren(vazio("building", "Cadastre um empreendimento para testar")); return; }
+    let prop = ps.find((p) => (p.facts || "").trim()) || ps[0];
+    const aparelho = DeviceMockup.mount(mock, "", { model: "iphone-17-pro-verde", width: 300, darkStatus: true });
+    const tela = aparelho.querySelector(".dp-screen");
+    const conteudo = h("div", { class: "sim-tela" }); tela.prepend(conteudo);
+    const escolha = ps.length > 1 ? h("select", { class: "sim-sel", "aria-label": "Empreendimento", onchange: (e) => { prop = ps.find((p) => String(p.id) === e.target.value) || prop; montar(); } }, ps.map((p) => h("option", { value: p.id, selected: p.id === prop.id }, p.name))) : null;
+    const montar = () => {
+      const msgs = h("div", { class: "sim-msgs" }, h("div", { class: "sim-m bot" }, `Oi! Sou o assistente do ${prop.name}. Pergunte o que quiser; se eu não souber, o corretor responde você.`));
+      const inp = h("input", { type: "text", maxlength: 500, placeholder: "Escreva sua pergunta…", "aria-label": "Pergunta de teste para a IA", autocomplete: "off" });
+      const go = h("button", { class: "sim-go", type: "submit", "aria-label": "Enviar" }, ic("send"));
+      let ocupado = false;
+      const bolha = (cls, t) => { const d = h("div", { class: "sim-m " + cls }, t); msgs.append(d); msgs.scrollTop = msgs.scrollHeight; return d; };
+      const sug = h("div", { class: "sim-sug" }, ["Quais opções estão disponíveis?", "Quais as formas de pagamento?", "O que tem de lazer?"].map((t) => h("button", { type: "button", onclick: () => enviar(t) }, t)));
+      async function enviar(t) {
+        t = (t || "").trim(); if (!t || ocupado) return;
+        ocupado = true; go.disabled = true; sug.remove(); bolha("me", t); inp.value = "";
+        const p = bolha("bot pensando", "Pensando…");
+        try { const r = await api("POST", "/api/ia-teste", { property_id: prop.id, pergunta: t }); p.className = "sim-m bot" + (r.resposta ? "" : " err"); p.textContent = r.resposta || "Não consegui responder agora. Fale direto com o corretor."; }
+        catch (e) { p.className = "sim-m bot err"; p.textContent = (e && e.message) || "Falha ao falar com a IA."; }
+        ocupado = false; go.disabled = false; msgs.scrollTop = msgs.scrollHeight;
+      }
+      conteudo.replaceChildren(h("div", { class: "sim-sheet" },
+        h("div", { class: "sim-hd" }, h("span", { class: "sim-av", "aria-hidden": "true" }, ini(S.me.name)),
+          h("div", { style: "min-width:0;flex:1" }, h("b", null, prop.name), h("span", null, "Atendimento por " + S.me.name.split(" ")[0]))),
+        escolha && h("div", { class: "sim-escolha" }, escolha),
+        h("div", { class: "sim-tabs", "aria-hidden": "true" }, h("span", { class: "on" }, "Pergunte à IA"), h("span", null, "Falar com corretor")),
+        msgs, sug, h("p", { class: "sim-note" }, "Respostas geradas por IA a partir das informações do empreendimento."),
+        h("form", { class: "sim-in", onsubmit: (e) => { e.preventDefault(); enviar(inp.value); } }, inp, go)));
+    };
+    montar();
+  }).catch(() => mock.replaceChildren(h("p", { class: "muted small" }, "Não foi possível carregar os empreendimentos.")));
+  return box;
+}
+const comCelular = (el) => (dono() ? h("div", { class: "perg-layout" }, el, simuladorIA()) : el);
 async function telaPerguntas() {
   const qs = await api("GET", "/api/questions");
-  const el = h("div", { class: "stack" }, cabeca("Perguntas à IA", "O que os clientes querem saber. Cada pergunta está ligada a um cliente identificado."));
-  if (!qs.length) { el.append(h("div", { class: "card" }, vazio("chat", "Nenhuma pergunta ainda"))); return el; }
+  const el = h("div", { class: "stack col-padrao" }, cabeca("Perguntas à IA", "O que os clientes querem saber. Cada pergunta está ligada a um cliente identificado."));
+  if (!qs.length) { el.append(h("div", { class: "card" }, vazio("chat", "Nenhuma pergunta ainda"))); return comCelular(el); }
   const sem = qs.filter((x) => !x.answer).length;
   if (sem) el.append(h("div", { class: "card alerta-card" }, `${sem} pergunta(s) ficaram sem resposta (limite do mês ou falha da IA). Vale retornar para esses clientes.`));
   // conversas: uma por cliente, em balões (cliente à direita, IA à esquerda), da mais recente para a mais antiga
@@ -717,20 +978,20 @@ async function telaPerguntas() {
     h("div", { class: "conv-b" }, c.itens.map((x) => [
       h("div", { class: "msg cli" }, h("span", { class: "wrap" }, x.question)),
       x.answer ? h("div", { class: "msg ia" }, h("span", { class: "msg-quem" }, "IA"), h("span", { class: "wrap" }, x.answer)) : h("div", { class: "msg ia sem" }, pill("sem resposta", "warn"), h("span", { class: "muted small" }, "Limite do mês ou falha da IA. Vale retornar para este cliente."))]))))));
-  return el;
+  return comCelular(el);
 }
 async function telaConfig() {
   const c = await api("GET", "/api/settings"), pct = c.ai_limite ? Math.min(100, Math.round((c.ai_usadas / c.ai_limite) * 100)) : 100;
-  return h("div", { class: "stack", style: "max-width:720px" }, cabeca("Configurações"),
+  return h("div", { class: "stack col-padrao" }, cabeca("Configurações"),
     h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); const f = new FormData(e.target); try { await api("PATCH", "/api/settings", { empresa: f.get("empresa"), ai_limite: Number(f.get("ai_limite")), notify_min: Number(f.get("notify_min")) }); S.empresa = f.get("empresa"); aviso("Configurações salvas."); rotear(); } catch (x) { aviso(x.message, true); } } },
-      h("h2", null, "Empresa e IA"), campo("Nome da empresa", h("input", { type: "text", name: "empresa", value: c.empresa, required: true }), "Aparece no painel, no cadastro do cliente e no aceite."),
+      tituloCard("building", "Empresa e IA"), campo("Nome da empresa", h("input", { type: "text", name: "empresa", value: c.empresa, required: true }), "Aparece no painel, no cadastro do cliente e no aceite."),
       blocoLogo(c),
       campo("Aviso de cliente novo, depois de quantos minutos", h("input", { type: "number", name: "notify_min", min: 0, max: 120, value: c.notify_min }), "O painel avisa que o cliente abriu, se cadastrou e de qual corretor veio. Padrão: 5 minutos."),
       campo("Perguntas à IA por mês, por empreendimento", h("input", { type: "number", name: "ai_limite", min: 0, max: 100000, value: c.ai_limite }), "Passou do teto, a IA para e manda falar com o corretor."),
       h("div", null, h("div", { class: "row between small" }, h("span", null, "Uso neste mês"), h("strong", null, fmtN(c.ai_usadas))), h("div", { class: "bar", style: "margin-top:6px" }, h("i", { style: `width:${pct}%` }))),
       !c.claude_cli && h("p", { class: "err", style: "display:block" }, "O Claude Code não foi encontrado neste computador: as perguntas à IA ficam sem resposta."), h("div", null, h("button", { class: "btn primary", type: "submit" }, "Salvar"))),
     blocoVisual(),
-    h("div", { class: "card stack" }, h("h2", null, "Regra da comissão"), h("p", { class: "muted" }, "O cliente pertence ao primeiro corretor por quem se identificou. Se abrir o link de outro corretor, a abertura é registrada no nome dele, mas a origem não muda. Só o dono transfere um cliente, na página do cliente.")),
+    h("div", { class: "card stack" }, tituloCard("swap", "Regra da comissão"), h("p", { class: "muted" }, "O cliente pertence ao primeiro corretor por quem se identificou. Se abrir o link de outro corretor, a abertura é registrada no nome dele, mas a origem não muda. Só o dono transfere um cliente, na página do cliente.")),
 )
 }
 // Visual do painel: "novo" (tema-painel.css, inspirado no Sábio) ou "classico" (só painel.css). Fica no navegador (localStorage lc.visual); index.html lê antes de pintar.
@@ -749,7 +1010,7 @@ function blocoVisual() {
     try { localStorage.setItem("lc.modo", k); } catch (e) {}
     if (window.LC_APLICAR_MODO) window.LC_APLICAR_MODO(); pintarModo(); } }, t))); };
   pintarModo();
-  return h("div", { class: "card stack" }, h("h2", null, "Visual do painel"), h("p", { class: "muted" }, "Novo: barra ardósia, acento esmeralda e cartões com borda. Clássico: verde-escuro e latão. A escolha vale só neste navegador."), chips,
+  return h("div", { class: "card stack" }, tituloCard("sliders", "Visual do painel"), h("p", { class: "muted" }, "Novo: barra ardósia, acento esmeralda e cartões com borda. Clássico: verde-escuro e latão. A escolha vale só neste navegador."), chips,
     h("div", { class: "lbl", style: "margin-top:4px" }, "Modo de cor"), h("p", { class: "muted small" }, "Padrão: Claro. Automático segue o sistema. Vale para o visual Novo (o Clássico segue sempre o sistema)."), modos);
 }
 function blocoLogo(c) {
@@ -799,16 +1060,98 @@ function enviarLogo(f) {
   };
   img.onerror = () => aviso("Não consegui ler a imagem.", true); img.src = url;
 }
+// ───────── Minha conta → IA do cliente (bloqueada até a senha da VGVX) ─────────
+const fav = (d) => `https://www.google.com/s2/favicons?domain=${d}&sz=64`;
+const LLMS = [
+  { id: "openai", n: "OpenAI", d: "openai.com", fmt: "sk-proj-••••••••••••••••••••AbC1", ini: "sk-proj-", url: "https://platform.openai.com/api-keys" },
+  { id: "anthropic", n: "Claude", d: "anthropic.com", fmt: "sk-ant-api03-••••••••••••••••••AA", ini: "sk-ant-", url: "https://console.anthropic.com/settings/keys" },
+  { id: "gemini", n: "Gemini", d: "gemini.google.com", fmt: "AIzaSy•••••••••••••••••••••••••Xy9", ini: "AIza", url: "https://aistudio.google.com/apikey" },
+  { id: "groq", n: "Groq", d: "groq.com", fmt: "gsk_••••••••••••••••••••••••••••Q2", ini: "gsk_", url: "https://console.groq.com/keys" },
+  { id: "mistral", n: "Mistral", d: "mistral.ai", fmt: "32 letras e números · ••••••••Ab12", ini: "", url: "https://console.mistral.ai/api-keys" },
+  { id: "deepseek", n: "DeepSeek", d: "deepseek.com", fmt: "sk-••••••••••••••••••••••••••••3f9a", ini: "sk-", url: "https://platform.deepseek.com/api_keys" },
+  { id: "xai", n: "Grok (xAI)", d: "x.ai", fmt: "xai-••••••••••••••••••••••••••••Zt7", ini: "xai-", url: "https://console.x.ai" },
+  { id: "openrouter", n: "OpenRouter", d: "openrouter.ai", fmt: "sk-or-v1-••••••••••••••••••••••c4d2", ini: "sk-or-v1-", url: "https://openrouter.ai/keys" },
+  { id: "perplexity", n: "Perplexity", d: "perplexity.ai", fmt: "pplx-••••••••••••••••••••••••••8kLm", ini: "pplx-", url: "https://www.perplexity.ai/settings/api" },
+  { id: "cohere", n: "Cohere", d: "cohere.com", fmt: "40 letras e números · ••••••••wX3q", ini: "", url: "https://dashboard.cohere.com/api-keys" },
+  { id: "together", n: "Together AI", d: "together.ai", fmt: "tgp_v1_•••••••••••••••••••••••••R5s", ini: "tgp_", url: "https://api.together.ai/settings/api-keys" },
+  { id: "qwen", n: "Qwen (Alibaba)", d: "qwen.ai", fmt: "sk-••••••••••••••••••••••••••••a1b2", ini: "sk-", url: "https://dashscope.console.aliyun.com/apiKey" },
+];
+function boxIACliente() {
+  const box = h("section", { class: "card ia-cli", "aria-label": "IA do cliente" });
+  const pintar = (st) => {
+    const lib = st.liberada;
+    const tile = (m) => {
+      const tem = st.provedores[m.id], ativo = st.ativo === m.id;
+      return h("button", { type: "button", class: "ia-tile" + (tem ? " tem" : "") + (ativo ? " ativo" : ""), disabled: !lib, "aria-label": `${m.n}${tem ? " · chave cadastrada" : ""}${ativo ? " · em uso" : ""}`, onclick: () => chaveLLM(m, st, pintar) },
+        h("img", { src: fav(m.d), alt: "", width: 32, height: 32, loading: "lazy", referrerpolicy: "no-referrer" }),
+        h("span", { class: "ia-n" }, m.n),
+        h("span", { class: "ia-st" }, ativo ? "Em uso" : tem ? "•••" + tem.final : ""));  // sem chave: nenhuma frase, o logo ocupa o espaço
+    };
+    const grade = h("div", { class: "ia-grade" }, LLMS.map(tile));
+    const sub = lib ? "Escolha a LLM e cole a chave de API da sua empresa. A IA da apresentação passa a usar a sua conta." : "Use a chave de API da sua própria LLM na IA que responde os clientes.";
+    const corpo = [h("div", { class: "row between" }, tituloCard("chat", "IA do cliente"), lupaInfo(sub, "Sobre a IA do cliente")),
+      h("div", { class: "ia-area" + (lib ? "" : " bloq") }, grade, !lib && travaVGVX(pintar))];
+    box.replaceChildren(...corpo);
+  };
+  api("GET", "/api/ia-cliente").then(pintar).catch(() => box.replaceChildren(tituloCard("chat", "IA do cliente"), h("p", { class: "muted" }, "Não foi possível carregar.")));
+  return box;
+}
+function travaVGVX(pintar) {
+  const inp = h("input", { type: "password", name: "vgvx", autocomplete: "off", placeholder: "Senha de liberação", "aria-label": "Senha de liberação da VGVX", required: true });
+  const erro = h("p", { class: "err", role: "alert" });
+  return h("form", { class: "ia-trava", novalidate: true, onsubmit: async (e) => {
+      e.preventDefault(); erro.textContent = ""; if (!inp.value.trim()) { erro.textContent = "Digite a senha."; inp.focus(); return; }
+      try { const st = await api("POST", "/api/ia-cliente/liberar", { senha: inp.value }); aviso("IA do cliente liberada."); pintar(st); } catch (x) { erro.textContent = x.message; inp.select(); } } },
+    h("span", { class: "ic-box ia-cadeado", "aria-hidden": "true" }, ic("lock")),
+    h("strong", null, "Função bloqueada"),
+    h("p", { class: "muted small" }, "Para liberar, digite a senha fornecida pela VGVX."),
+    h("div", { class: "ia-trava-row" }, inp, h("button", { class: "btn primary", type: "submit" }, "Desbloquear")), erro);
+}
+function chaveLLM(m, st, pintar) {
+  const tem = st.provedores[m.id];
+  const inp = h("input", { type: "password", name: "chave", id: "ia-chave-in", autocomplete: "off", spellcheck: "false", placeholder: m.fmt, class: "ia-chave", "aria-describedby": "ia-fmt" });
+  const ver = h("button", { type: "button", class: "btn sm ghost", onclick: () => { inp.type = inp.type === "password" ? "text" : "password"; ver.textContent = inp.type === "password" ? "Mostrar" : "Ocultar"; } }, "Mostrar");
+  const corpo = [
+    h("div", { class: "ia-dlg-topo" }, h("img", { src: fav(m.d), alt: "", width: 40, height: 40, referrerpolicy: "no-referrer" }), h("div", null, h("strong", null, m.n), h("span", { class: "muted small" }, tem ? `Chave cadastrada, termina em ${tem.final}.` : "Nenhuma chave cadastrada."))),
+    h("div", { class: "field" }, h("label", { for: "ia-chave-in" }, "Chave de API"), h("div", { class: "ia-chave-row" }, inp, ver),
+      h("span", { class: "hint" }, m.ini ? `Começa com ${m.ini} e termina com letras e números, como no exemplo do campo.` : "É uma sequência de letras e números, como no exemplo do campo.")),
+    h("p", { class: "muted small", id: "ia-fmt" }, "A chave fica guardada no servidor e nunca aparece inteira de novo. ", h("a", { href: m.url, target: "_blank", rel: "noopener" }, `Onde pegar a chave da ${m.n} →`))];
+  const botoes = [btnFechar(),
+    tem && h("button", { type: "button", class: "btn ghost danger", onclick: async (e) => { const st2 = await api("POST", "/api/ia-cliente/chave", { provedor: m.id, chave: "" }); e.target.closest("dialog")?.close(); e.target.closest("dialog")?.remove(); aviso("Chave removida."); pintar(st2); } }, "Remover"),
+    tem && st.ativo !== m.id && h("button", { type: "button", class: "btn", onclick: async (e) => { const st2 = await api("POST", "/api/ia-cliente/ativar", { provedor: m.id }); e.target.closest("dialog")?.close(); e.target.closest("dialog")?.remove(); aviso(`${m.n} em uso.`); pintar(st2); } }, "Usar esta"),
+    btnOk("Salvar chave")].filter(Boolean);
+  dialogo(`Chave da ${m.n}`, corpo, botoes, { onSubmit: async (f, fechar) => {
+    const v = String(f.get("chave") || "").trim();
+    if (!v) throw new Error("Cole a chave de API.");
+    if (m.ini && !v.startsWith(m.ini) && !confirm(`A chave da ${m.n} costuma começar com "${m.ini}". Salvar mesmo assim?`)) return;
+    const st2 = await api("POST", "/api/ia-cliente/chave", { provedor: m.id, chave: v }); fechar(); aviso(`Chave da ${m.n} salva. Ela passa a ser a LLM em uso.`); pintar(st2); } });
+}
 async function telaConta() {
-  return h("div", { class: "stack", style: "max-width:520px" }, cabeca("Minha conta"),
-    h("div", { class: "card hero-p" }, avatar(S.me.name, "lg", fotoDe(S.me.id, S.me.tem_foto)), h("div", null, h("strong", { class: "wrap" }, S.me.name), h("div", { class: "muted wrap" }, S.me.email), h("div", { class: "muted small" }, dono() ? "Dono" : "Corretor"),
-      h("div", { class: "row", style: "margin-top:10px" }, h("button", { class: "btn sm", type: "button", onclick: () => escolherFoto(async (d) => { await api("POST", "/api/me/foto", { foto: d }); S.me.tem_foto = true; S_FOTO.v = Date.now(); aviso("Foto salva."); casca(); rotear(); }) }, S.me.tem_foto ? "Trocar foto" : "Adicionar foto"),
+  // nome com lápis: clicar troca o nome por um campo no lugar; Enter salva, Esc cancela
+  const nomeBox = h("div", { class: "hero-nome" });
+  const verNome = () => nomeBox.replaceChildren(h("strong", { class: "wrap hero-n" }, S.me.name),
+    h("button", { type: "button", class: "lapis", "aria-label": "Editar nome", title: "Editar nome", onclick: () => editarNome() }, ic("edit")));
+  const editarNome = () => {
+    const inp = h("input", { type: "text", name: "nome", value: S.me.name, maxlength: 80, "aria-label": "Nome", autocomplete: "name", class: "hero-in" });
+    const salvar = async () => {
+      const v = inp.value.trim(); if (!v) { aviso("Digite o nome.", true); inp.focus(); return; } if (v === S.me.name) { verNome(); return; }
+      try { await api("POST", "/api/me/nome", { nome: v }); S.me.name = v; aviso("Nome salvo."); casca(); rotear(); } catch (x) { aviso(x.message, true); }
+    };
+    nomeBox.replaceChildren(inp, h("button", { type: "button", class: "lapis ok", "aria-label": "Salvar nome", title: "Salvar", onclick: salvar }, ic("check")), h("button", { type: "button", class: "lapis", "aria-label": "Cancelar", title: "Cancelar", onclick: verNome }, ic("x")));
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); salvar(); } else if (e.key === "Escape") { e.stopPropagation(); verNome(); } });
+    inp.focus(); inp.select();
+  };
+  verNome();
+  const col = h("div", { class: "conta-col" },
+    h("div", { class: "card hero-p hero-grande" }, avatar(S.me.name, "xl", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "hero-info" }, nomeBox, h("div", { class: "muted wrap" }, S.me.email), h("div", null, pill(dono() ? "Dono" : "Corretor", "on")),
+      h("div", { class: "row", style: "margin-top:8px" }, h("button", { class: "btn sm", type: "button", onclick: () => escolherFoto(async (d) => { await api("POST", "/api/me/foto", { foto: d }); S.me.tem_foto = true; S_FOTO.v = Date.now(); aviso("Foto salva."); casca(); rotear(); }) }, S.me.tem_foto ? "Trocar foto" : "Adicionar foto"),
         S.me.tem_foto && h("button", { class: "btn sm ghost", type: "button", onclick: async () => { await api("POST", "/api/me/foto", { foto: "" }); S.me.tem_foto = false; aviso("Foto removida."); casca(); rotear(); } }, "Remover")),
       !dono() && h("p", { class: "muted small", style: "margin-top:6px" }, "A foto (1:1) aparece no seu selo para a construtora."))),
     h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); const f = new FormData(e.target); try { await api("POST", "/api/me/senha", { atual: f.get("atual"), nova: f.get("nova") }); aviso("Senha alterada."); e.target.reset(); } catch (x) { aviso(x.message, true); } } },
-      h("h2", null, "Trocar senha"), campo("Senha atual", h("input", { type: "password", name: "atual", autocomplete: "current-password", required: true })), campo("Nova senha", h("input", { type: "password", name: "nova", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
-      h("div", null, h("button", { class: "btn primary", type: "submit" }, "Trocar senha"))),
-    h("div", null, h("button", { class: "btn", onclick: sair }, ic("out"), "Sair")));
+      tituloCard("user", "Trocar senha"), campo("Senha atual", h("input", { type: "password", name: "atual", autocomplete: "current-password", required: true })), campo("Nova senha", h("input", { type: "password", name: "nova", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
+      h("div", null, h("button", { class: "btn primary", type: "submit" }, "Trocar senha"))));
+  // mosaico: título acima, depois as duas colunas com a mesma altura (os cartões esticam para fechar embaixo na mesma linha)
+  return h("div", { class: "stack" }, cabeca("Minha conta"), h("div", { class: "conta-layout" + (dono() ? "" : " solo") }, col, dono() && boxIACliente()));
 }
 
 // ───────── início e avisos ─────────
@@ -826,6 +1169,82 @@ async function checar() {
     S.nv = n.v; S.no = n.o;
   } catch { /* próximo ciclo */ }
 }
-function iniciar() { try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = null; rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
+// Holofote: um brilho bem suave que passa sozinho, em pontos aleatórios, pela barra lateral e pela barra superior (CSS: --hx/--hy/--ha).
+// As variáveis são "@property": o navegador interpola o movimento (uns 9 s entre um ponto e outro). Quem prefere menos movimento não vê.
+let _holo = 0;
+function holofote() {
+  if (_holo || matchMedia("(prefers-reduced-motion: reduce)").matches) return; _holo = 1;
+  const r = document.documentElement, rnd = (a, b) => a + Math.random() * (b - a);
+  const passo = () => {
+    if (document.hidden) return;
+    const sb = document.querySelector(".side")?.getBoundingClientRect(), tp = document.querySelector(".topo")?.getBoundingClientRect();
+    const lateral = !!sb && sb.right > 80 && Math.random() < 0.5, w = innerWidth, h = innerHeight;
+    const x = lateral ? rnd(sb.left + 30, sb.right - 30) : rnd(w * 0.05, w * 0.95), y = lateral ? rnd(h * 0.05, h * 0.95) : rnd(10, Math.max(30, (tp ? tp.height : 80) - 10));
+    r.style.setProperty("--hx", Math.round(x) + "px"); r.style.setProperty("--hy", Math.round(y) + "px"); r.style.setProperty("--ha", rnd(0.6, 1).toFixed(2));
+  };
+  passo(); setInterval(passo, 9000);
+}
+function iniciar() { holofote(); try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = null; rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
 window.addEventListener("hashchange", rotear);
 entrada();
+
+// ───────── caixas de seleção: troca o menu nativo do navegador por uma lista no padrão da busca do topo ─────────
+// O <select> continua no formulário (valor, change, required); só fica escondido. Vale para todo <select> que aparecer.
+(function selecoes() {
+  let aberta = null;
+  const fechar = (foco) => { if (!aberta) return; const a = aberta; aberta = null; a.lista.hidden = true; a.btn.after(a.lista); a.btn.setAttribute("aria-expanded", "false"); if (foco) a.btn.focus(); };
+  const texto = (sel) => { const o = sel.options[sel.selectedIndex]; return o ? o.textContent : ""; };
+  // a lista é fixa na tela: acompanha o botão quando a página rola ou muda de tamanho
+  function posicionar() {
+    if (!aberta) return; const { btn, lista, n } = aberta, r = btn.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) { fechar(); return; }
+    const alto = Math.min(320, n * 46 + 16), embaixo = window.innerHeight - r.bottom - 12, larg = Math.max(r.width, 200);
+    lista.style.left = Math.max(8, Math.min(r.left, window.innerWidth - larg - 8)) + "px";
+    lista.style.minWidth = larg + "px"; lista.style.maxWidth = (window.innerWidth - 16) + "px";
+    if (embaixo < alto && r.top > embaixo) { lista.style.top = ""; lista.style.bottom = (window.innerHeight - r.top + 6) + "px"; } else { lista.style.bottom = ""; lista.style.top = (r.bottom + 6) + "px"; }
+  }
+  function abrir(sel, btn, lista) {
+    if (aberta && aberta.btn === btn) { fechar(); return; }
+    fechar();
+    lista.replaceChildren(...[...sel.options].map((o, i) => h("button", { type: "button", class: "sel-it" + (i === sel.selectedIndex ? " on" : ""), role: "option", "aria-selected": String(i === sel.selectedIndex), disabled: o.disabled, tabindex: "-1",
+      onclick: () => { if (sel.selectedIndex !== i) { sel.selectedIndex = i; sel.dispatchEvent(new Event("input", { bubbles: true })); sel.dispatchEvent(new Event("change", { bubbles: true })); } btn.firstChild.textContent = texto(sel); fechar(true); } },
+      h("span", { class: "sel-tx" }, o.textContent), i === sel.selectedIndex ? ic("check") : null)));
+    // fora do conteúdo (nenhum ancestral com transform/filtro muda a posição fixa), MAS dentro do <dialog> quando o seletor está num:
+    // um diálogo modal fica na "camada superior" do navegador (acima de qualquer z-index) e deixa o resto da página inerte.
+    (btn.closest("dialog") || document.body).append(lista);
+    aberta = { btn, lista, n: sel.options.length }; posicionar();
+    lista.hidden = false; btn.setAttribute("aria-expanded", "true");
+    (lista.querySelector(".sel-it.on") || lista.querySelector(".sel-it:not([disabled])"))?.focus({ preventScroll: true });
+  }
+  function melhorar(sel) {
+    if (sel.dataset.sel || sel.multiple || sel.size > 1) return;
+    sel.dataset.sel = "1";
+    const btn = h("button", { type: "button", class: "sel-btn", "aria-haspopup": "listbox", "aria-expanded": "false", "aria-label": sel.getAttribute("aria-label") || null }, h("span", { class: "sel-tx" }, texto(sel)), ic("chev"));
+    const lista = h("div", { class: "sel-lista", role: "listbox", hidden: true });
+    const caixa = h("div", { class: "sel" + (sel.className ? " " + sel.className : "") });
+    sel.replaceWith(caixa); caixa.append(sel, btn, lista);
+    sel.tabIndex = -1; sel.setAttribute("aria-hidden", "true"); sel.classList.add("sel-nativo");
+    if (sel.disabled) btn.disabled = true;
+    const sync = () => { btn.firstChild.textContent = texto(sel); btn.disabled = sel.disabled; };
+    sel.addEventListener("change", sync); new MutationObserver(sync).observe(sel, { childList: true, subtree: true, attributes: true });
+    btn.addEventListener("click", () => abrir(sel, btn, lista));
+    btn.addEventListener("keydown", (e) => { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); abrir(sel, btn, lista); } });
+    lista.addEventListener("keydown", (e) => {
+      const its = [...lista.querySelectorAll(".sel-it:not([disabled])")], i = its.indexOf(document.activeElement);
+      if (e.key === "ArrowDown") { e.preventDefault(); its[Math.min(its.length - 1, i + 1)]?.focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); its[Math.max(0, i - 1)]?.focus(); }
+      else if (e.key === "Home") { e.preventDefault(); its[0]?.focus(); }
+      else if (e.key === "End") { e.preventDefault(); its[its.length - 1]?.focus(); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); fechar(true); }
+      else if (e.key === "Tab") fechar();
+    });
+    // label em volta: clicar no texto do rótulo abre a lista (em vez de focar o select escondido)
+    const lbl = caixa.closest("label"); if (lbl && !lbl.dataset.sel) { lbl.dataset.sel = "1"; lbl.addEventListener("click", (e) => { if (!e.target.closest(".sel")) { e.preventDefault(); btn.focus(); } }); }
+  }
+  const varrer = (raiz) => { if (raiz.nodeType !== 1) return; if (raiz.tagName === "SELECT") melhorar(raiz); else raiz.querySelectorAll("select").forEach(melhorar); };
+  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach(varrer))).observe(document.documentElement, { childList: true, subtree: true });
+  varrer(document.body);
+  document.addEventListener("click", (e) => { if (aberta && !e.composedPath().some((n) => n === aberta.lista || n === aberta.btn)) fechar(); });
+  window.addEventListener("resize", posicionar);
+  document.addEventListener("scroll", (e) => { if (aberta && !aberta.lista.contains(e.target)) posicionar(); }, true);
+})();

@@ -9,23 +9,26 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316302e'/%3E%3Cpath d='M13 19a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-.9.9M19 13a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l.9-.9' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preload" href="vendor/fonts/Figtree-normal-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="vendor/fonts/InstrumentSerif-normal-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="vendor/fonts.css?v=2">
-<link rel="stylesheet" href="painel.css?v=31">
-<link rel="stylesheet" href="tema-painel.css?v=8" id="tema-novo">
+<link rel="stylesheet" href="vendor/fonts.css?v=3">
+<link rel="stylesheet" href="painel.css?v=68">
+<link rel="stylesheet" href="vendor/device-mockup/device-mockup.css?v=1">
+<link rel="stylesheet" href="tema-painel.css?v=12" id="tema-novo">
 <script>/* visual do painel: "classico" desliga a folha nova; modo claro/escuro: lc.modo = light | dark | (vazio = segue o sistema).
    data-modo recebe o modo efetivo; tema-painel.css pinta por ele. (Troca em Configurações; fica neste navegador.) */
 (function(){try{if(localStorage.getItem("lc.visual")==="classico")document.getElementById("tema-novo").disabled=true}catch(e){}
 var mq=matchMedia("(prefers-color-scheme: dark)");function aplicar(){var p="";try{p=localStorage.getItem("lc.modo")||""}catch(e){}
 /* padrão = claro; "auto" só quando escolhido em Configurações */
 document.documentElement.dataset.modoPref=p||"light";document.documentElement.dataset.modo=p==="dark"?"dark":p==="auto"?(mq.matches?"dark":"light"):"light"}
+try{var f=localStorage.getItem("lc.fonte"),e=localStorage.getItem("lc.escala");if(f)document.documentElement.dataset.fonte=f;if(e)document.documentElement.style.fontSize=Math.round(e*100)+"%"}catch(x){}
 aplicar();mq.addEventListener("change",aplicar);window.LC_APLICAR_MODO=aplicar})()</script>
 </head>
 <body>
 <div id="raiz"></div>
-<div id="avisos" aria-live="polite" aria-atomic="false"></div>
+<div id="avisos" popover="manual" aria-live="polite" aria-atomic="false"></div>
 <noscript><p style="padding:24px">O painel precisa de JavaScript para funcionar.</p></noscript>
 <script src="vendor/qrcode.js?v=1"></script>
-<script src="painel.js?v=32"></script>
-<script src="tabelas.js?v=1"></script>
+<script src="vendor/device-mockup/device-mockup.js?v=2"></script>
+<script src="painel.js?v=66"></script>
+<script src="tabelas.js?v=3"></script>
 </body>
 </html>

@@ -35,8 +35,8 @@
 
     // títulos clicáveis (A→Z / Z→A / original) e arrastáveis (reordenar colunas)
     ths().forEach((th) => {
-      const nome = th.textContent.trim(); th.dataset.nome = nome;
-      if (!nome) return;
+      const nome = th.classList.contains("th-info") ? "" : th.textContent.trim(); th.dataset.nome = nome;
+      if (!nome) return;  // coluna de ações / lupa de informação: não ordena nem arrasta
       th.dataset.ord = "1"; th.tabIndex = 0; th.classList.add("ord"); th.setAttribute("role", "columnheader"); th.draggable = true;
       th.title = "Clique para ordenar (A→Z, Z→A). Arraste para mudar a coluna de lugar.";
       const alternar = () => {
@@ -66,7 +66,7 @@
     const colunaNomeVazia = () => original.length >= 2;
     if (colunaNomeVazia()) original.forEach((tr) => {
       const td = tr.cells[0]; if (!td || td.querySelector(".grip")) return;
-      const g = document.createElement("span"); g.className = "grip"; g.draggable = true; g.setAttribute("role", "img"); g.setAttribute("aria-label", "Arraste para reordenar a linha"); g.title = "Arraste para reordenar"; g.textContent = "⋮⋮";
+      const g = document.createElement("span"); g.className = "grip"; g.draggable = true; g.setAttribute("role", "img"); g.setAttribute("aria-label", "Arraste para reordenar a linha"); g.title = "Arraste para reordenar"; g.innerHTML = '<svg viewBox="0 0 10 16" aria-hidden="true"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/></svg>'; td.classList.add("com-grip");
       g.addEventListener("dragstart", (e) => { e.dataTransfer.setData("text/lc-row", "1"); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setDragImage(tr, 10, 10); tr.classList.add("arrastando"); t._arr = tr; });
       g.addEventListener("dragend", () => { tr.classList.remove("arrastando"); [...corpo.rows].forEach((r) => r.classList.remove("alvo-cima", "alvo-baixo")); t._arr = null; });
       td.prepend(g);

@@ -1,4 +1,4 @@
-import { useLoader } from '@react-three/fiber'
+import { useLoader, useThree } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
 import { BackSide, SRGBColorSpace, TextureLoader } from 'three'
 import { EYE_HEIGHT } from './constants'
@@ -9,7 +9,9 @@ import { viewFor } from '../lib/geometry'
  *  A câmera continua a mesma do tour (girar = olhar em volta). Só entra quando o arquivo existe. */
 function Esfera({ url, room }: { readonly url: string; readonly room: Room }) {
   const tex = useLoader(TextureLoader, url)
+  const gl = useThree((s) => s.gl)
   tex.colorSpace = SRGBColorSpace
+  tex.anisotropy = gl.capabilities.getMaxAnisotropy()  // paredes vistas de lado ficam nítidas em vez de borradas
   const { eye } = viewFor(room)
   return (
     <mesh position={[eye[0], EYE_HEIGHT, eye[1]]} scale={[-1, 1, 1]} renderOrder={1000}>

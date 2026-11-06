@@ -73,6 +73,15 @@ dialog.modal{border-radius:var(--r-lg);box-shadow:var(--sh-3)}
 .kpi .l{font-size:var(--fs-sm);font-weight:500;color:var(--muted)}
 a.kpi:hover{border-color:rgba(16,185,129,.4)!important}
 :root[data-modo="dark"] .kpi::before{background:linear-gradient(90deg,#10b981,#84cc16)}
+/* capa do cartão de métrica: foto 5:1 de ponta a ponta, em cinza; no hover/foco acende em cores */
+.kpi.com-capa{padding-top:0;overflow:hidden}
+.kpi.com-capa::before{z-index:2}
+.kpi-capa{display:block;width:calc(100% + 40px);max-width:none;margin:0 -20px 14px;aspect-ratio:5/1;object-fit:cover;background:var(--surface2);filter:grayscale(1) contrast(.96) brightness(1.04);opacity:.88;transform-origin:50% 50%;transition:filter .5s ease,opacity .5s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.kpi.com-capa:hover .kpi-capa,.kpi.com-capa:focus-visible .kpi-capa{filter:none;opacity:1;transform:scale(1.045)}
+:root[data-modo="dark"] .kpi-capa{filter:grayscale(1) brightness(.78) contrast(1.02);opacity:.8}
+:root[data-modo="dark"] .kpi.com-capa:hover .kpi-capa{filter:none;opacity:1}
+@media (hover:none){.kpi-capa{filter:grayscale(.55);opacity:1}}   /* celular não tem hover: já vem meio colorida */
+@media (prefers-reduced-motion:reduce){.kpi-capa{transition:filter .2s,opacity .2s}.kpi.com-capa:hover .kpi-capa{transform:none}}
 
 /* ───────── botões (shadcn Button): primário marinho, secundário branco com borda, raio 8, 40 px ───────── */
 .btn{min-height:40px;padding:0 16px;border-radius:var(--r-md);font-weight:500;font-size:var(--fs-base);border:1px solid var(--line)!important;background:var(--surface);box-shadow:var(--sh-0);transition:background-color var(--t-fast),border-color var(--t-fast),scale var(--t-fast) var(--ease)}
@@ -238,3 +247,23 @@ body.sb-mini .side .brand .logo-img.shape-wide{max-height:44px}
 .brandbar .logo-img.shape-wide{width:auto;height:30px;border-radius:0;object-fit:contain}
 .logo-entrada img{height:56px;width:auto;margin:0 auto 6px;display:block}
 .logo-prev.shape-wide{width:220px;height:auto;border-radius:0;object-fit:contain;background:#fff;padding:10px;border:1px solid var(--line)}
+
+/* fundo da área de conteúdo: padrão de desenhos com véu de 75% (só no modo claro) */
+:root:not([data-modo="dark"]) #conteudo{
+  background-color:#f8fafc;
+  background-image:linear-gradient(rgba(248,250,252,.75),rgba(248,250,252,.75)),url("bg-painel-seamless.webp?v=2");
+  background-repeat:repeat;
+  background-size:auto,520px auto;
+}
+
+/* barra lateral mais estreita (fontes iguais) e logo sem fundo, sempre inteira — também com a barra recolhida */
+:root{--side:216px}
+.side{padding:20px 12px 14px}
+.side .brand{background:none;border:0;box-shadow:none;margin:0 0 10px;padding:6px 8px 14px}
+.side .brand .logo-img{background:transparent!important;padding:0!important;border-radius:0}
+.side .brand .logo-img.shape-wide{width:100%;max-width:168px;height:auto;max-height:52px;margin:0 auto;object-fit:contain}
+.side .brand:has(.shape-wide){padding:6px 8px 14px}
+@media (min-width:1025px){
+  body.sb-mini .side .brand{padding:4px 0 12px;margin:0}
+  body.sb-mini .side .brand .logo-img.logo-img{width:100%!important;max-width:60px!important;height:auto!important;max-height:40px!important;border-radius:0!important;object-fit:contain!important;background:transparent!important;padding:0!important}
+}

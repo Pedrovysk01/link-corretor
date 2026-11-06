@@ -1,0 +1,35 @@
+/* ==========================================================================
+   device-mockup.css — mockups de celular com moldura PNG real (fundo transparente).
+   Extraído do projeto Cliente Fiel (assets/css/device.css, bloco .device-png).
+   A tela (.dp-screen) fica POR BAIXO da moldura (.dp-frame); a área vazada de cada
+   PNG foi medida pixel a pixel e é aplicada inline pelo device-mockup.js.
+
+   Estrutura gerada:
+     <div class="device-png [dark-status]" style="--dw:300px;--dz:…;width:300px;aspect-ratio:W/H">
+       <div class="dp-screen" style="left/top/width/height/border-radius em %">…conteúdo…<div class="dev-status">…</div></div>
+       <img class="dp-frame" src="img/apple-iphone-17-pro-2025.png" alt="">
+     </div>
+
+   Variáveis disponíveis para o conteúdo da tela:
+     --dw  largura total do aparelho em px (a tela já herda font-size = --dw/26,
+           então use "em" dentro da tela que tudo escala junto com o aparelho)
+     --dz  fator de zoom para conteúdo desenhado a 390px de largura
+           (ex.: .minha-tela{zoom:var(--dz,1)})
+   ========================================================================== */
+.device-png{--dw:300px;position:relative;margin:0 auto;flex:none}
+.device-png .dp-screen{position:absolute;overflow:hidden;background:#000;box-shadow:0 0 0 1px #000;isolation:isolate;font-size:calc(var(--dw) / 26)}
+/* fundo preto + 1px de sangria por baixo da moldura: sem isso o branco do fundo aparece como uma
+   linha fina entre a moldura e a tela (borda com pixel fracionado) */
+.device-png .dp-screen > :first-child{height:100%}
+.device-png .dp-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none;-webkit-user-drag:none;z-index:2}
+
+/* status bar falsa: hora à esquerda, sinal/wifi/bateria à direita */
+.device-png .dev-status{position:absolute;z-index:3;top:calc(var(--dw) * .043);left:calc(var(--dw) * .085);right:calc(var(--dw) * .08);display:flex;justify-content:space-between;align-items:center;font-size:calc(var(--dw) * .04);font-weight:600;color:#111;pointer-events:none;line-height:1;height:auto}
+.device-png .dev-status .sig{display:inline-flex;gap:calc(var(--dw) * .012);align-items:center}
+.device-png .dev-status .sig i{display:inline-block;width:calc(var(--dw) * .045);height:calc(var(--dw) * .026);border-radius:2px;background:currentColor}
+.device-png .dev-status .sig i.bat{width:calc(var(--dw) * .065);height:calc(var(--dw) * .032);border:calc(var(--dw) * .004) solid currentColor;background:transparent;border-radius:3px;position:relative}
+.device-png .dev-status .sig i.bat::after{content:"";position:absolute;inset:1px;right:25%;background:currentColor;border-radius:1px}
+.device-png.dark-status .dev-status{color:#fff}
+
+/* conteúdo de tela rolável (prévia longa): o conteúdo cresce, a tela corta */
+.device-png .dp-screen .dev-scroll{height:100%;overflow:hidden;position:relative}
