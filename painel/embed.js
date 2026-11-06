@@ -188,6 +188,14 @@
   .mq-it small{font-size:10.5px;color:#4d6460;text-align:center;line-height:1.2}
   .btn.alt2{background:transparent;color:#16302e;border:1px solid rgba(22,48,46,.25)}
   @media (prefers-reduced-motion:reduce){.mq-in{animation:none;flex-wrap:wrap;width:auto}.mq{mask-image:none;overflow:auto}}
+  /* barra de baixo: botão da IA + selo "Atendimento por", lado a lado */
+  .dockbar{position:fixed;left:16px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:calc(100vw - 24px)}
+  .dockbar .fab,.dockbar .badge{position:static;left:auto;top:auto;bottom:auto;max-width:100%;animation:pop .5s cubic-bezier(.2,.8,.2,1) both}
+  .dockbar .badge{min-height:48px;padding:6px 16px 6px 6px}
+  .dockbar .badge .av{width:36px;height:36px}
+  .badge[hidden]{display:none}
+  :host([data-tour]) .dockbar{display:none}
+  @media (max-width:900px){.dockbar{left:12px;bottom:calc(var(--dockh,76px) + 64px + env(safe-area-inset-bottom))}:host([data-card]) .dockbar{display:none}}
   /* tablet e celular */
   @media (min-width:521px) and (max-width:1024px){.panel{width:min(440px,calc(100vw - 24px));height:min(680px,calc(100dvh - 100px))}}
   @media (max-width:520px){.panel{inset:auto;left:var(--pl,10px);right:auto;width:var(--pw,calc(100vw - 20px));height:min(78dvh,620px);border-radius:16px}.pr-grid{grid-template-columns:1fr 1fr}.hd{padding-top:12px}.langs{right:10px}}
@@ -226,7 +234,10 @@
   function montar(info) {
     const idiomas = info.idiomas && info.idiomas.length ? info.idiomas : ["pt-BR"];
     const nav = (navigator.language || "pt-BR").toLowerCase();
-    let lang = idiomas.find((l) => nav.startsWith(l.toLowerCase().split("-")[0])) || idiomas[0];
+    const TZ_BR = /^America\/(Sao_Paulo|Fortaleza|Recife|Bahia|Belem|Manaus|Cuiaba|Campo_Grande|Porto_Velho|Boa_Vista|Rio_Branco|Noronha|Araguaina|Maceio|Santarem|Eirunepe)$/;
+    let noBrasil = nav.startsWith("pt"); try { noBrasil = noBrasil || TZ_BR.test(Intl.DateTimeFormat().resolvedOptions().timeZone || ""); } catch { /* sem Intl */ }
+    let lembrado = null; try { lembrado = localStorage.getItem("lc_lang_" + code); } catch { /* sem storage */ }
+    let lang = idiomas.includes(lembrado) ? lembrado : noBrasil && idiomas.includes("pt-BR") ? "pt-BR" : idiomas.find((l) => nav.startsWith(l.toLowerCase().split("-")[0])) || idiomas[0];  // no Brasil, sempre português
     let t = T[lang] || T["pt-BR"], aba = info.ia ? "ia" : "contato", ocupado = false, aberto = false, msgs = null, gate = false, toques = 0, ultimo = 0;
     const LIMITE = 3;
     // Papel pelo login (resolvido no fim): "cliente" (ninguém logado), "corretor" (corretor logado) ou "equipe" (dono logado: só olha).
@@ -391,8 +402,8 @@
       if (papel === null || (papel === "equipe" && !previa)) { sh.innerHTML = ""; return; } // carregando, ou outra pessoa da equipe olhando: nada por cima do mapa
       if (papel === "corretor") { renderCorretor(); return; } // apresentação normal: sem faixa, sem IA, sem cadastro de cliente, sem batimento
       sh.innerHTML = `<style>${CSS}</style>${cadastro()}
-        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}">${avHtml()}<span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button>
-        <button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
+        <div class="dockbar"><button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
+        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}">${avHtml()}<span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button></div>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
           <div class="hd">${avHtml()}<div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${previa ? " · visão da construtora" : ""}</span></div>
             ${idiomas.length > 1 ? `<button class="lang" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="${esc(t.lang)}: ${esc(NOME[lang] || lang)}">${BAND[lang] || fl('<rect width="24" height="17" fill="#4d6460"/>')}</button>` : ""}
@@ -412,7 +423,7 @@
       painel.addEventListener("keydown", (e) => { if (e.key === "Escape") q(".x").click(); });
       const lb = q(".lang"), ll = q(".langs");
       if (lb && ll) { lb.onclick = (ev) => { ev.stopPropagation(); ll.hidden = !ll.hidden; lb.setAttribute("aria-expanded", String(!ll.hidden)); if (!ll.hidden) ll.querySelector("[aria-pressed=true]")?.focus(); };
-        ll.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { lang = b.dataset.l; render(); }));
+        ll.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { lang = b.dataset.l; try { localStorage.setItem("lc_lang_" + code, lang); } catch { /* sem storage */ } render(); }));
         painel.addEventListener("click", (ev) => { if (!ll.hidden && !ev.composedPath().includes(ll) && !ev.composedPath().includes(lb)) { ll.hidden = true; lb.setAttribute("aria-expanded", "false"); } }); }
       if (aba === "prop") ligarProposta();
       sh.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => { aba = b.dataset.a; render(); (sh.querySelector(".in input") || sh.querySelector("textarea"))?.focus(); }));
