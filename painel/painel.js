@@ -613,7 +613,7 @@ async function telaResumo() {
   el.append(h("div", { class: "cols2" },
     cartaoGrafico("people", "Clientes novos por dia", d.serie, "clientes", "Clientes", "barras", t.clientes ? null : vazio("people", "Ainda sem clientes", "Quando alguém se cadastrar por um link, aparece aqui.")),
     cartaoGrafico("eye", "Aberturas por dia", d.serie, "aberturas", "Aberturas", "linha", t.aberturas ? null : vazio("eye", "Ainda sem aberturas"))));
-  const top5 = d.ranking.slice(0, 5);  // o ranking do Resumo mostra os 5 primeiros; "Ver todos" abre a lista completa
+  const top5 = d.ranking.slice(0, d.empreendimentos.length > 3 ? 10 : 5);  // até 3 empreendimentos: top 5; com mais, o cartão ao lado fica alto e cabe o top 10
   const max = Math.max(1, ...top5.map((r) => r.clientes));
   // "Por empreendimento": caixa pequena com a miniatura de cada empreendimento, 2 por linha. Número ímpar (ex.: só 1) ganha o "+" para fechar a linha.
   const meta = {};
