@@ -31,7 +31,7 @@ const ICONES = {
   ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', down: '<path d="M12 4v11M7 10l5 5 5-5M4 20h16"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>', check: '<path d="M5 12l5 5 9-10"/>', back: '<path d="M15 5l-7 7 7 7"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>', phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>',
-  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', eyeOff: '<path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10 10 0 0 0 4.4-1"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   play: '<path d="M8 5v14l11-7z"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', upload: '<path d="M12 16V4M6 10l6-6 6 6M4 20h16"/>',
   barras: '<path d="M6 20V11M12 20V4M18 20v-6"/>', linha: '<path d="M3 17l5-6 4 3 8-9"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="20" cy="5" r="1"/>',
@@ -139,6 +139,11 @@ const escolherFoto = (aoEscolher) => { const i = h("input", { type: "file", acce
 const icWa = () => h("img", { class: "ic-wa", src: "whatsapp.webp", alt: "", width: 40, height: 40, decoding: "async", "aria-hidden": "true" });
 const vazio = (icone, titulo, texto, acao) => h("div", { class: "vazio" }, h("span", { class: "ic-box" }, ic(icone)), h("strong", null, titulo), texto && h("p", null, texto), acao);
 let _id = 0;
+// campo de senha com o olho: alterna entre oculto e visível (vale no login, na configuração, em Trocar senha e na liberação da IA)
+const comOlho = (input) => { const b = h("button", { type: "button", class: "olho", "aria-label": "Mostrar senha", "aria-pressed": "false", title: "Mostrar senha",
+  onclick: () => { const ver = input.type === "password"; input.type = ver ? "text" : "password"; b.setAttribute("aria-pressed", String(ver)); b.setAttribute("aria-label", ver ? "Ocultar senha" : "Mostrar senha"); b.title = ver ? "Ocultar senha" : "Mostrar senha"; b.replaceChildren(ic(ver ? "eyeOff" : "eye")); input.focus({ preventScroll: true }); } }, ic("eye"));
+  return h("div", { class: "pw" }, input, b); };
+function campoSenha(rotulo, props, dica) { const id = "c" + ++_id, input = h("input", { type: "password", ...props, id }); return h("div", { class: "field" }, h("label", { for: id }, rotulo), comOlho(input), dica && h("span", { class: "hint" }, dica)); }
 function campo(rotulo, input, dica) { const id = "c" + ++_id; input.id = id; return h("div", { class: "field" }, h("label", { for: id }, rotulo), input, dica && h("span", { class: "hint" }, dica)); }
 const caixa = (rotulo, marcado, nome) => h("label", { class: "check" }, h("input", { type: "checkbox", name: nome, checked: !!marcado }), h("span", null, rotulo));
 const nav = (rota) => { location.hash = "#/" + rota; };
@@ -447,7 +452,7 @@ function telaLogin() {
   return h("div", { class: "entrada" }, h("form", { class: "card", novalidate: true, onsubmit: async (e) => { e.preventDefault(); erro.textContent = ""; const f = new FormData(e.target);
     try { await api("POST", "/api/login", { email: f.get("email"), senha: f.get("senha") }); entrada(); /* relê /api/me: antes do login o servidor não manda a logo */ } catch (x) { erro.textContent = x.message; } } },
     h("div", { class: "logo logo-entrada" }, h("img", { src: "/painel/logo-justus.png", alt: "Justus Incorporadora", class: "logo-img shape-wide" })), h("div", null, h("h1", null, "Entrar"), h("p", { class: "muted" }, S.empresa || "Clientes por corretor")),
-    campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campo("Senha", h("input", { type: "password", name: "senha", autocomplete: "current-password", required: true })),
+    campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campoSenha("Senha", { name: "senha", autocomplete: "current-password", required: true  }),
     erro, h("button", { class: "btn primary", type: "submit" }, "Entrar")));
 }
 function telaSetup() {
@@ -457,7 +462,7 @@ function telaSetup() {
       const m = await api("GET", "/api/me"); S.me = m.user; S.empresa = m.empresa; S.logo = m.logo || ""; S.logoShape = m.logo_shape || "round"; S.theme = temaValido(m.theme) ? m.theme : null; aplicarTema(S.theme); iniciar(); } catch (x) { erro.textContent = x.message; } } },
     h("div", { class: "logo" }, LOGO(), "Link Corretor"), h("div", null, h("h1", null, "Vamos começar"), h("p", { class: "muted" }, "Crie a conta do dono da construtora ou imobiliária. Leva um minuto.")),
     campo("Nome da empresa", h("input", { type: "text", name: "empresa", autocomplete: "organization", required: true })), campo("Seu nome", h("input", { type: "text", name: "nome", autocomplete: "name", required: true })),
-    campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campo("Senha", h("input", { type: "password", name: "senha", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
+    campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campoSenha("Senha", { name: "senha", autocomplete: "new-password", minlength: 8, required: true  }, "Mínimo de 8 caracteres."),
     erro, h("button", { class: "btn primary", type: "submit" }, "Criar conta e entrar")));
 }
 
@@ -1153,7 +1158,7 @@ function travaVGVX(pintar) {
     h("span", { class: "ic-box ia-cadeado", "aria-hidden": "true" }, ic("lock")),
     h("strong", null, "Função bloqueada"),
     h("p", { class: "muted small" }, "Para liberar, digite a senha fornecida pela VGVX."),
-    h("div", { class: "ia-trava-row" }, inp, h("button", { class: "btn primary", type: "submit" }, "Desbloquear")), erro);
+    h("div", { class: "ia-trava-row" }, comOlho(inp), h("button", { class: "btn primary", type: "submit" }, "Desbloquear")), erro);
 }
 function chaveLLM(m, st, pintar) {
   const tem = st.provedores[m.id];
@@ -1196,7 +1201,7 @@ async function telaConta() {
         S.me.tem_foto && h("button", { class: "btn sm ghost", type: "button", onclick: async () => { await api("POST", "/api/me/foto", { foto: "" }); S.me.tem_foto = false; aviso("Foto removida."); casca(); rotear(); } }, "Remover")),
       !dono() && h("p", { class: "muted small", style: "margin-top:6px" }, "A foto (1:1) aparece no seu selo para a construtora."))),
     h("form", { class: "card stack", novalidate: true, onsubmit: async (e) => { e.preventDefault(); const f = new FormData(e.target); try { await api("POST", "/api/me/senha", { atual: f.get("atual"), nova: f.get("nova") }); aviso("Senha alterada."); e.target.reset(); } catch (x) { aviso(x.message, true); } } },
-      tituloCard("user", "Trocar senha"), campo("Senha atual", h("input", { type: "password", name: "atual", autocomplete: "current-password", required: true })), campo("Nova senha", h("input", { type: "password", name: "nova", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
+      tituloCard("user", "Trocar senha"), campoSenha("Senha atual", { name: "atual", autocomplete: "current-password", required: true  }), campo("Nova senha", h("input", { type: "password", name: "nova", autocomplete: "new-password", minlength: 8, required: true }), "Mínimo de 8 caracteres."),
       h("div", null, h("button", { class: "btn primary", type: "submit" }, "Trocar senha"))));
   // mosaico: título acima, depois as duas colunas com a mesma altura (os cartões esticam para fechar embaixo na mesma linha)
   return h("div", { class: "stack" }, cabeca("Minha conta"), h("div", { class: "conta-layout" + (dono() ? "" : " solo") }, col, dono() && boxIACliente()));

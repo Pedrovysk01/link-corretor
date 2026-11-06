@@ -1036,3 +1036,13 @@ table.t th.acoes,table.t td.acoes{text-align:center}
 /* propostas do cliente (montadas no chat) */
 .props-cli{display:grid;gap:10px}
 .prop-cli{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+
+/* campo de senha com o olho */
+.pw{position:relative;display:grid;min-width:0}
+.pw input{width:100%;padding-right:46px}
+.olho{position:absolute;right:6px;top:50%;translate:0 -50%;display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}
+.olho .ic{width:18px;height:18px}
+.olho:hover{color:var(--text);background:var(--surface2)}
+.olho[aria-pressed=true]{color:var(--brass-ink)}
+.olho:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.ia-trava-row .pw{flex:1;min-width:0}
