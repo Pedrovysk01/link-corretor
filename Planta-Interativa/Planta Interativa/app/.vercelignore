@@ -1,0 +1,5 @@
+tests
+.unlazy
+*.md
+lqip.txt
+.gitignore

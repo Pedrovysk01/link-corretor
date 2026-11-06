@@ -271,8 +271,17 @@ def pasta_ok(rel):
 
 
 def fontes_detectadas():
-    """v2: a única apresentação é o mapa do Montemerano (com o tour 3D dentro)."""
-    return [APRESENTACAO] if (ROOT / APRESENTACAO / "index.html").is_file() else []
+    """Pastas de apresentação disponíveis: o mapa do Montemerano (apresentacao-montemerano) e qualquer pasta com index.html dentro de
+    Planta-Interativa (Bossa em .../app, Felicità em .../apresentacao). Pula código-fonte, mídia e cópias originais."""
+    pulo = {".git", "node_modules", "vendor", "media", "tests", "original", "tour", "pesquisa", "src", "public", "dist", "Villa-Montemerano-continuar"}
+    achadas = [APRESENTACAO] if (ROOT / APRESENTACAO / "index.html").is_file() else []
+    base = ROOT / "Planta-Interativa"
+    if base.is_dir():
+        for ind in base.rglob("index.html"):
+            partes = ind.relative_to(ROOT).parts
+            if len(partes) > 6 or any(p in pulo for p in partes[:-1]): continue
+            achadas.append(ind.parent.relative_to(ROOT).as_posix())
+    return sorted(set(achadas))
 
 
 def pasta_da(prop): return pasta_ok(prop["source_dir"]) if prop["source_dir"] else None
@@ -1282,13 +1291,14 @@ class H(BaseHTTPRequestHandler):
                 f'<div style="max-width:420px;text-align:center"><h1 style="font:400 28px Georgia,serif;margin:0 0 8px">{titulo}</h1><p style="margin:0;opacity:.8">{texto}</p></div>')
         self.resp(code, html.encode("utf-8"), "text/html; charset=utf-8", {"Cache-Control": "no-store"})
 
-    def arquivo(self, caminho, injetar_code=None, voltar=False, recursos=None):
+    def arquivo(self, caminho, injetar_code=None, voltar=False, recursos=None, casca=False):
         ext = caminho.suffix.lower()
         tipo = TIPOS.get(ext) or mimetypes.guess_type(str(caminho))[0] or "application/octet-stream"
         if (injetar_code or voltar) and ext == ".html":
             html = caminho.read_text(encoding="utf-8", errors="replace")
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
+            if casca: tag = '<script src="/painel/materiais.js?v=3"></script><script src="/painel/casca.js?v=5"></script>' + tag  # Bossa/Felicità: materiais (galeria, planta, antes/depois) + cabeçalho padrão; o Montemerano tem os seus
             # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
             if injetar_code: tag += f'<script src="/painel/embed.js?v=24" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
@@ -1345,7 +1355,7 @@ class H(BaseHTTPRequestHandler):
                     return self.resp(200, json.dumps(D, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8", {"Cache-Control": "no-store"})
         eh_entrada = alvo == (pasta / entrada).resolve()
         if eh_entrada and recursos is not None: simular_se_demo(.5)  # demonstração: abrir uma apresentação também gera um cadastro simulado
-        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None)
+        self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None, casca=eh_entrada and pasta.resolve() != (ROOT / APRESENTACAO).resolve())
 
     def apresentacao(self, code, rel):
         L = link_publico(code)
