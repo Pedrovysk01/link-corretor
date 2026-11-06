@@ -989,3 +989,46 @@ table.t th.acoes,table.t td.acoes{text-align:center}
 .sim-sheet{left:0;right:0;top:0;bottom:0;border-radius:0;box-shadow:none}
 .sim-hd{padding-top:4.1em}      /* o cabeçalho escuro sobe até o topo e passa por baixo da barra de status e da ilha */
 .sim-in{padding-bottom:1.5em}   /* respiro embaixo, longe do canto arredondado e do indicador de início */
+
+/* ===== Unidades: mapa de andares em quadradinhos + tabela de preços ===== */
+.un-cols{align-items:start}
+.un-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.un-top .card-titulo{margin:0}
+.un-leg{display:flex;gap:14px;flex-wrap:wrap}
+.un-leg-it{display:inline-flex;align-items:center;gap:7px;font-size:var(--fs-sm);color:var(--muted)}
+.un-sq{display:inline-block;width:26px;height:26px;border-radius:7px;background:var(--surface2);border:1px solid var(--line);flex:none;box-sizing:border-box}
+.un-sq[data-s="d"]{background:#a7f3d0;border-color:#34d399}
+.un-sq[data-s="r"]{background:#fde68a;border-color:#f59e0b}
+.un-sq[data-s="v"]{background:#fda4af;border-color:#e11d48}
+:root[data-modo="dark"] .un-sq[data-s="d"]{background:rgba(52,211,153,.5);border-color:#34d399}
+:root[data-modo="dark"] .un-sq[data-s="r"]{background:rgba(251,191,36,.55);border-color:#fbbf24}
+:root[data-modo="dark"] .un-sq[data-s="v"]{background:rgba(244,63,94,.55);border-color:#fb7185}
+.un-leg .un-sq,.un-seg .un-sq{width:14px;height:14px;border-radius:4px}
+.un-grid{display:grid;gap:6px;margin-top:16px;justify-content:start}
+.un-head{display:flex;gap:6px;margin-left:40px}
+.un-head span{width:26px;text-align:center;font:500 .6875rem/1 var(--mono,ui-monospace,monospace);color:var(--muted)}
+.un-row{display:flex;align-items:center;gap:6px}
+.un-floor{width:30px;margin-right:4px;text-align:right;font:500 .75rem/1 var(--mono,ui-monospace,monospace);color:var(--muted)}
+.un-btn{position:relative;padding:0;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.un-btn:hover,.un-btn:focus-visible{transform:scale(1.18);box-shadow:0 3px 10px rgba(15,23,42,.28);outline:none;z-index:1}
+.un-seg{display:flex;gap:6px;flex-wrap:wrap}
+.un-seg button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:500 var(--fs-sm) var(--body);cursor:pointer}
+.un-seg button[aria-pressed="true"]{border-color:var(--brass);box-shadow:var(--ring)}
+.un-ativar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.un-cks{display:grid;gap:6px;margin-top:8px}
+.un-prev{min-height:1.2em;margin:0}
+.un-precos textarea{font:.8125rem/1.5 var(--mono,ui-monospace,monospace);resize:vertical}
+@media (max-width:560px){.un-sq{width:22px;height:22px}.un-head span{width:22px}}
+@media (prefers-reduced-motion:reduce){.un-btn{transition:none}.un-btn:hover{transform:none}}
+
+/* ===== gerentes de venda: filtro em chips, etiqueta no cartão do corretor, lista no diálogo ===== */
+.ger-chips{margin-top:-6px}
+.ger-tag{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 9px;border-radius:999px;font-size:.75rem;font-weight:600;color:var(--brass-ink);background:var(--brass-soft,var(--surface2));max-width:100%}
+.ger-tag .ic{width:12px;height:12px;flex:none}
+.ger-sel{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.ger-sel select{min-width:200px}
+.ger-lista{display:grid;gap:8px}
+.ger-it{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.ger-it.off{opacity:.65}
+.ger-it b .pill{margin-left:8px;vertical-align:middle}
+@media (max-width:560px){.ger-it{flex-wrap:wrap}}

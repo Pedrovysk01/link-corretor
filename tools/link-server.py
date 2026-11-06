@@ -66,9 +66,9 @@ BOT_RE = re.compile(r"bot|crawl|spider|facebookexternalhit|whatsapp/|slackbot|te
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS users(
-  id INTEGER PRIMARY KEY, role TEXT NOT NULL CHECK(role IN ('owner','broker')), name TEXT NOT NULL,
+  id INTEGER PRIMARY KEY, role TEXT NOT NULL CHECK(role IN ('owner','broker','manager')), name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE, phone TEXT NOT NULL DEFAULT '', pw_salt TEXT NOT NULL, pw_hash TEXT NOT NULL,
-  active INTEGER NOT NULL DEFAULT 1, demo INTEGER NOT NULL DEFAULT 0, created TEXT NOT NULL DEFAULT (datetime('now')));
+  active INTEGER NOT NULL DEFAULT 1, demo INTEGER NOT NULL DEFAULT 0, created TEXT NOT NULL DEFAULT (datetime('now')), manager_id INTEGER);
 CREATE TABLE IF NOT EXISTS sessions(
   token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS properties(
@@ -107,6 +107,10 @@ CREATE TABLE IF NOT EXISTS ai_questions(
   visitor_id INTEGER REFERENCES visitors(id) ON DELETE CASCADE,
   ts TEXT NOT NULL DEFAULT (datetime('now')), question TEXT NOT NULL, answer TEXT, lang TEXT NOT NULL DEFAULT 'pt-BR');
 CREATE INDEX IF NOT EXISTS ai_prop_ts ON ai_questions(property_id, ts);
+CREATE TABLE IF NOT EXISTS units(
+  id INTEGER PRIMARY KEY, property_id INTEGER NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+  floor INTEGER NOT NULL, unit TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'd' CHECK(status IN ('d','r','v')),
+  price REAL NOT NULL DEFAULT 0, updated TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(property_id, unit));
 """
 
 
@@ -125,6 +129,18 @@ def init_db():
     if "ai_questions" in tabelas and "visitor_id" not in [r[1] for r in c.execute("PRAGMA table_info(ai_questions)")]:
         c.execute("ALTER TABLE ai_questions RENAME TO ai_questions_old")  # versão anterior: recria com a coluna nova
     c.executescript(SCHEMA)
+    # gerentes de venda: papel 'manager' e coluna manager_id (corretor → gerente). Banco antigo: recria a tabela users mantendo os dados.
+    usql = c.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'").fetchone()[0]
+    if "'manager'" not in usql:
+        cols = [r[1] for r in c.execute("PRAGMA table_info(users)")]
+        c.commit(); c.execute("PRAGMA foreign_keys=OFF")
+        novo = usql.replace("CHECK(role IN ('owner','broker'))", "CHECK(role IN ('owner','broker','manager'))").replace("users(", "users_new(", 1)
+        if "manager_id" not in cols: novo = novo[:novo.rfind(")")] + ", manager_id INTEGER)"
+        c.execute(novo); c.execute(f"INSERT INTO users_new({','.join(cols)}) SELECT {','.join(cols)} FROM users")
+        c.execute("DROP TABLE users"); c.execute("ALTER TABLE users_new RENAME TO users")
+        c.commit(); c.execute("PRAGMA foreign_keys=ON")
+    if "manager_id" not in [r[1] for r in c.execute("PRAGMA table_info(users)")]:
+        c.execute("ALTER TABLE users ADD COLUMN manager_id INTEGER")
     if "photo" not in [r[1] for r in c.execute("PRAGMA table_info(users)")]:
         c.execute("ALTER TABLE users ADD COLUMN photo TEXT NOT NULL DEFAULT ''")  # foto 1:1 do corretor (data URL reduzida no navegador)
     if "city_cards" not in [r[1] for r in c.execute("PRAGMA table_info(properties)")]:
@@ -295,6 +311,7 @@ def usuario_publico(u): return {"id": u["id"], "role": u["role"], "name": u["nam
 def escopo(user, col="v.broker_id"):
     """Corretor enxerga os clientes dele e os em que tem participação na comissão."""
     if user["role"] == "owner": return ("", ())
+    if user["role"] == "manager": return (f" AND {col} IN (SELECT id FROM users WHERE manager_id=?)", (user["id"],))  # gerente: tudo dos corretores da equipe
     if col == "v.broker_id": return (" AND (v.broker_id=? OR EXISTS(SELECT 1 FROM commission_shares s WHERE s.visitor_id=v.id AND s.broker_id=?))", (user["id"], user["id"]))
     return (f" AND {col}=?", (user["id"],))
 
@@ -359,7 +376,7 @@ def dashboard(user, dias):
         f"SELECT u.id, u.name, (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.created>=datetime('now',?)) clientes, "
         f"(SELECT COUNT(*) FROM opens o WHERE o.broker_id=u.id AND o.ts>=datetime('now',?)) aberturas, "
         f"(SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='fechado') fechados "
-        f"FROM users u WHERE u.role='broker' AND u.active=1{'' if user['role']=='owner' else ' AND u.id=?'} ORDER BY clientes DESC, aberturas DESC LIMIT 10",
+        f"FROM users u WHERE u.role='broker' AND u.active=1{'' if user['role']=='owner' else ' AND u.manager_id=?' if user['role']=='manager' else ' AND u.id=?'} ORDER BY clientes DESC, aberturas DESC LIMIT 10",
         (desde, desde, *(() if user["role"] == "owner" else (user["id"],))))
     emp = q(f"SELECT p.id, p.name, COUNT(v.id) clientes, (SELECT COUNT(*) FROM opens o WHERE o.property_id=p.id AND o.ts>=datetime('now',?){so}) aberturas "
             f"FROM properties p LEFT JOIN visitors v ON v.property_id=p.id{sc.replace('v.broker_id', 'v.broker_id')} GROUP BY p.id ORDER BY clientes DESC", (desde, *soa, *sa))
@@ -657,7 +674,97 @@ def r_prop_edit(h, u, q_, b, pid):
 def r_sources(h, u, q_, b): return fontes_detectadas()
 
 
-BROKER_SQL = """SELECT u.id, u.name, u.email, u.phone, u.active, u.demo, u.created, (u.photo<>'') tem_foto,
+# ───────────────────────── unidades: disponível / reservado / vendido + preço (só o dono) ─────────────────────────
+# A apresentação 3D já traz os andares e apartamentos em data/empreendimento.json. O painel copia essa lista para a tabela units
+# ("Ativar controle") e, a partir daí, o servidor injeta status e preço no JSON que a apresentação baixa (ver servir_pasta).
+def run_count(sql, args=()):
+    c = conn(); cur = c.execute(sql, args); c.commit(); n = cur.rowcount; c.close(); return n
+
+
+def unidades_apresentacao(prop):
+    pasta = pasta_da(prop) if prop["source_dir"] else None
+    arq = (pasta / "data" / "empreendimento.json") if pasta else None
+    if not arq or not arq.is_file(): return []
+    try: D = json.loads(arq.read_text(encoding="utf-8"))
+    except Exception: return []
+    out = []
+    for a in D.get("andares") or []:
+        for ap in a.get("aptos") or []:
+            uid = re.sub(r"\D", "", str(ap.get("id") or ""))
+            if not uid: continue
+            out.append({"floor": int(a.get("num") or 0), "unit": uid, "label": a.get("label") or f"{a.get('num')}º Pavimento",
+                        "status": ap.get("status") if ap.get("status") in ("d", "r", "v") else "d", "area": ap.get("area") or "", "lado": ap.get("lado") or "", "price": float(ap.get("preco") or 0)})
+    return out
+
+
+def prop_ou_404(pid):
+    prop = q("SELECT * FROM properties WHERE id=?", (int(pid),), one=True); need(prop, "Empreendimento não encontrado.", 404); return prop
+
+
+def r_unidades(h, u, q_, b, pid):
+    prop = prop_ou_404(pid)
+    base = unidades_apresentacao(prop); meta = {x["unit"]: x for x in base}
+    rows = q("SELECT floor, unit, status, price FROM units WHERE property_id=? ORDER BY floor DESC, unit", (prop["id"],))
+    itens = [dict(meta.get(r["unit"], {}), floor=r["floor"], unit=r["unit"], status=r["status"], price=r["price"]) for r in rows] if rows else base
+    andares = {}
+    for x in itens:
+        a = andares.setdefault(x["floor"], {"num": x["floor"], "label": x.get("label") or f"{x['floor']}º Pavimento", "aptos": []})
+        a["aptos"].append({"id": x["unit"], "status": x["status"], "price": x.get("price") or 0, "area": x.get("area", ""), "lado": x.get("lado", "")})
+    lst = sorted(andares.values(), key=lambda a: -a["num"])
+    for a in lst: a["aptos"].sort(key=lambda p: p["id"])
+    return {"fonte": "banco" if rows else "apresentacao", "andares": lst}
+
+
+def importar_unidades(prop):
+    base = unidades_apresentacao(prop)
+    for x in base: run("INSERT OR IGNORE INTO units(property_id,floor,unit,status,price) VALUES(?,?,?,?,?)", (prop["id"], x["floor"], x["unit"], x["status"], x["price"]))
+    return len(base)
+
+
+def r_unidades_importar(h, u, q_, b, pid):
+    prop = prop_ou_404(pid); n = importar_unidades(prop); need(n, "A apresentação deste empreendimento não tem andares.")
+    return {"ok": True, "unidades": n}
+
+
+def r_unidades_edit(h, u, q_, b, pid):
+    prop = prop_ou_404(pid); itens = b.get("itens") or []; need(isinstance(itens, list) and itens, "Nada para salvar.")
+    for it in itens[:500]:
+        unit = re.sub(r"\D", "", str(it.get("unit") or "")); need(unit, "Unidade inválida.")
+        d = {}
+        if "status" in it: need(it["status"] in ("d", "r", "v"), "Situação inválida."); d["status"] = it["status"]
+        if "price" in it:
+            try: p = float(it.get("price") or 0)
+            except (TypeError, ValueError): p = -1
+            need(0 <= p < 1e12, "Preço inválido."); d["price"] = p
+        need(d, "Nada para salvar.")
+        if not run_count(f"UPDATE units SET {','.join(k + '=?' for k in d)}, updated=datetime('now') WHERE property_id=? AND unit=?", (*d.values(), prop["id"], unit)):
+            run("INSERT INTO units(property_id,floor,unit,status,price) VALUES(?,?,?,?,?)", (prop["id"], int(it.get("floor") or (unit[:-2] or 0)), unit, d.get("status", "d"), d.get("price", 0)))
+    return {"ok": True}
+
+
+def r_unidades_precos(h, u, q_, b):
+    """Tabela de preços aplicada a vários empreendimentos: linhas [{unit, price}] casam pelo número do apartamento (ex.: 1501)."""
+    ids = [int(x) for x in (b.get("property_ids") or []) if str(x).isdigit()]; need(ids, "Marque pelo menos um empreendimento.")
+    linhas = b.get("linhas") or []; need(isinstance(linhas, list) and linhas, "Envie a tabela de preços.")
+    atualizados, faltam = {}, {}
+    for pid in ids:
+        prop = q("SELECT * FROM properties WHERE id=?", (pid,), one=True)
+        if not prop: continue
+        if not q("SELECT 1 FROM units WHERE property_id=?", (pid,), one=True): importar_unidades(prop)  # primeira vez: traz os andares da apresentação
+        n = 0
+        for l in linhas[:2000]:
+            unit = re.sub(r"\D", "", str(l.get("unit") or ""))
+            try: p = float(l.get("price") or 0)
+            except (TypeError, ValueError): continue
+            if not unit or not (0 <= p < 1e12): continue
+            k = run_count("UPDATE units SET price=?, updated=datetime('now') WHERE property_id=? AND unit=?", (p, pid, unit))
+            if k: n += k
+            else: faltam.setdefault(prop["name"], []).append(unit)
+        atualizados[prop["name"]] = n
+    return {"atualizados": atualizados, "nao_encontradas": {k: v[:30] for k, v in faltam.items()}}
+
+
+BROKER_SQL = """SELECT u.id, u.name, u.email, u.phone, u.active, u.demo, u.created, (u.photo<>'') tem_foto, u.manager_id, (SELECT m.name FROM users m WHERE m.id=u.manager_id) gerente,
   COALESCE((SELECT bc.phone FROM broker_cards bc WHERE bc.broker_id=u.id AND bc.phone<>'' ORDER BY bc.id DESC LIMIT 1), u.phone) whatsapp,
   (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id) clientes, (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='novo') novos,
   (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='fechado') fechados,
@@ -665,11 +772,52 @@ BROKER_SQL = """SELECT u.id, u.name, u.email, u.phone, u.active, u.demo, u.creat
   (SELECT COUNT(*) FROM links l WHERE l.broker_id=u.id) links FROM users u WHERE u.role='broker'"""
 
 
-def r_brokers(h, u, q_, b): return q(BROKER_SQL + " ORDER BY u.active DESC, clientes DESC, u.name")
+def r_brokers(h, u, q_, b):
+    if u["role"] == "manager": return q(BROKER_SQL + " AND u.manager_id=? ORDER BY u.active DESC, clientes DESC, u.name", (u["id"],))
+    return q(BROKER_SQL + " ORDER BY u.active DESC, clientes DESC, u.name")
+
+
+def equipe_ok(u, r): need(u["role"] != "manager" or r["manager_id"] == u["id"], "Este corretor não é da sua equipe.", 403)
+
+
+def gerente_id_ok(b):
+    """gerente_id do corpo: None/"" = sem gerente; senão, um gerente ativo."""
+    g = b.get("gerente_id")
+    if g in (None, "", 0, "0"): return None
+    need(str(g).isdigit() and q("SELECT 1 FROM users WHERE id=? AND role='manager' AND active=1", (int(g),), one=True), "Escolha um gerente de vendas ativo."); return int(g)
+
+
+# ───────── gerentes de venda (só o dono cria): entram com e-mail e senha, veem e cuidam só da própria equipe ─────────
+def r_gerentes(h, u, q_, b):
+    return q("SELECT u.id, u.name, u.email, u.phone, u.active, u.created, (u.photo<>'') tem_foto, (SELECT COUNT(*) FROM users c WHERE c.manager_id=u.id AND c.role='broker') corretores, "
+             "(SELECT COUNT(*) FROM visitors v JOIN users c ON c.id=v.broker_id WHERE c.manager_id=u.id) clientes FROM users u WHERE u.role='manager' ORDER BY u.active DESC, u.name")
+
+
+def r_gerente_new(h, u, q_, b):
+    nome = txt(b.get("nome"), 120, "o nome do gerente", True); email = email_ok(b.get("email"))
+    need(not q("SELECT 1 FROM users WHERE email=?", (email,), one=True), "Já existe um acesso com este e-mail.", 409)
+    senha = str(b.get("senha") or "").strip() or "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
+    need(len(senha) >= 8, "A senha precisa ter pelo menos 8 caracteres.")
+    sl, hs = hash_pw(senha)
+    return {"id": run("INSERT INTO users(role,name,email,phone,pw_salt,pw_hash) VALUES('manager',?,?,?,?,?)", (nome, email, fone_br(b.get("telefone")), sl, hs)), "senha": senha}
+
+
+def r_gerente_edit(h, u, q_, b, gid):
+    r = q("SELECT * FROM users WHERE id=? AND role='manager'", (int(gid),), one=True); need(r, "Gerente não encontrado.", 404)
+    out = {"ok": True}
+    if "active" in b:
+        run("UPDATE users SET active=? WHERE id=?", (1 if b["active"] else 0, r["id"]))
+        if not b["active"]: run("DELETE FROM sessions WHERE user_id=?", (r["id"],))  # os corretores continuam na equipe; só o acesso do gerente para
+    if "nome" in b: run("UPDATE users SET name=? WHERE id=?", (txt(b["nome"], 120, "o nome", True), r["id"]))
+    if "telefone" in b: run("UPDATE users SET phone=? WHERE id=?", (fone_br(b["telefone"]), r["id"]))
+    if b.get("nova_senha"):
+        senha = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8)); sl, hs = hash_pw(senha)
+        run("UPDATE users SET pw_salt=?, pw_hash=? WHERE id=?", (sl, hs, r["id"])); run("DELETE FROM sessions WHERE user_id=?", (r["id"],)); out["senha"] = senha
+    return out
 
 
 def r_broker(h, u, q_, b, bid):
-    r = q(BROKER_SQL + " AND u.id=?", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404)
+    r = q(BROKER_SQL + " AND u.id=?", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404); equipe_ok(u, r)
     r["clientes_lista"] = lista_clientes(u, broker=r["id"]); r["links"] = [l for l in lista_links(u) if l["broker_id"] == r["id"]]
     r["cartao"] = q("SELECT name, phone, email, signature, created FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (r["id"],), one=True)  # dados e assinatura para propostas
     return r
@@ -681,7 +829,8 @@ def r_broker_new(h, u, q_, b):
     senha = str(b.get("senha") or "").strip() or "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
     need(len(senha) >= 8, "A senha precisa ter pelo menos 8 caracteres.")
     s, hs = hash_pw(senha)
-    return {"id": run("INSERT INTO users(role,name,email,phone,pw_salt,pw_hash) VALUES('broker',?,?,?,?,?)", (nome, email, fone_br(b.get("telefone")), s, hs)), "senha": senha}
+    gid = u["id"] if u["role"] == "manager" else gerente_id_ok(b)  # gerente cadastrando: o corretor já nasce na equipe dele
+    return {"id": run("INSERT INTO users(role,name,email,phone,pw_salt,pw_hash,manager_id) VALUES('broker',?,?,?,?,?,?)", (nome, email, fone_br(b.get("telefone")), s, hs, gid)), "senha": senha}
 
 
 def foto_ok(v):
@@ -706,8 +855,9 @@ def r_foto(h, u, q_, b, uid):
 
 
 def r_broker_edit(h, u, q_, b, bid):
-    r = q("SELECT * FROM users WHERE id=? AND role='broker'", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404)
+    r = q("SELECT * FROM users WHERE id=? AND role='broker'", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404); equipe_ok(u, r)
     out = {"ok": True}
+    if "gerente_id" in b and u["role"] == "owner": run("UPDATE users SET manager_id=? WHERE id=?", (gerente_id_ok(b), r["id"]))
     if "active" in b:
         run("UPDATE users SET active=? WHERE id=?", (1 if b["active"] else 0, r["id"]))
         if not b["active"]: run("DELETE FROM sessions WHERE user_id=?", (r["id"],))
@@ -755,8 +905,9 @@ def r_link_new(h, u, q_, b):
     prop = q("SELECT * FROM properties WHERE id=? AND active=1", (int(b.get("property_id") or 0),), one=True); need(prop, "Escolha um empreendimento ativo.")
     canal = b.get("channel") if b.get("channel") in CANAIS else "outro"
     bid = u["id"]
-    if u["role"] == "owner":
-        bid = int(b.get("broker_id") or 0); need(q("SELECT 1 FROM users WHERE id=? AND role='broker' AND active=1", (bid,), one=True), "Escolha um corretor ativo.")
+    if u["role"] in ("owner", "manager"):  # gerente só cria link para corretor da equipe dele
+        bid = int(b.get("broker_id") or 0); ger = (" AND manager_id=?", (u["id"],)) if u["role"] == "manager" else ("", ())
+        need(q("SELECT 1 FROM users WHERE id=? AND role='broker' AND active=1" + ger[0], (bid, *ger[1]), one=True), "Escolha um corretor ativo da sua equipe.")
     code = novo_codigo()
     return {"id": run("INSERT INTO links(code,broker_id,property_id,channel,label) VALUES(?,?,?,?,?)", (code, bid, prop["id"], canal, txt(b.get("label"), 80, "o rótulo"))), "code": code}
 
@@ -854,12 +1005,15 @@ def r_pub_info(h, u, q_, b, code):
     v = visitante_do_cookie(h)
     dono_nome = q("SELECT name, phone FROM users WHERE id=?", (v["broker_id"],), one=True) if v else None
     atendido = dono_nome or {"name": L["corretor"], "phone": L["corretor_fone"]}
+    # quem atende: se a comissão deste cliente foi dividida, todos os corretores da divisão (maior parte primeiro); senão, o corretor do link
+    corretores = [r["name"] for r in q("SELECT u2.name FROM commission_shares s JOIN users u2 ON u2.id=s.broker_id WHERE s.visitor_id=? ORDER BY s.pct DESC, u2.name", (v["id"],))] if v else []
+    if not corretores: corretores = [atendido["name"]]
     return {"empreendimento": L["name"], "corretor": atendido["name"], "whatsapp": atendido["phone"] or L["whatsapp"], "ia": bool(L["ai_on"]), "form": bool(L["form_on"]),
             "idiomas": json.loads(L["languages"] or "[]"), "recursos": recursos_de(L), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
             "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"],
             "cartao": bool(q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True)),  # só diz SE já cadastrou; a assinatura nunca vai para o cliente
             "corretor_email": (q("SELECT email FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (L["broker_id"],), one=True) or {}).get("email", "") if (u and (u["role"] == "owner" or u["id"] == L["broker_id"])) else "",
-            "equipe": bool(u), "meu_link": bool(u and u["role"] == "broker" and u["id"] == L["broker_id"])}  # quem está logado: "meu_link" = o corretor dono deste link
+            "corretores": corretores, "pid": L["id"], "dono": bool(u and u["role"] in ("owner", "manager")), "equipe": bool(u), "meu_link": bool(u and u["role"] == "broker" and u["id"] == L["broker_id"])}  # quem está logado: "meu_link" = o corretor dono deste link
 
 
 def r_pub_register(h, u, q_, b, code):
@@ -1007,11 +1161,14 @@ def r_pub_message(h, u, q_, b, code):
 
 
 OWNER, ANY, PUB = "owner", "any", None
+GESTAO = "gestao"  # dono OU gerente de vendas
 ROTAS = [
     ("GET", r"/api/me", r_me, PUB), ("GET", r"/api/ia-cliente", r_ia_cliente, OWNER), ("POST", r"/api/ia-cliente/liberar", r_ia_cliente_liberar, OWNER), ("POST", r"/api/ia-cliente/chave", r_ia_cliente_chave, OWNER), ("POST", r"/api/ia-cliente/ativar", r_ia_cliente_ativar, OWNER), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY), ("POST", r"/api/me/foto", r_me_foto, ANY), ("POST", r"/api/me/nome", r_me_nome, ANY), ("GET", r"/api/foto/(\d+)", r_foto, ANY),
     ("GET", r"/api/dashboard", r_dashboard, ANY), ("GET", r"/api/notify", r_notify, ANY),
     ("GET", r"/api/properties", r_props, ANY), ("POST", r"/api/properties", r_prop_new, OWNER), ("PATCH", r"/api/properties/(\d+)", r_prop_edit, OWNER), ("GET", r"/api/sources", r_sources, OWNER),
-    ("GET", r"/api/brokers", r_brokers, OWNER), ("GET", r"/api/brokers/(\d+)", r_broker, OWNER), ("POST", r"/api/brokers", r_broker_new, OWNER), ("PATCH", r"/api/brokers/(\d+)", r_broker_edit, OWNER),
+    ("GET", r"/api/properties/(\d+)/unidades", r_unidades, OWNER), ("POST", r"/api/properties/(\d+)/unidades/importar", r_unidades_importar, OWNER), ("PATCH", r"/api/properties/(\d+)/unidades", r_unidades_edit, OWNER), ("POST", r"/api/unidades/precos", r_unidades_precos, OWNER),
+    ("GET", r"/api/brokers", r_brokers, GESTAO), ("GET", r"/api/brokers/(\d+)", r_broker, GESTAO), ("POST", r"/api/brokers", r_broker_new, GESTAO), ("PATCH", r"/api/brokers/(\d+)", r_broker_edit, GESTAO),
+    ("GET", r"/api/gerentes", r_gerentes, OWNER), ("POST", r"/api/gerentes", r_gerente_new, OWNER), ("PATCH", r"/api/gerentes/(\d+)", r_gerente_edit, OWNER),
     ("GET", r"/api/clientes", r_clientes, ANY), ("GET", r"/api/clientes/(\d+)", r_cliente, ANY), ("PATCH", r"/api/clientes/(\d+)", r_cliente_edit, ANY),
     ("GET", r"/api/links", r_links, ANY), ("POST", r"/api/links", r_link_new, ANY), ("PATCH", r"/api/links/(\d+)", r_link_edit, ANY),
     ("GET", r"/api/questions", r_questions, ANY),
@@ -1082,7 +1239,7 @@ class H(BaseHTTPRequestHandler):
             tag = '<script src="/painel/voltar.js?v=1" defer></script>'  # aba "← Painel": só aparece para quem está logado
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
             # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=20" data-code="{injetar_code}" defer></script>'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=21" data-code="{injetar_code}" defer></script>'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
@@ -1118,10 +1275,23 @@ class H(BaseHTTPRequestHandler):
         if any(p.startswith(".") or p in NEGADO_DIR for p in partes) or alvo.suffix.lower() in NEGADO_EXT: return None
         return alvo
 
-    def servir_pasta(self, pasta, rel, entrada, injetar=None, voltar=False, recursos=None):
+    def servir_pasta(self, pasta, rel, entrada, injetar=None, voltar=False, recursos=None, pid=None):
         alvo = self.dentro(pasta, rel or entrada)
         if alvo and alvo.is_dir(): alvo = alvo / "index.html"
         if not alvo or not alvo.is_file(): return self.pagina_erro(404, "Não encontrado", "Este arquivo não existe.")
+        if pid and str(rel or "").replace("\\", "/").endswith("data/empreendimento.json"):  # unidades controladas no painel: status e preço entram no JSON na hora
+            rows = q("SELECT unit, status, price FROM units WHERE property_id=?", (pid,))
+            if rows:
+                try: D = json.loads(alvo.read_text(encoding="utf-8"))
+                except Exception: D = None
+                if isinstance(D, dict) and isinstance(D.get("andares"), list):
+                    m = {r["unit"]: r for r in rows}
+                    for a in D["andares"]:
+                        for ap in a.get("aptos") or []:
+                            r = m.get(re.sub(r"\D", "", str(ap.get("id") or "")))
+                            if r: ap["status"] = r["status"]; ap["preco"] = r["price"] or 0
+                    D["mostrarStatus"] = True
+                    return self.resp(200, json.dumps(D, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8", {"Cache-Control": "no-store"})
         eh_entrada = alvo == (pasta / entrada).resolve()
         if eh_entrada and recursos is not None: simular_se_demo(.5)  # demonstração: abrir uma apresentação também gera um cadastro simulado
         self.arquivo(alvo, injetar_code=injetar if eh_entrada else None, voltar=voltar and eh_entrada, recursos=recursos if eh_entrada else None)
@@ -1133,7 +1303,7 @@ class H(BaseHTTPRequestHandler):
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
         v = visitante_do_cookie(self)
         if not rel and v and not self.usuario(): registrar_abertura(self, v, L)  # cliente já identificado: abertura no nome dele. Sem cadastro, o widget pede depois de 3 interações
-        self.servir_pasta(pasta, rel, L["entry"], injetar=code, voltar=True, recursos=recursos_de(L))
+        self.servir_pasta(pasta, rel, L["entry"], injetar=code, voltar=True, recursos=recursos_de(L), pid=L["id"])
 
     def previa(self, pid, resto):
         if not self.usuario(): return self.pagina_erro(401, "Entre no painel", "Abra o painel e entre para ver a apresentação.")
@@ -1143,7 +1313,7 @@ class H(BaseHTTPRequestHandler):
         if resto is None: return self.redireciona(f"/pre/{pid}/")
         pasta = pasta_da(prop)
         if not pasta: return self.pagina_erro(404, "Apresentação indisponível", "O empreendimento ainda não tem apresentação publicada.")
-        self.servir_pasta(pasta, resto.lstrip("/"), prop["entry"], voltar=True, recursos=recursos_de(prop))
+        self.servir_pasta(pasta, resto.lstrip("/"), prop["entry"], voltar=True, recursos=recursos_de(prop), pid=prop["id"])
 
     def clique(self, code):
         L = link_publico(code)
@@ -1213,6 +1383,7 @@ class H(BaseHTTPRequestHandler):
             user = self.usuario()
             if papel in (ANY, OWNER): need(user, "Entre para continuar.", 401)
             if papel == OWNER: need(user["role"] == "owner", "Só o dono pode fazer isso.", 403)
+            if papel == GESTAO: need(user["role"] in ("owner", "manager"), "Só o dono ou um gerente de vendas pode fazer isso.", 403)
             out = fn(self, user, qs, body, *mt.groups())
             if out is None: return  # a rota já respondeu (ex.: /api/foto devolve a imagem)
             return self.json(200, out)

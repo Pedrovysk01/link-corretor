@@ -33,6 +33,7 @@ const ICONES = {
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>', phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>',
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   play: '<path d="M8 5v14l11-7z"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', upload: '<path d="M12 16V4M6 10l6-6 6 6M4 20h16"/>',
   barras: '<path d="M6 20V11M12 20V4M18 20v-6"/>', linha: '<path d="M3 17l5-6 4 3 8-9"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="20" cy="5" r="1"/>',
   swap: '<path d="M4 7h12l-3-3M20 17H8l3 3"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 };
@@ -120,6 +121,8 @@ function fone(v) { const d = String(v || "").replace(/\D/g, "").replace(/^55(?=\
 const urlLink = (code) => `${location.origin}/r/${code}`;
 const wa = (num, txt) => `https://wa.me/${String(num).replace(/\D/g, "")}?text=${encodeURIComponent(txt)}`;
 const dono = () => S.me && S.me.role === "owner";
+const gestao = () => S.me && (S.me.role === "owner" || S.me.role === "manager");  // dono ou gerente de vendas
+const papelNome = () => (S.me.role === "owner" ? "Dono" : S.me.role === "manager" ? "Gerente de vendas" : "Corretor");
 const pill = (txt, cls) => h("span", { class: "pill " + (cls || "") }, txt);
 const statusPill = (s) => pill(STATUS[s] || s, "s-" + s);
 const ini = (n) => String(n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
@@ -158,7 +161,8 @@ const btnOk = (txt) => h("button", { type: "submit", class: "btn primary" }, txt
 // ───────── casca ─────────
 function menu() {
   const m = [{ r: "", t: "Resumo", i: "dash" }, { r: "clientes", t: "Clientes", i: "people" }];
-  if (dono()) m.push({ r: "corretores", t: "Corretores", i: "users" }, { r: "empreendimentos", t: "Empreendimentos", i: "building" });
+  if (gestao()) m.push({ r: "corretores", t: dono() ? "Corretores" : "Meus corretores", i: "users" });
+  if (dono()) m.push({ r: "empreendimentos", t: "Empreendimentos", i: "building" }, { r: "unidades", t: "Unidades", i: "grid" });
   m.push({ r: "links", t: dono() ? "Links" : "Meus links", i: "link" }, { r: "perguntas", t: "Perguntas à IA", i: "chat" });
   if (dono()) m.push({ r: "config", t: "Configurações", i: "sliders" });
   m.push({ r: "conta", t: "Minha conta", i: "user" }); return m;
@@ -323,7 +327,7 @@ function menuUsuario() {
     const embreve = (t) => () => aviso(t + ": em breve.");
     caixa.replaceChildren(
       // 1) quem sou eu: foto com anel, nome, e-mail e o papel (Dono / Corretor)
-      h("div", { class: "mu-topo" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "mu-id" }, h("b", { class: "wrap" }, S.me.name), h("small", { class: "wrap" }, S.me.email)), h("span", { class: "mu-papel" }, dono() ? "Dono" : "Corretor")),
+      h("div", { class: "mu-topo" }, avatar(S.me.name, "sm", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "mu-id" }, h("b", { class: "wrap" }, S.me.name), h("small", { class: "wrap" }, S.me.email)), h("span", { class: "mu-papel" }, papelNome())),
       // 2) faixa única: fonte (Aa, Aa serifa, A-, A+) e modo escuro
       h("div", { class: "mu-barra" },
         h("div", { class: "mu-fontes", role: "group", "aria-label": "Texto" }, fbtn("sans", "", "Fonte padrão"), fbtn("serif", " serif", "Fonte com serifa"), tam(-.125, "A-", "Diminuir texto"), tam(.125, "A+", "Aumentar texto")),
@@ -457,12 +461,12 @@ function telaSetup() {
 }
 
 // ───────── roteador ─────────
-const TELAS = { "": ["Resumo", telaResumo], clientes: ["Clientes", telaClientes], cliente: ["Cliente", telaCliente], corretores: ["Corretores", telaCorretores, true], corretor: ["Corretor", telaCorretor, true],
-  empreendimentos: ["Empreendimentos", telaProps, true], links: ["Links", telaLinks], perguntas: ["Perguntas à IA", telaPerguntas], config: ["Configurações", telaConfig, true], conta: ["Minha conta", telaConta], tutorial: ["Tutorial", telaTutorial] };
+const TELAS = { "": ["Resumo", telaResumo], clientes: ["Clientes", telaClientes], cliente: ["Cliente", telaCliente], corretores: ["Corretores", telaCorretores, "gestao"], corretor: ["Corretor", telaCorretor, "gestao"],
+  empreendimentos: ["Empreendimentos", telaProps, true], unidades: ["Unidades", telaUnidades, true], links: ["Links", telaLinks], perguntas: ["Perguntas à IA", telaPerguntas], config: ["Configurações", telaConfig, true], conta: ["Minha conta", telaConta], tutorial: ["Tutorial", telaTutorial] };
 async function rotear() {
   if (!S.me) return;
   let [r, arg] = partes();
-  if (!TELAS[r] || (TELAS[r][2] && !dono())) { r = ""; arg = null; location.replace("#/"); }
+  if (!TELAS[r] || (TELAS[r][2] === true && !dono()) || (TELAS[r][2] === "gestao" && !gestao())) { r = ""; arg = null; location.replace("#/"); }
   S.rota = r; S.arg = arg; const tok = ++S.tok;
   const menuRota = r === "cliente" ? "clientes" : r === "corretor" ? "corretores" : r;
   if (!$("#conteudo") || $(".side .nav a[aria-current]")?.getAttribute("href") !== "#/" + menuRota) casca();
@@ -594,7 +598,7 @@ async function telaResumo() {
   const kpi = (n, l, href, capa) => h(href ? "a" : "div", { class: "card kpi" + (capa ? " com-capa" : ""), href },
     capa && h("img", { class: "kpi-capa", src: `img/kpi/${capa}.jpg?v=1`, alt: "", loading: "lazy", decoding: "async", onerror: (e) => { const c = e.target.closest(".kpi"); e.target.remove(); c && c.classList.remove("com-capa"); } }),
     h("span", { class: "n" }, fmtN(n)), h("span", { class: "l" }, l));
-  const el = h("div", { class: "stack" }, cabeca(dono() ? "Resumo" : `Olá, ${S.me.name.split(" ")[0]}`, dono() ? S.empresa : "Seus clientes", sel),
+  const el = h("div", { class: "stack" }, cabeca(gestao() ? "Resumo" : `Olá, ${S.me.name.split(" ")[0]}`, dono() ? S.empresa : S.me.role === "manager" ? "A sua equipe de corretores" : "Seus clientes", sel),
     h("div", { class: "kpis" }, kpi(t.clientes, `Clientes novos (${dias} dias)`, "#/clientes", "clientes-novos"), kpi(t.aberturas, "Aberturas da apresentação", null, "aberturas"), kpi(t.retornos, "Voltaram a abrir", null, "voltaram"), kpi(t.novos_para_atender, "Novos para atender", "#/clientes?status=novo", "atender")));
   if (!t.total_clientes) el.append(h("div", { class: "card" }, tituloCard("check", "Como funciona"), h("div", { class: "passos" },
     passo(true, "Cada corretor tem links por empreendimento", "O cliente abre o link e se identifica com nome e WhatsApp ou e-mail."),
@@ -618,7 +622,7 @@ async function telaResumo() {
   const cardEmp = h("div", { class: "card" }, tituloCard("building", "Por empreendimento"),
     d.empreendimentos.length ? h("div", { class: "emp-mini" }, d.empreendimentos.map(miniEmp), novoEmp) : vazio("building", "Sem empreendimentos"));
   el.append(h("div", { class: "cols2" },
-    dono() && h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("users", "Corretores"), h("a", { href: "#/corretores" }, "Ver todos")),
+    gestao() && h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("users", "Corretores"), h("a", { href: "#/corretores" }, "Ver todos")),
       top5.length ? h("div", { class: "stack", style: "gap:12px;margin-top:12px" }, top5.map((r, i) => h("a", { class: "rank", href: "#/corretor/" + r.id },
         avatar(r.name, "sm"), h("div", { style: "flex:1;min-width:0" }, h("div", { class: "row between" }, h("span", { class: "cell-main wrap" }, `${i + 1}. ${r.name}`), h("span", { class: "muted small" }, `${fmtN(r.clientes)} clientes · ${fmtN(r.aberturas)} aberturas${r.fechados ? " · " + r.fechados + " fechado(s)" : ""}`)),
           h("div", { class: "bar", style: "margin-top:6px" }, h("i", { style: `width:${Math.round((r.clientes / max) * 100)}%` })))))) : vazio("users", "Nenhum corretor ainda", null, h("a", { class: "btn primary", href: "#/corretores" }, "Cadastrar corretor"))),
@@ -652,7 +656,7 @@ async function telaClientes() {
 }
 async function telaCliente(id) {
   const c = await api("GET", "/api/clientes/" + id);
-  const bs = dono() ? await api("GET", "/api/brokers") : [];
+  const bs = gestao() ? await api("GET", "/api/brokers") : [];
   const contato = [c.phone && fone(c.phone), c.email].filter(Boolean);
   const el = h("div", { class: "stack", style: "max-width:960px" }, voltar("clientes", "Clientes"),
     h("div", { class: "card hero-p" }, avatar(c.name, "lg"), h("div", { style: "flex:1;min-width:0" },
@@ -709,12 +713,19 @@ function transferir(c, bs) {
 
 // ───────── corretores ─────────
 async function telaCorretores() {
-  const bs = await api("GET", "/api/brokers");
-  const el = h("div", { class: "stack" }, cabeca("Corretores", "Toque num corretor para ver os clientes dele.", vistaToggle("corretores"), h("button", { class: "btn primary", onclick: formCorretor }, ic("plus"), "Novo corretor")));
-  if (!bs.length) { el.append(h("div", { class: "card" }, vazio("users", "Nenhum corretor ainda", "Cadastre o primeiro. Você define a senha ou deixa o painel gerar uma."))); return el; }
+  const bsTodos = await api("GET", "/api/brokers");
+  const gers = dono() ? (await api("GET", "/api/gerentes")) : [];
+  const filtro = dono() ? sessionStorage.getItem("lc_ger") || "" : "";   // "" = todos · "0" = sem gerente · id do gerente
+  const bs = filtro === "" ? bsTodos : bsTodos.filter((b) => String(b.manager_id || 0) === filtro);
+  const el = h("div", { class: "stack" }, cabeca(dono() ? "Corretores" : "Meus corretores", dono() ? "Toque num corretor para ver os clientes dele. Filtre por gerente de vendas." : "Os corretores da sua equipe: clientes, links e dados para proposta.",
+    vistaToggle("corretores"), dono() && h("button", { class: "btn", onclick: gerentesDialogo }, ic("users"), "Gerentes de venda"), h("button", { class: "btn primary", onclick: formCorretor }, ic("plus"), "Novo corretor")));
+  if (dono() && gers.length) el.append(chipsGerentes(gers, bsTodos, filtro));
+  if (!bsTodos.length) { el.append(h("div", { class: "card" }, vazio("users", "Nenhum corretor ainda", "Cadastre o primeiro. Você define a senha ou deixa o painel gerar uma."))); return el; }
+  if (!bs.length) { el.append(h("div", { class: "card" }, vazio("users", "Nenhum corretor neste filtro", "Troque o gerente acima ou cadastre um corretor para ele."))); return el; }
   if (vista("corretores") === "tabela") {
     el.append(h("div", { class: "card" }, h("p", { class: "muted small", style: "margin-bottom:8px" }, "Clique numa linha para ver os clientes do corretor aqui mesmo."), tabela([
       { t: "Corretor", v: (b) => h("div", { class: "row", style: "gap:10px;flex-wrap:nowrap" }, avatar(b.name, "sm", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0" }, h("a", { class: "cell-main wrap", href: "#/corretor/" + b.id }, b.name), h("div", { class: "cell-sub wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · ")))), cls: "main-cell" },
+      ...(dono() ? [{ t: "Gerente", v: (b) => b.gerente || h("span", { class: "muted" }, "—") }] : []),
       { t: "Clientes", v: (b) => fmtN(b.clientes), cls: "num" }, { t: "Novos", v: (b) => fmtN(b.novos), cls: "num" }, { t: "Aberturas", v: (b) => fmtN(b.aberturas), cls: "num" }, { t: "Fechados", v: (b) => fmtN(b.fechados), cls: "num" },
       { t: "Links", v: (b) => fmtN(b.links), cls: "num" }, { t: "Última abertura", v: (b) => quando(b.ultima) }, { t: "Situação", v: (b) => pill(b.active ? "Ativo" : "Desativado", b.active ? "on" : "off") },
       // atalho do WhatsApp do corretor (o mesmo ícone do cartão), sem abrir a linha
@@ -724,7 +735,7 @@ async function telaCorretores() {
   }
   const abrirCorretor = (b) => (e) => { if (e.target.closest("a,button")) return; if (e.type === "keydown" && e.key !== "Enter") return; location.hash = "#/corretor/" + b.id; };
   el.append(h("div", { class: "props" }, bs.map((b) => h("div", { class: "card corretor" + (b.active ? "" : " off"), role: "link", tabindex: "0", "aria-label": "Abrir " + b.name, onclick: abrirCorretor(b), onkeydown: abrirCorretor(b) },
-    h("div", { class: "row", style: "gap:12px;flex-wrap:nowrap" }, avatar(b.name, "foto-c", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0;flex:1" }, h("h2", { class: "wrap", style: "margin:0" }, b.name), h("div", { class: "contato-c muted small", title: b.email }, b.email), b.phone && h("div", { class: "contato-c muted small" }, fone(b.phone))), !b.active && pill("Desativado", "off"),
+    h("div", { class: "row", style: "gap:12px;flex-wrap:nowrap" }, avatar(b.name, "foto-c", fotoDe(b.id, b.tem_foto)), h("div", { style: "min-width:0;flex:1" }, h("h2", { class: "wrap", style: "margin:0" }, b.name), h("div", { class: "contato-c muted small", title: b.email }, b.email), b.phone && h("div", { class: "contato-c muted small" }, fone(b.phone)), dono() && b.gerente && h("span", { class: "ger-tag" }, ic("users"), b.gerente)), !b.active && pill("Desativado", "off"),
       (b.whatsapp || b.phone) && h("a", { class: "btn-wa", href: wa(b.whatsapp || b.phone, `Olá ${b.name.split(" ")[0]}, tudo bem?`), target: "_blank", rel: "noopener", title: "Chamar " + b.name + " no WhatsApp", "aria-label": "Chamar " + b.name + " no WhatsApp" }, icWa())),
     h("div", { class: "stats" }, h("div", null, h("b", null, fmtN(b.clientes)), h("span", null, "clientes")), h("div", null, h("b", null, fmtN(b.novos)), h("span", null, "novos")), h("div", null, h("b", null, fmtN(b.aberturas)), h("span", null, "aberturas")), h("div", null, h("b", null, fmtN(b.fechados)), h("span", null, "fechados"))),
     h("div", { class: "muted small" }, "Última abertura " + quando(b.ultima))))));
@@ -737,9 +748,13 @@ function formCartao(b) {
 }
 async function telaCorretor(id) {
   const b = await api("GET", "/api/brokers/" + id);
+  const gers = dono() ? (await api("GET", "/api/gerentes")).filter((g) => g.active || g.id === b.manager_id) : [];
+  const selGerente = dono() && gers.length ? h("label", { class: "ger-sel" }, h("span", { class: "muted small" }, "Gerente de vendas"),
+    h("select", { "aria-label": "Gerente de vendas", onchange: async (e) => { await api("PATCH", `/api/brokers/${b.id}`, { gerente_id: e.target.value || null }); aviso(e.target.value ? "Gerente atualizado." : "Corretor sem gerente."); } },
+      h("option", { value: "" }, "Sem gerente"), gers.map((g) => h("option", { value: g.id, selected: g.id === b.manager_id }, g.name)))) : null;
   const el = h("div", { class: "stack" }, voltar("corretores", "Corretores"),
     h("div", { class: "card hero-p" }, avatar(b.name, "lg", fotoDe(b.id, b.tem_foto)), h("div", { style: "flex:1;min-width:0" }, h("div", { class: "row", style: "gap:8px" }, h("h1", { class: "wrap" }, b.name), pill(b.active ? "Ativo" : "Desativado", b.active ? "on" : "off")),
-      h("p", { class: "muted wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · ")),
+      h("p", { class: "muted wrap" }, [b.email, b.phone && fone(b.phone)].filter(Boolean).join(" · ")), selGerente,
       h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn sm", onclick: () => escolherFoto(async (d) => { await api("PATCH", `/api/brokers/${b.id}`, { foto: d }); S_FOTO.v = Date.now(); aviso("Foto salva."); rotear(); }) }, b.tem_foto ? "Trocar foto" : "Adicionar foto"), h("button", { class: "btn sm", onclick: () => redefinir(b) }, "Nova senha"),
         h("button", { class: "btn sm" + (b.active ? " danger" : ""), onclick: async () => { await api("PATCH", `/api/brokers/${b.id}`, { active: !b.active }); aviso(b.active ? "Acesso desativado. Os links dele param de funcionar." : "Acesso reativado."); rotear(); } }, b.active ? "Desativar" : "Reativar"),
         h("a", { class: "btn sm", href: "/clientes.csv?corretor=" + b.id, download: "clientes.csv" }, ic("down"), "CSV dos clientes")))),
@@ -759,12 +774,38 @@ function mostrarSenha(nome, email, senha) {
     h("div", { class: "row" }, h("button", { class: "btn", onclick: () => copiar(msg, "Dados de acesso copiados.") }, ic("copy"), "Copiar dados"), h("a", { class: "btn", target: "_blank", rel: "noopener", href: wa("", msg) }, ic("send"), "Enviar pelo WhatsApp"))],
     [h("button", { type: "button", class: "btn primary", onclick: (e) => { const d = e.target.closest("dialog"); d.close(); d.remove(); } }, "Pronto")]);
 }
-function formCorretor() {
-  dialogo("Novo corretor", [campo("Nome", h("input", { type: "text", name: "nome", required: true, autocomplete: "off" })), campo("E-mail (é o login)", h("input", { type: "email", name: "email", required: true, autocomplete: "off" })),
+async function formCorretor() {
+  const gers = dono() ? (await api("GET", "/api/gerentes")).filter((g) => g.active) : [];
+  const filtroGer = sessionStorage.getItem("lc_ger") || "";
+  dialogo("Novo corretor", [gers.length ? campo("Gerente de vendas", h("select", { name: "gerente_id" }, h("option", { value: "" }, "Sem gerente"), gers.map((g) => h("option", { value: g.id, selected: String(g.id) === filtroGer }, g.name))), "O gerente vê e cuida só dos corretores da equipe dele.") : null,
+    campo("Nome", h("input", { type: "text", name: "nome", required: true, autocomplete: "off" })), campo("E-mail (é o login)", h("input", { type: "email", name: "email", required: true, autocomplete: "off" })),
     campo("WhatsApp", h("input", { type: "tel", name: "telefone", placeholder: "(47) 99999-9999", autocomplete: "off" }), "Aparece para o cliente na apresentação."), campo("Senha inicial", h("input", { type: "text", name: "senha", autocomplete: "off", placeholder: "Deixe vazio para gerar" }), "Mínimo de 8 caracteres."), campo("Foto (opcional)", h("input", { type: "file", name: "foto", accept: "image/png,image/jpeg,image/webp" }), "Quadrada (1:1): a imagem é recortada no centro. O corretor também pode trocar em Minha conta.")],
-    [btnFechar(), btnOk("Criar acesso")], { onSubmit: async (f, fechar) => { const r = await api("POST", "/api/brokers", { nome: f.get("nome"), email: f.get("email"), telefone: f.get("telefone"), senha: f.get("senha") }); const arq = f.get("foto"); if (arq && arq.size) { try { await api("PATCH", `/api/brokers/${r.id}`, { foto: await fotoQuadrada(arq) }); } catch (e) { aviso("Corretor criado, mas a foto não foi salva: " + e.message, true); } } fechar(); mostrarSenha(f.get("nome"), f.get("email"), r.senha); rotear(); } });
+    [btnFechar(), btnOk("Criar acesso")], { onSubmit: async (f, fechar) => { const r = await api("POST", "/api/brokers", { nome: f.get("nome"), email: f.get("email"), telefone: f.get("telefone"), senha: f.get("senha"), gerente_id: f.get("gerente_id") || null }); const arq = f.get("foto"); if (arq && arq.size) { try { await api("PATCH", `/api/brokers/${r.id}`, { foto: await fotoQuadrada(arq) }); } catch (e) { aviso("Corretor criado, mas a foto não foi salva: " + e.message, true); } } fechar(); mostrarSenha(f.get("nome"), f.get("email"), r.senha); rotear(); } });
 }
 async function redefinir(b) { if (!confirm(`Gerar uma nova senha para ${b.name}? A atual deixa de funcionar e ele será desconectado.`)) return; const r = await api("PATCH", `/api/brokers/${b.id}`, { nova_senha: true }); mostrarSenha(b.name, b.email, r.senha); }
+
+// ───────── gerentes de venda (só o dono) ─────────
+function chipsGerentes(gers, bs, filtro) {
+  const n = (id) => bs.filter((b) => String(b.manager_id || 0) === String(id)).length;
+  const chip = (val, txt) => h("button", { type: "button", class: "chip", "aria-pressed": String(filtro === val), onclick: () => { sessionStorage.setItem("lc_ger", val); rotear(); } }, txt);
+  return h("div", { class: "chips ger-chips", role: "group", "aria-label": "Filtrar por gerente de vendas" }, chip("", `Todos · ${bs.length}`), gers.filter((g) => g.active || n(g.id)).map((g) => chip(String(g.id), `${g.name} · ${n(g.id)}`)), n(0) ? chip("0", `Sem gerente · ${n(0)}`) : null);
+}
+async function gerentesDialogo() {
+  const gers = await api("GET", "/api/gerentes");
+  const lista = h("div", { class: "ger-lista" }, gers.length ? gers.map((g) => h("div", { class: "ger-it" + (g.active ? "" : " off") }, avatar(g.name, "sm", fotoDe(g.id, g.tem_foto)),
+    h("div", { style: "min-width:0;flex:1" }, h("b", { class: "wrap" }, g.name, !g.active && pill("Desativado", "off")), h("div", { class: "muted small wrap" }, `${g.email} · ${g.corretores} corretor(es) · ${g.clientes} cliente(s)`)),
+    h("div", { class: "row", style: "gap:6px;flex-wrap:nowrap" },
+      h("button", { type: "button", class: "btn sm", onclick: async () => { if (!confirm(`Gerar uma nova senha para ${g.name}? A atual deixa de funcionar.`)) return; const r = await api("PATCH", `/api/gerentes/${g.id}`, { nova_senha: true }); d.fechar(); mostrarSenha(g.name, g.email, r.senha); } }, "Nova senha"),
+      h("button", { type: "button", class: "btn sm" + (g.active ? " danger" : ""), onclick: async () => { await api("PATCH", `/api/gerentes/${g.id}`, { active: !g.active }); aviso(g.active ? "Gerente desativado. Os corretores continuam na equipe." : "Gerente reativado."); d.fechar(); rotear(); } }, g.active ? "Desativar" : "Reativar"))))
+    : h("p", { class: "muted" }, "Nenhum gerente ainda."));
+  const d = dialogo("Gerentes de venda", [h("p", { class: "muted small" }, "O gerente entra no painel com o próprio e-mail e senha e vê só a equipe dele: corretores, clientes, links e perguntas à IA. Ele também cadastra corretores e gera senha para eles. Empreendimentos, unidades, comissões e configurações continuam só com você."), lista],
+    [btnFechar("Fechar"), h("button", { type: "button", class: "btn primary", onclick: () => { d.fechar(); formGerente(); } }, ic("plus"), "Novo gerente")]);
+}
+function formGerente() {
+  dialogo("Novo gerente de vendas", [campo("Nome", h("input", { type: "text", name: "nome", required: true, autocomplete: "off" })), campo("E-mail (é o login)", h("input", { type: "email", name: "email", required: true, autocomplete: "off" })),
+    campo("WhatsApp", h("input", { type: "tel", name: "telefone", placeholder: "(47) 99999-9999", autocomplete: "off" })), campo("Senha inicial", h("input", { type: "text", name: "senha", autocomplete: "off", placeholder: "Em branco: o painel gera uma" }), "Mínimo de 8 caracteres. Aparece uma vez na tela: copie e envie ao gerente.")],
+    [btnFechar(), btnOk("Criar acesso")], { onSubmit: async (f, fechar) => { const r = await api("POST", "/api/gerentes", { nome: f.get("nome"), email: f.get("email"), telefone: f.get("telefone"), senha: f.get("senha") }); fechar(); mostrarSenha(f.get("nome"), f.get("email"), r.senha); rotear(); } });
+}
 
 // ───────── empreendimentos ─────────
 // "Dados da cidade": até 5 boxes curtos (etiqueta, título, texto, 3 destaques) que aparecem na apresentação em Materiais → A cidade
@@ -834,7 +875,7 @@ function tabelaLinks(links, compacto, info) {
       h("td", { class: "main-cell" }, h("div", { class: "cell-main wrap" }, l.empreendimento, !l.active && " ", !l.active && pill("pausado", "off")), h("div", { class: "cell-sub wrap mono" }, [l.label, `/r/${l.code}`].filter(Boolean).join(" · "))),
       !compacto && dono() && h("td", { "data-l": "Corretor", class: "wrap" }, l.corretor), h("td", { "data-l": "Canal" }, CANAIS[l.channel] || l.channel),
       h("td", { class: "num", "data-l": "Cliques" }, fmtN(l.cliques)), h("td", { class: "num", "data-l": "Clientes" }, fmtN(l.clientes)), h("td", { class: "num", "data-l": "Aberturas" }, fmtN(l.aberturas)),
-      h("td", { class: "acoes" }, h("div", { class: "acoes-in" }, h("button", { class: "btn sm", onclick: () => copiar(urlLink(l.code), "Link copiado.") }, ic("copy"), "Copiar"), h("button", { class: "btn sm", onclick: () => mostrarQr(l) }, ic("qr"), "QR"),
+      h("td", { class: "acoes" }, h("div", { class: "acoes-in" }, h("a", { class: "btn sm", href: `/p/${l.code}/`, target: "_blank", rel: "noopener", title: "Abrir a apresentação deste link", "aria-label": "Abrir a apresentação do link de " + l.corretor }, ic("ext"), "Abrir"), h("button", { class: "btn sm", onclick: () => mostrarQr(l) }, ic("qr"), "QR"),
         dono() ? h("button", { class: "btn sm", title: "Reenviar o link e o QR Code ao corretor", onclick: () => enviarAoCorretor(l) }, ic("send"), "WhatsApp")
           : h("a", { class: "btn sm", target: "_blank", rel: "noopener", href: wa("", `Olá! Preparei uma apresentação interativa do ${l.empreendimento} para você: ${urlLink(l.code)}`) }, ic("send"), "WhatsApp"),
         h("button", { class: "btn sm ghost", onclick: async () => { await api("PATCH", `/api/links/${l.id}`, { active: !l.active }); aviso(l.active ? "Link pausado." : "Link reativado."); rotear(); } }, l.active ? "Pausar" : "Reativar")))))));
@@ -1143,7 +1184,7 @@ async function telaConta() {
   };
   verNome();
   const col = h("div", { class: "conta-col" },
-    h("div", { class: "card hero-p hero-grande" }, avatar(S.me.name, "xl", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "hero-info" }, nomeBox, h("div", { class: "muted wrap" }, S.me.email), h("div", null, pill(dono() ? "Dono" : "Corretor", "on")),
+    h("div", { class: "card hero-p hero-grande" }, avatar(S.me.name, "xl", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "hero-info" }, nomeBox, h("div", { class: "muted wrap" }, S.me.email), h("div", null, pill(papelNome(), "on")),
       h("div", { class: "row", style: "margin-top:8px" }, h("button", { class: "btn sm", type: "button", onclick: () => escolherFoto(async (d) => { await api("POST", "/api/me/foto", { foto: d }); S.me.tem_foto = true; S_FOTO.v = Date.now(); aviso("Foto salva."); casca(); rotear(); }) }, S.me.tem_foto ? "Trocar foto" : "Adicionar foto"),
         S.me.tem_foto && h("button", { class: "btn sm ghost", type: "button", onclick: async () => { await api("POST", "/api/me/foto", { foto: "" }); S.me.tem_foto = false; aviso("Foto removida."); casca(); rotear(); } }, "Remover")),
       !dono() && h("p", { class: "muted small", style: "margin-top:6px" }, "A foto (1:1) aparece no seu selo para a construtora."))),
@@ -1152,6 +1193,87 @@ async function telaConta() {
       h("div", null, h("button", { class: "btn primary", type: "submit" }, "Trocar senha"))));
   // mosaico: título acima, depois as duas colunas com a mesma altura (os cartões esticam para fechar embaixo na mesma linha)
   return h("div", { class: "stack" }, cabeca("Minha conta"), h("div", { class: "conta-layout" + (dono() ? "" : " solo") }, col, dono() && boxIACliente()));
+}
+
+// ───────── Unidades: andares em quadradinhos (disponível / reservado / vendido), preço por apartamento e tabela de preços (só dono) ─────────
+async function telaUnidades() {
+  const props = (await api("GET", "/api/properties")).filter((p) => p.tem_apresentacao && !p.external_url);
+  const lembrado = Number(sessionStorage.getItem("lc_un_prop")) || 0;
+  const prop = props.find((p) => p.id === lembrado) || props[0];
+  const selProp = props.length > 1 ? h("select", { "aria-label": "Empreendimento", onchange: (e) => { sessionStorage.setItem("lc_un_prop", e.target.value); rotear(); } }, props.map((p) => h("option", { value: p.id, selected: prop && p.id === prop.id }, p.name))) : null;
+  const el = h("div", { class: "stack" }, cabeca("Unidades", "Disponível, reservado ou vendido, andar por andar. Clique num apartamento para mudar.", selProp));
+  if (!prop) { el.append(h("div", { class: "card" }, vazio("building", "Nenhum empreendimento com apresentação", "As unidades vêm dos andares da apresentação 3D."))); return el; }
+  const d = await api("GET", `/api/properties/${prop.id}/unidades`);
+  const ST = { d: "Disponível", r: "Reservado", v: "Vendido" };
+  const brl = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const tot = { d: 0, r: 0, v: 0 }; d.andares.forEach((a) => a.aptos.forEach((x) => { tot[x.status] = (tot[x.status] || 0) + 1; }));
+  const sq = (s) => h("i", { class: "un-sq", "data-s": s, "aria-hidden": "true" });
+  const legenda = h("div", { class: "un-leg" }, ["d", "r", "v"].map((s) => h("span", { class: "un-leg-it" }, sq(s), `${ST[s]} · ${tot[s] || 0}`)));
+  const ativo = d.fonte === "banco";
+  const editar = (a, x) => {
+    if (!ativo) { aviso("Ative o controle das unidades primeiro.", true); return; }
+    let st = x.status;
+    const seg = h("div", { class: "un-seg", role: "group", "aria-label": "Situação" }, ["d", "r", "v"].map((s) => h("button", { type: "button", "data-s": s, "aria-pressed": String(st === s),
+      onclick: () => { st = s; seg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.s === s))); } }, sq(s), ST[s])));
+    const preco = h("input", { type: "text", name: "preco", inputmode: "decimal", value: x.price ? brl(x.price).replace("R$", "").trim() : "", placeholder: "Ex.: 1.250.000", autocomplete: "off" });
+    dialogo(`Apto ${x.id} · ${a.label}`, [h("p", { class: "muted" }, [x.area && x.area + " m²", x.lado].filter(Boolean).join(" · ")), campo("Situação", seg), campo("Preço (R$)", preco, "Em branco: a ficha não mostra preço.")],
+      [btnFechar(), btnOk("Salvar")], { onSubmit: async (f, fechar) => {
+        const v = String(f.get("preco") || "").replace(/[R$\s]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", "."); const p = v ? Number(v) : 0;
+        if (v && !(p >= 0)) throw new Error("Preço inválido.");
+        await api("PATCH", `/api/properties/${prop.id}/unidades`, { itens: [{ floor: a.num, unit: x.id, status: st, price: p }] }); fechar(); aviso(`Apto ${x.id}: ${ST[st]}${p ? " · " + brl(p) : ""}.`); rotear(); } });
+  };
+  const finais = (d.andares[0] ? d.andares[0].aptos : []).map((x) => x.id.slice(-2));
+  const grade = h("div", { class: "un-grid" }, finais.length > 1 && h("div", { class: "un-head", "aria-hidden": "true" }, finais.map((f) => h("span", null, f))),
+    d.andares.map((a) => h("div", { class: "un-row" }, h("span", { class: "un-floor" }, String(a.num)),
+      a.aptos.map((x) => h("button", { type: "button", class: "un-sq un-btn", "data-s": x.status, title: `Apto ${x.id} · ${ST[x.status]}${x.price ? " · " + brl(x.price) : ""}`,
+        "aria-label": `Apto ${x.id}, ${ST[x.status]}${x.price ? ", " + brl(x.price) : ""}`, onclick: () => editar(a, x) })))));
+  const ativar = !ativo && d.andares.length ? h("div", { class: "card alerta-card un-ativar" },
+    h("div", null, h("strong", null, "Os andares vieram da apresentação 3D."), h("p", { class: "muted small", style: "margin:4px 0 0" }, "Ative para controlar daqui. As mudanças aparecem na apresentação na hora: luz acesa nas unidades vendidas e reservadas, e o preço na ficha.")),
+    h("button", { class: "btn primary", type: "button", onclick: async (e) => { e.target.disabled = true; try { await api("POST", `/api/properties/${prop.id}/unidades/importar`, {}); aviso("Controle de unidades ativado."); rotear(); } catch (x) { aviso(x.message, true); e.target.disabled = false; } } }, "Ativar controle")) : null;
+  const mapa = h("div", { class: "card" }, h("div", { class: "un-top" }, tituloCard("grid", "Mapa de unidades"), legenda),
+    d.andares.length ? grade : vazio("building", "A apresentação não tem andares", "Este mapa usa os andares e apartamentos da apresentação 3D."));
+
+  // tabela de preços: cola ou envia um CSV (unidade;preco ou andar;final;preco) e aplica nos empreendimentos marcados
+  const num = (s) => { const v = String(s || "").replace(/R\$|\s/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", "."); const n = Number(v); return v && Number.isFinite(n) && n >= 0 ? n : null; };
+  const parse = (txt) => {
+    const out = []; let ign = 0, cols = null;
+    for (const l of txt.split(/\r?\n/).map((x) => x.trim()).filter(Boolean)) {
+      const c = (l.includes(";") ? l.split(";") : l.includes("\t") ? l.split("\t") : l.split(",")).map((x) => x.replace(/^"|"$/g, "").trim());
+      const low = c.map((x) => x.toLowerCase());
+      if (!cols && c.length >= 2 && num(c[c.length - 1]) === null) {  // cabeçalho
+        const i = (re) => low.findIndex((x) => re.test(x));
+        cols = { unit: i(/unid|apto|apart/), floor: i(/andar|pav/), final: i(/final|coluna|lado/), price: i(/pre[çc]o|valor/) }; if (cols.price < 0) cols.price = c.length - 1; continue;
+      }
+      let unit = null, price = null;
+      if (cols) { price = num(c[cols.price]); if (cols.unit >= 0) unit = c[cols.unit]; else if (cols.floor >= 0 && cols.final >= 0) unit = `${(c[cols.floor] || "").replace(/\D/g, "")}${(c[cols.final] || "").replace(/\D/g, "").padStart(2, "0")}`; }
+      else if (c.length === 2) { unit = c[0]; price = num(c[1]); }
+      else if (c.length >= 3) { unit = `${c[0].replace(/\D/g, "")}${c[1].replace(/\D/g, "").padStart(2, "0")}`; price = num(c[c.length - 1]); }
+      unit = String(unit || "").replace(/\D/g, "");
+      if (unit && price !== null) out.push({ unit, price }); else ign++;
+    }
+    return { linhas: out, ignoradas: ign };
+  };
+  let linhas = [];
+  const ta = h("textarea", { rows: 7, "aria-label": "Tabela de preços", placeholder: "unidade;preco\n1501;1250000\n1502;1390000\n\nou  andar;final;preco\n15;01;1250000" });
+  const prev = h("p", { class: "un-prev muted small" });
+  const prever = () => { const r = parse(ta.value); linhas = r.linhas; prev.textContent = r.linhas.length ? `${r.linhas.length} unidade(s) com preço` + (r.ignoradas ? ` · ${r.ignoradas} linha(s) ignorada(s)` : "") : ta.value.trim() ? "Nenhuma linha reconhecida. Use unidade;preco ou andar;final;preco." : ""; };
+  ta.addEventListener("input", prever);
+  const file = h("input", { type: "file", accept: ".csv,.txt,text/csv,text/plain", style: "display:none", onchange: async (e) => { const f = e.target.files[0]; if (!f) return; ta.value = await f.text(); prever(); e.target.value = ""; } });
+  const cks = h("div", { class: "un-cks" }, props.map((p) => caixa(p.name, p.id === prop.id, "p" + p.id)));
+  const aplicar = h("button", { class: "btn primary", type: "button", onclick: async () => {
+    const ids = [...cks.querySelectorAll("input:checked")].map((i) => Number(i.name.slice(1)));
+    if (!linhas.length) { aviso("Cole ou envie a tabela de preços primeiro.", true); ta.focus(); return; }
+    if (!ids.length) { aviso("Marque pelo menos um empreendimento.", true); return; }
+    aplicar.disabled = true;
+    try { const r = await api("POST", "/api/unidades/precos", { property_ids: ids, linhas }); const n = Object.values(r.atualizados).reduce((a, b) => a + b, 0), falt = Object.values(r.nao_encontradas).reduce((a, b) => a + b.length, 0);
+      aviso(`${n} preço(s) atualizado(s) em ${Object.keys(r.atualizados).length} empreendimento(s).${falt ? ` ${falt} unidade(s) da tabela não existem.` : ""}`); rotear(); }
+    catch (x) { aviso(x.message, true); } aplicar.disabled = false; } }, ic("upload"), "Aplicar nos selecionados");
+  const precos = h("div", { class: "card stack un-precos" }, tituloCard("upload", "Tabela de preços"),
+    h("p", { class: "muted small", style: "margin:0" }, "Cole a tabela (uma unidade por linha) ou envie um CSV exportado da planilha. Colunas: unidade e preço, ou andar, final e preço."),
+    h("div", { class: "row", style: "gap:8px" }, h("button", { class: "btn sm", type: "button", onclick: () => file.click() }, ic("upload"), "Enviar CSV"), file), ta, prev,
+    h("div", null, h("span", { class: "eyebrow" }, "Aplicar em"), cks), h("div", null, aplicar));
+  el.append(ativar, h("div", { class: "cols2 un-cols" }, mapa, precos));
+  return el;
 }
 
 // ───────── início e avisos ─────────

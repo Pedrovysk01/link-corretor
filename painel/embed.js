@@ -124,7 +124,10 @@
   const post = async (p, body) => { const r = await fetch(`/api/p/${code}/${p}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.erro || "erro"); return j; };
 
-  fetch(`/api/p/${code}/info`).then((r) => (r.ok ? r.json() : null)).then((info) => { if (info) montar(info); }).catch(() => {});
+  const previaAsk = async (txt) => { const r = await fetch("/api/ia-teste", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property_id: info0.pid, pergunta: txt }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.erro || "erro"); return j; };
+  let info0 = null;
+  fetch(`/api/p/${code}/info`).then((r) => (r.ok ? r.json() : null)).then((info) => { if (info) { info0 = info; montar(info); } }).catch(() => {});
 
   function montar(info) {
     const idiomas = info.idiomas && info.idiomas.length ? info.idiomas : ["pt-BR"];
@@ -134,11 +137,12 @@
     const LIMITE = 3;
     // Papel pelo login (resolvido no fim): "cliente" (ninguém logado), "corretor" (corretor logado) ou "equipe" (dono logado: só olha).
     let papel = null;
+    let previa = false;  // o DONO logado vê o mesmo selo e o chat do cliente, mas nada é gravado (sem cadastro, sem batimento, IA pelo teste do painel)
     const rec = info.recursos || {};
     // Cliente sem cadastro: além da 3ª interação, o popup aparece sozinho 30 s depois de abrir a apresentação
     let relogio = null;
     const armar = () => { clearTimeout(relogio); relogio = null; if (papel !== "cliente" || rec.cadastro === false || info.cliente) return; relogio = setTimeout(() => { if (papel === "cliente" && !gate && !info.cliente) { gate = true; render(); } }, 30000); };
-    window.LC_EMBED = { papel: () => papel, abrirIA: () => { if (papel !== "cliente") return; aba = info.ia ? "ia" : "contato"; if (pedirCadastro()) return; aberto = true; render(); } };  // o tour 3D (iframe) chama abrirIA() no "Fale conosco"
+    window.LC_EMBED = { papel: () => papel, abrirIA: () => { if (papel !== "cliente" && !previa) return; aba = info.ia ? "ia" : "contato"; if (pedirCadastro()) return; aberto = true; render(); } };  // o tour 3D (iframe) chama abrirIA() no "Fale conosco"
     const fone = rec.whatsapp === false ? "" : String(info.whatsapp || "").replace(/\D/g, "");
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
@@ -230,15 +234,17 @@
           info.cartao = true; publicar({ ...cartao, email: cartao.email }); cartaoAberto = false; render();
         } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; if (/já foram cadastrados/.test(x.message)) { info.cartao = true; setTimeout(() => { cartaoAberto = false; render(); }, 1800); } } };
     }
+    // nomes de quem atende: "A", "A e B" ou "A, B e C" (comissão dividida mostra todos)
+    const nomes = () => { const l = info.corretores && info.corretores.length ? info.corretores : [info.corretor]; return l.length < 2 ? l[0] : l.slice(0, -1).join(", ") + " e " + l[l.length - 1]; };
     function render() {
       t = T[lang] || T["pt-BR"];
-      if (papel === null || papel === "equipe") { sh.innerHTML = ""; return; } // carregando, ou dono olhando: nada por cima do mapa
+      if (papel === null || (papel === "equipe" && !previa)) { sh.innerHTML = ""; return; } // carregando, ou outra pessoa da equipe olhando: nada por cima do mapa
       if (papel === "corretor") { renderCorretor(); return; } // apresentação normal: sem faixa, sem IA, sem cadastro de cliente, sem batimento
       sh.innerHTML = `<style>${CSS}</style>${cadastro()}
-        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(info.corretor)}</b></span></button>
+        <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}"><span class="av">${esc(ini(info.corretor))}</span><span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button>
         <button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
-          <div class="hd"><span class="av">${esc(ini(info.corretor))}</span><div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}</span></div>
+          <div class="hd"><span class="av">${esc(ini(info.corretor))}</span><div class="who"><b>${esc(info.corretor)}</b><span>${esc(info.empreendimento)}${previa ? " · visão da construtora" : ""}</span></div>
             ${idiomas.length > 1 ? `<select aria-label="${esc(t.lang)}">${idiomas.map((l) => `<option value="${l}" ${l === lang ? "selected" : ""}>${l.split("-")[0].toUpperCase()}</option>`).join("")}</select>` : ""}
             <button class="x" aria-label="${esc(t.close)}">${svg("x")}</button></div>
           ${info.outro_corretor ? `<p class="warn" style="margin-top:10px">${esc(t.other(info.outro_corretor))}</p>` : ""}
@@ -259,7 +265,7 @@
       const fi = q("form.in"); if (fi) fi.onsubmit = (e) => { e.preventDefault(); const i = fi.querySelector("input"), v = i.value.trim(); if (v) { i.value = ""; perguntar(v); } };
       const fg = q("form.reg"); if (fg) { fg.onsubmit = registrar; fg.elements.nome.addEventListener("input", () => { if (fg.elements.nome.value.trim().length >= 2) fg.querySelector(".etapa2").hidden = false; }); if (gate) setTimeout(() => fg.elements.nome.focus(), 50); }
       const fr = q("form.rec"); if (fr) fr.onsubmit = async (e) => { e.preventDefault(); const er = fr.querySelector(".er"), ok = fr.querySelector(".ok"), v = fr.elements.m.value.trim(); er.textContent = ok.textContent = "";
-        if (!v) return; const b = fr.querySelector("button"); b.disabled = true;
+        if (!v) return; if (previa) { ok.textContent = "Visão da construtora: o recado não é enviado."; return; } const b = fr.querySelector("button"); b.disabled = true;
         try { await post("message", { mensagem: v }); ok.textContent = t.msg_ok.replace("{c}", info.corretor); fr.elements.m.value = ""; } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; } b.disabled = false; };
     }
     async function registrar(e) {
@@ -274,19 +280,19 @@
         info.cliente = r.cliente; info.corretor = r.corretor; info.whatsapp = r.whatsapp || info.whatsapp; gate = false; render(); }
       catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; }
     }
-    function pedirCadastro() { if (!info.cliente && rec.cadastro !== false) { gate = true; render(); return true; } return false; }
+    function pedirCadastro() { if (previa) return false; if (!info.cliente && rec.cadastro !== false) { gate = true; render(); return true; } return false; }
     function bolha(cls, texto) { const d = document.createElement("div"); d.className = "m " + cls; d.textContent = texto; const l = sh.querySelector(".msgs"); l.append(d); l.scrollTop = l.scrollHeight; return d; }
     async function perguntar(txt) {
       if (pedirCadastro() || ocupado) return; ocupado = true;
       const go = sh.querySelector(".go"); go && (go.disabled = true); sh.querySelector(".sug")?.remove();
       bolha("me", txt); const esp = bolha("bot", t.thinking);
-      try { const r = await post("ask", { pergunta: txt, lang });
+      try { const r = previa ? await previaAsk(txt) : await post("ask", { pergunta: txt, lang });
         if (r.resposta) esp.textContent = r.resposta.replace(/\*\*(.+?)\*\*/g, "$1").replace(/^#+\s*/gm, "");
         else { esp.className = "m err"; esp.textContent = r.motivo === "limite" ? t.limit : t.fail; }
       } catch (e) { esp.className = "m err"; esp.textContent = e.message === "erro" ? t.net : e.message; }
       ocupado = false; go && (go.disabled = false); msgs = sh.querySelector(".msgs").innerHTML; sh.querySelector(".msgs").scrollTop = 1e6;
     }
-    papel = info.meu_link ? "corretor" : info.equipe ? "equipe" : "cliente"; // logado no link dele: corretor; logado em qualquer outro: só olha
+    papel = info.meu_link ? "corretor" : info.equipe ? "equipe" : "cliente"; previa = papel === "equipe" && !!info.dono; // logado no link dele: corretor; logado em qualquer outro: só olha
     cartaoAberto = papel === "corretor" && !cartaoOk(); armar(); render();
   }
 })();

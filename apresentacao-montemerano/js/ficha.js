@@ -140,7 +140,7 @@ function andarAptosHTML(f) {
       <div class="apto-active-box" style="padding:12px;border-radius:var(--r-md);background:var(--track);display:grid;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <strong style="font-size:var(--fs-lg);">${curApto.label}</strong>
-          ${D.mostrarStatus ? `<span class="st ${stCls}">${stTxt}</span>` : ""}
+          ${D.mostrarStatus ? `<span class="st ${stCls}">${stTxt}</span>` : ""}${D.mostrarStatus && curApto.preco ? `<span class="st preco">${Number(curApto.preco).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span>` : ""}
         </div>
         <div style="font-size:var(--fs-sm);color:var(--ink-soft);">${curApto.lado}</div>
         <dl class="specs" style="margin:6px 0 0;">

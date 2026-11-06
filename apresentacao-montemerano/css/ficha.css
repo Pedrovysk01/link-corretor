@@ -30,3 +30,6 @@
 
 .st.area{background:var(--ink-fill);color:var(--ink)}
 .fine{font-size:var(--fs-sm);color:var(--ink-soft);margin:8px 0 0;line-height:1.45}
+
+/* preço da unidade na ficha (vem do painel → Unidades) */
+.st.preco{background:var(--paper,#f3efe6);color:var(--ink,#16302e);border:1px solid var(--brass,#c9944a);font-family:var(--mono,ui-monospace,monospace);letter-spacing:.01em}
