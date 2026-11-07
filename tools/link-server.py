@@ -1315,8 +1315,8 @@ class H(BaseHTTPRequestHandler):
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
             if casca: tag = '<script src="/painel/materiais.js?v=3"></script><script src="/painel/casca.js?v=5"></script>' + tag  # Bossa/Felicità: materiais (galeria, planta, antes/depois) + cabeçalho padrão; o Montemerano tem os seus
             # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=25" data-code="{injetar_code}" defer></script>'
-            elif pre_pid: tag += f'<script src="/painel/embed.js?v=25" data-pid="{pre_pid}" defer></script>'  # pré-visualização: selo e chat da construtora'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=26" data-code="{injetar_code}" defer></script>'
+            elif pre_pid: tag += f'<script src="/painel/embed.js?v=26" data-pid="{pre_pid}" defer></script>'  # pré-visualização: selo e chat da construtora'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200

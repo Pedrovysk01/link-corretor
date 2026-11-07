@@ -256,6 +256,11 @@
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
+    // chat e corretor só aparecem na tela do empreendimento: somem durante a abertura (voo/intro) e os filmes em tela cheia
+    const cineEl = document.getElementById("cine");
+    const naAbertura = () => { const b = document.body.classList; return !!cineEl && (!b.contains("intro-done") || b.contains("intro") || !cineEl.hidden); };
+    const visivel = () => { host.style.display = naAbertura() ? "none" : ""; };
+    visivel(); const ob = new MutationObserver(visivel); ob.observe(document.body, { attributes: true, attributeFilter: ["class"] }); if (cineEl) ob.observe(cineEl, { attributes: true, attributeFilter: ["hidden"] });
     // o chat segue a barra de baixo da apresentação (legenda no computador, dock no celular): mesma borda esquerda e mesma largura
     const encaixar = () => { const barra = [...document.querySelectorAll(".legend, .dock")].find((b) => b.getClientRects().length && getComputedStyle(b).visibility !== "hidden");
       if (!barra) { host.style.removeProperty("--pl"); host.style.removeProperty("--pw"); host.style.removeProperty("--pb"); return; }
