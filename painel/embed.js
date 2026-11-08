@@ -202,6 +202,11 @@
   /* tablet e celular */
   @media (min-width:521px) and (max-width:1024px){.panel{width:min(440px,calc(100vw - 24px));height:min(680px,calc(100dvh - 100px))}}
   @media (max-width:520px){.panel{inset:auto;left:var(--pl,10px);right:auto;width:var(--pw,calc(100vw - 20px));height:min(78dvh,620px);border-radius:16px}.pr-grid{grid-template-columns:1fr 1fr}.hd{padding-top:12px}.langs{right:10px}}
+  /* celular: o chat aberto ocupa a tela toda, como nos apps de mensagem, e acompanha a área visível acima do teclado (--vvt/--vvh vêm do visualViewport) */
+  @media (max-width:600px){.panel{inset:auto;left:0;right:0;top:var(--vvt,0px);bottom:auto;width:100%;min-width:0;max-width:none;height:var(--vvh,100dvh);border-radius:0;box-shadow:none;animation:none}
+    .panel .hd{padding-top:calc(12px + env(safe-area-inset-top))}.panel .body{overflow-y:auto;overscroll-behavior:contain}.msgs{overscroll-behavior:contain}
+    .panel .in{padding-bottom:calc(12px + env(safe-area-inset-bottom))}:host([data-teclado]) .panel .in{padding-bottom:10px}
+    textarea{font-size:16px}:host([data-chat]) .dockbar,:host([data-chat]) .modo{display:none}}
   @media (prefers-reduced-motion:reduce){.badge,.panel{animation:none}.fab:active,.btn:active{scale:1}}`;
   const ICON = { chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
     wa: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/>', lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>' };
@@ -256,6 +261,16 @@
     const host = document.createElement("div"); host.setAttribute("data-lc", ""); const sh = host.attachShadow({ mode: "open" });
     ["keydown", "keyup", "keypress", "wheel"].forEach((ev) => host.addEventListener(ev, (e) => e.stopPropagation()));
     document.body.append(host);
+    // celular: a altura do chat segue a área visível (o teclado encolhe o visualViewport); a última mensagem fica sempre à vista
+    const vv = window.visualViewport, celular = () => matchMedia("(max-width:600px)").matches;
+    const ajustarTela = (rolar) => { if (!vv) return; host.style.setProperty("--vvh", Math.round(vv.height) + "px"); host.style.setProperty("--vvt", Math.round(vv.offsetTop) + "px");
+      host.toggleAttribute("data-teclado", innerHeight - vv.height > 120);
+      if (rolar) { const m = sh.querySelector(".panel:not([hidden]) .msgs"); if (m) m.scrollTop = m.scrollHeight; } };
+    if (vv) { vv.addEventListener("resize", () => ajustarTela(true)); vv.addEventListener("scroll", () => ajustarTela(false)); ajustarTela(false); }
+    let rolagemAntes = null;
+    const marcarChat = (aberto) => { host.toggleAttribute("data-chat", !!aberto); const de = document.documentElement;   // trava a página atrás do chat em tela cheia
+      if (aberto && celular()) { if (rolagemAntes === null) { rolagemAntes = de.style.overflow; de.style.overflow = "hidden"; } ajustarTela(true); }
+      else if (rolagemAntes !== null) { de.style.overflow = rolagemAntes; rolagemAntes = null; } };
     // chat e corretor só aparecem na tela do empreendimento: somem durante a abertura (voo/intro) e os filmes em tela cheia
     const cineEl = document.getElementById("cine");
     const naAbertura = () => { const b = document.body.classList; return !!cineEl && (!b.contains("intro-done") || b.contains("intro") || !cineEl.hidden); };
@@ -421,13 +436,13 @@
           ${idiomas.length > 1 ? `<div class="langs" role="listbox" hidden>${idiomas.map((l) => `<button type="button" role="option" data-l="${l}" aria-pressed="${l === lang}">${BAND[l] || fl('<rect width="24" height="17" fill="#4d6460"/>')} ${esc(NOME[l] || l)}</button>`).join("")}</div>` : ""}
           <div class="body">${aba === "ia" ? ia() : aba === "prop" ? proposta() : contato()}</div></section>`;
       if (msgs && aba === "ia") { sh.querySelector(".msgs").innerHTML = msgs; sh.querySelector(".sug")?.remove(); }
-      ligar();
+      ligar(); marcarChat(aberto);
     }
     function ligar() {
       const q = (s) => sh.querySelector(s), painel = q(".panel"), fab = q(".fab");
-      const abrir = () => { if (pedirCadastro()) return; encaixar(); aberto = true; painel.hidden = false; fab.hidden = true; (q(".in input") || q("textarea"))?.focus(); };
+      const abrir = () => { if (pedirCadastro()) return; encaixar(); aberto = true; painel.hidden = false; fab.hidden = true; marcarChat(true); (q(".in input") || q("textarea"))?.focus(); };
       fab.onclick = abrir; q(".badge").onclick = () => { if (pedirCadastro()) return; aba = "contato"; aberto = true; render(); (sh.querySelector("textarea") || sh.querySelector(".x"))?.focus(); };
-      q(".x").onclick = () => { aberto = false; painel.hidden = true; fab.hidden = false; fab.focus(); };
+      q(".x").onclick = () => { aberto = false; painel.hidden = true; fab.hidden = false; marcarChat(false); fab.focus(); };
       painel.addEventListener("keydown", (e) => { if (e.key === "Escape") q(".x").click(); });
       const lb = q(".lang"), ll = q(".langs");
       if (lb && ll) { lb.onclick = (ev) => { ev.stopPropagation(); ll.hidden = !ll.hidden; lb.setAttribute("aria-expanded", String(!ll.hidden)); if (!ll.hidden) ll.querySelector("[aria-pressed=true]")?.focus(); };
