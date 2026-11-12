@@ -47,7 +47,8 @@ Vale para qualquer construtora. Decisões fechadas em 05/11/2026 (ver "Decisões
 | D3 | Preço antes da tabela chegar? | **"Sob consulta" + botão do corretor.** A ficha abre com área, andar e planta; no lugar do valor, "sob consulta" e o WhatsApp do corretor. |
 | D4 | Janelas: identificar ou só acender? | **Identificar.** Cada janela pertence a uma unidade; à noite acendem só as vendidas. Em prédios com 2 por andar, basta dividir o andar ao meio. |
 | D5 | Sem o `.skp`? | **Modelar.** Volume pelas plantas, fachada pelos renders. Trocar pelo do arquiteto quando chegar. |
-| D6 | Caixas da apresentação | **Padrão do Bossa:** papel creme 92 %, tinta verde, latão. Igual nas três e nas próximas. |
+| D6 | Caixas da apresentação | **Vidro forte** (fundo translúcido ~50 %, desfoque 26–30 px), iguais em todos os empreendimentos; contraste do texto ≥ 4,5:1. Substitui o "papel 92 %" de 05/11 (pedido de 12/11). |
+| D8 | Padronização | Tudo que se aplica a um empreendimento se aplica a todos; itens do cabeçalho aparecem mesmo sem o recurso pronto. Regras completas em `CLAUDE.md` → "Regras do Pedro". |
 | D7 | Aviso legal | Sempre ao lado de qualquer valor, em toda tela. Texto da Lei 4.591/64 quando for pré-lançamento. |
 
 ## 5. Vocabulário
