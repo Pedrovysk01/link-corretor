@@ -14,6 +14,7 @@ const ICONES = {
   hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 10v.01M18 14v.01"/>',
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   dash: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
   building: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/>',
@@ -166,7 +167,7 @@ const btnOk = (txt) => h("button", { type: "submit", class: "btn primary" }, txt
 
 // ───────── casca ─────────
 function menu() {
-  const m = [{ r: "", t: "Resumo", i: "dash" }, { r: "clientes", t: "Clientes", i: "people" }];
+  const m = [{ r: "", t: "Resumo", i: "dash" }, { r: "propostas", t: "Propostas", i: "cash" }, { r: "clientes", t: "Clientes", i: "people" }];
   if (gestao()) m.push({ r: "corretores", t: dono() ? "Corretores" : "Meus corretores", i: "users" });
   if (dono()) m.push({ r: "empreendimentos", t: "Empreendimentos", i: "building" }, { r: "unidades", t: "Unidades", i: "grid" });
   m.push({ r: "links", t: dono() ? "Links" : "Meus links", i: "link" }, { r: "perguntas", t: "Perguntas à IA", i: "chat" });
@@ -356,7 +357,7 @@ document.addEventListener("click", (e) => { const m = $("#menu-usuario"); if (m 
 document.addEventListener("keydown", (e) => { const m = $("#menu-usuario"); if (e.key === "Escape" && m && !m.hidden) { m.hidden = true; const b = $("#user-btn"); if (b) { b.setAttribute("aria-expanded", "false"); b.focus(); } } });
 function casca() {
   const itens = menu(), atual = rotaAtual();
-  const link = (m) => h("a", { href: "#/" + m.r, "aria-current": m.r === atual ? "page" : null, title: m.t, onclick: () => document.body.classList.remove("sb-open") }, ic(m.i), h("span", null, m.t));
+  const link = (m) => h("a", { href: "#/" + m.r, "aria-current": m.r === atual ? "page" : null, title: m.t, onclick: () => document.body.classList.remove("sb-open") }, ic(m.i), h("span", null, m.t), m.r === "propostas" ? h("span", { class: "nav-badge nav-badge-prop", hidden: !(S.propNovas > 0), "aria-label": "propostas novas" }, String(S.propNovas > 99 ? "99+" : S.propNovas || 0)) : null);
   const mini = document.body.classList.contains("sb-mini");
   const lateral = h("aside", { class: "side", id: "menu-lateral" },
     h("a", { class: "brand", href: "#/", "aria-label": S.empresa || "Início" }, logoEmpresa(), h("span", null, S.empresa || "Link Corretor")),
@@ -447,11 +448,12 @@ function entrada() {
   api("GET", "/api/me").then((m) => { S.empresa = m.empresa; S.logo = m.logo || ""; S.logoShape = m.logo_shape || "round"; S.theme = temaValido(m.theme) ? m.theme : null; aplicarTema(S.theme); if (m.user) { S.me = m.user; iniciar(); return; } $("#raiz").replaceChildren(m.setup ? telaSetup() : telaLogin()); $("#raiz input")?.focus(); })
     .catch((e) => $("#raiz").replaceChildren(h("div", { class: "entrada" }, h("div", { class: "card" }, h("h1", null, "Não consegui abrir o painel"), h("p", { class: "muted" }, e.message)))));
 }
+const ACESSO_CORRETOR = new URLSearchParams(location.search).get("acesso") === "corretor";
 function telaLogin() {
   const erro = h("p", { class: "err", role: "alert" });
   return h("div", { class: "entrada" }, h("form", { class: "card", novalidate: true, onsubmit: async (e) => { e.preventDefault(); erro.textContent = ""; const f = new FormData(e.target);
     try { await api("POST", "/api/login", { email: f.get("email"), senha: f.get("senha") }); entrada(); /* relê /api/me: antes do login o servidor não manda a logo */ } catch (x) { erro.textContent = x.message; } } },
-    h("div", { class: "logo logo-entrada" }, h("img", { src: "/painel/logo-justus.png", alt: "Justus Incorporadora", class: "logo-img shape-wide" })), h("div", null, h("h1", null, "Entrar"), h("p", { class: "muted" }, S.empresa || "Clientes por corretor")),
+    h("div", { class: "logo logo-entrada" }, h("img", { src: "/painel/logo-justus.png", alt: "Justus Incorporadora", class: "logo-img shape-wide" })), h("div", null, h("h1", null, ACESSO_CORRETOR ? "Acesso do corretor" : "Entrar"), h("p", { class: "muted" }, ACESSO_CORRETOR ? "Use o e-mail e a senha que a construtora passou para você." : (S.empresa || "Clientes por corretor"))),
     campo("E-mail", h("input", { type: "email", name: "email", autocomplete: "username", required: true })), campoSenha("Senha", { name: "senha", autocomplete: "current-password", required: true  }),
     erro, h("button", { class: "btn primary", type: "submit" }, "Entrar")));
 }
@@ -467,7 +469,80 @@ function telaSetup() {
 }
 
 // ───────── roteador ─────────
-const TELAS = { "": ["Resumo", telaResumo], clientes: ["Clientes", telaClientes], cliente: ["Cliente", telaCliente], corretores: ["Corretores", telaCorretores, "gestao"], corretor: ["Corretor", telaCorretor, "gestao"],
+// ───────── propostas ─────────
+// A proposta é a notificação mais importante: abre um aviso FIXO no alto da tela (fica até alguém fechar), toca o som de caixa registradora,
+// pisca o título da aba e põe um selo vermelho no menu. Vale para a construtora, o gerente e o corretor (cada um vê as dele).
+const filaProp = []; let _pisca = 0, _tituloBase = null;
+function pintarBadgeProp() {
+  const n = S.propNovas || 0;
+  document.querySelectorAll(".nav-badge-prop").forEach((b) => { b.textContent = n > 99 ? "99+" : String(n); b.hidden = n === 0; });
+}
+function piscarTitulo(ligar) {
+  clearInterval(_pisca); _pisca = 0;
+  if (!ligar) { if (_tituloBase) document.title = _tituloBase; _tituloBase = null; return; }
+  _tituloBase = document.title.replace(/^Nova proposta! · /, ""); let alt = false;
+  _pisca = setInterval(() => { alt = !alt; document.title = alt ? "Nova proposta! · " + _tituloBase : _tituloBase; }, 1000);
+}
+function alertaProposta(novas) {
+  if (!novas.length) return;
+  novas.forEach((p) => { if (!filaProp.some((x) => x.id === p.id)) filaProp.push(p); });
+  abrirAlertaProp(); piscarTitulo(true);
+  if (window.LC_SOM) window.LC_SOM.caixa();
+}
+function abrirAlertaProp() {
+  let el = $("#alerta-prop");
+  if (!el) { el = h("div", { id: "alerta-prop", popover: "manual", role: "alertdialog", "aria-live": "assertive", "aria-labelledby": "alerta-prop-t" }); document.body.append(el); }
+  const p = filaProp[filaProp.length - 1], outras = filaProp.length - 1;
+  el.replaceChildren(h("span", { class: "ap-anel", "aria-hidden": "true" }),
+    h("div", { class: "ap-corpo" }, h("span", { class: "ap-ic", "aria-hidden": "true" }, ic("cash")),
+      h("div", { class: "ap-txt" }, h("p", { class: "ap-eyebrow" }, "Nova proposta" + (outras ? ` · mais ${outras}` : "")),
+        h("b", { id: "alerta-prop-t", class: "ap-valor" }, `Apto ${p.unit} · ${brlN(p.price)}`),
+        h("span", { class: "ap-sub wrap" }, `${p.cliente} · ${p.empreendimento}`),
+        h("small", { class: "ap-fluxo wrap" }, [gestao() ? `Corretor ${p.corretor}` : null, `Entrada ${brlN(p.entrada)}`, `${p.mensais}x de ${brlN(p.mensal_valor)}`].filter(Boolean).join(" · "))),
+      h("div", { class: "ap-acoes" }, h("a", { class: "btn primary", href: "#/propostas", onclick: fecharAlertaProp }, "Ver propostas"), h("button", { class: "btn", type: "button", onclick: fecharAlertaProp }, "Fechar"))));
+  try { if (!el.matches(":popover-open")) el.showPopover(); } catch { /* navegador sem popover: o CSS já deixa fixo */ el.classList.add("sem-popover"); }
+}
+function fecharAlertaProp() { filaProp.length = 0; piscarTitulo(false); const el = $("#alerta-prop"); if (el) { try { el.hidePopover(); } catch { /* ok */ } el.remove(); } }
+
+async function telaPropostas() {
+  const d = await api("GET", "/api/propostas"); S.propNovas = d.novas; pintarBadgeProp();
+  const todas = d.propostas, hojeStr = new Date().toDateString(), ehHoje = (p) => utc(p.created).toDateString() === hojeStr;
+  let filtro = "todas";
+  const soma = todas.reduce((t, p) => t + (p.price || 0), 0), kpi = (n, l) => h("div", { class: "card kpi" }, h("span", { class: "n" }, n), h("span", { class: "l" }, l));
+  const somOn = () => (window.LC_SOM ? window.LC_SOM.ligado() : true);
+  const btnSom = h("button", { class: "btn sm", type: "button", "aria-pressed": String(somOn()), onclick: () => { if (window.LC_SOM) window.LC_SOM.definir(!somOn()); btnSom.setAttribute("aria-pressed", String(somOn())); btnSom.lastChild.textContent = somOn() ? "Som ligado" : "Som desligado"; if (somOn() && window.LC_SOM) window.LC_SOM.caixa(); } }, ic("bell"), h("span", null, somOn() ? "Som ligado" : "Som desligado"));
+  const acoes = [btnSom, h("button", { class: "btn sm", type: "button", onclick: () => window.LC_SOM && window.LC_SOM.caixa({ forcar: true }) }, "Ouvir o som")];
+  if (dono() || (S.me && S.me.demo)) acoes.push(h("button", { class: "btn sm", type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true; try { await api("POST", "/api/propostas/teste", {}); aviso("Proposta de teste criada."); await checar(); } catch (x) { aviso(x.message, true); } b.disabled = false; } }, ic("plus"), "Simular proposta (teste)"));
+  if (S.propNovas) acoes.push(h("button", { class: "btn sm", type: "button", onclick: async () => { await api("POST", "/api/propostas/lidas", {}); S.propNovas = 0; pintarBadgeProp(); fecharAlertaProp(); rotear(); } }, "Marcar todas como vistas"));
+  const el = h("div", { class: "stack" }, cabeca("Propostas", "Cada proposta enviada por um cliente na apresentação: valor, fluxo, corretor e contato. A mais nova aparece primeiro.", ...acoes));
+  if (!todas.length) { el.append(h("div", { class: "card" }, vazio("cash", "Nenhuma proposta ainda", "Quando um cliente montar e enviar uma proposta no chat da apresentação, ela aparece aqui e um aviso fixo, com som de caixa registradora, abre na tela."))); return el; }
+  el.append(h("div", { class: "kpis" }, kpi(fmtN(d.novas), "novas (não vistas)"), kpi(fmtN(todas.length), "propostas"), kpi(brlN(soma), "valor somado"), kpi(brlN(soma / todas.length), "valor médio")));
+  const chips = h("div", { class: "chips", role: "group", "aria-label": "Filtrar propostas" }), grade = h("div", { class: "props propostas-grade" });
+  const marcar = async (p, cartao) => { if (p.seen) return; p.seen = 1; S.propNovas = Math.max(0, (S.propNovas || 1) - 1); pintarBadgeProp(); cartao && cartao.classList.remove("nova"); cartao && cartao.querySelector(".pill.nova") && cartao.querySelector(".pill.nova").remove(); try { await api("PATCH", "/api/propostas/" + p.id, { seen: true }); } catch { /* o próximo ciclo corrige o selo */ } };
+  const cartao = (p) => {
+    const c = h("article", { class: "card proposta" + (p.seen ? "" : " nova") },
+      h("div", { class: "row between" }, p.seen ? h("span", { class: "muted small" }, dataHora(p.created)) : pill("Nova", "nova warn"), !p.seen ? h("span", { class: "muted small" }, dataHora(p.created)) : null),
+      h("div", { class: "pr-unid" }, h("span", { class: "eyebrow" }, p.empreendimento), h("b", { class: "pr-apto" }, `Apto ${p.unit}`), h("span", { class: "pr-preco" }, brlN(p.price))),
+      h("a", { class: "pr-cli cell-main wrap", href: "#/cliente/" + p.visitor_id, onclick: () => marcar(p, c) }, p.cliente), p.cliente_fone && h("span", { class: "muted small" }, fone(p.cliente_fone)),
+      h("div", { class: "fluxo" }, h("div", null, h("span", null, "Entrada"), h("b", null, brlN(p.entrada))), h("div", null, h("span", null, `${p.mensais}x mensais`), h("b", null, brlN(p.mensal_valor))),
+        p.baloes ? h("div", null, h("span", null, `${p.baloes} balões ${p.balao_period === "semestral" ? "semestrais" : "anuais"}`), h("b", null, brlN(p.balao_valor))) : null,
+        h("div", null, h("span", null, p.modo === "banco" ? "Banco na entrega" : "Nas chaves"), h("b", null, brlN(p.chaves)))),
+      p.obs && h("p", { class: "pr-obs wrap small" }, p.obs),
+      h("div", { class: "selo-corretor" }, avatar(p.corretor, "sm", fotoDe(p.broker_id, p.corretor_tem_foto)), h("span", { class: "wrap small" }, p.corretor)),
+      h("div", { class: "row pr-acoes" }, h("a", { class: "btn sm primary", href: "#/cliente/" + p.visitor_id, onclick: () => marcar(p, c) }, "Abrir cliente"),
+        p.cliente_fone && h("a", { class: "btn-wa", href: wa(p.cliente_fone, `Olá ${p.cliente.split(" ")[0]}, recebi sua proposta para o apto ${p.unit} do ${p.empreendimento}. Vamos conversar?`), target: "_blank", rel: "noopener", title: "Chamar " + p.cliente + " no WhatsApp", "aria-label": "Chamar " + p.cliente + " no WhatsApp", onclick: () => marcar(p, c) }, icWa()),
+        !p.seen && h("button", { class: "btn sm ghost", type: "button", onclick: () => marcar(p, c) }, "Marcar como vista")));
+    return c;
+  };
+  const pintar = () => {
+    const lista = todas.filter((p) => (filtro === "novas" ? !p.seen : filtro === "hoje" ? ehHoje(p) : true));
+    chips.replaceChildren(...[["todas", `Todas (${todas.length})`], ["novas", `Novas (${todas.filter((p) => !p.seen).length})`], ["hoje", `Hoje (${todas.filter(ehHoje).length})`]].map(([k, t]) => h("button", { type: "button", class: "chip", "aria-pressed": String(filtro === k), onclick: () => { filtro = k; pintar(); } }, t)));
+    grade.replaceChildren(...(lista.length ? lista.map(cartao) : [h("p", { class: "muted" }, "Nada neste filtro.")]));
+  };
+  pintar(); el.append(chips, grade); return el;
+}
+
+const TELAS = { "": ["Resumo", telaResumo], propostas: ["Propostas", telaPropostas], clientes: ["Clientes", telaClientes], cliente: ["Cliente", telaCliente], corretores: ["Corretores", telaCorretores, "gestao"], corretor: ["Corretor", telaCorretor, "gestao"],
   empreendimentos: ["Empreendimentos", telaProps, true], unidades: ["Unidades", telaUnidades, true], links: ["Links", telaLinks], perguntas: ["Perguntas à IA", telaPerguntas], config: ["Configurações", telaConfig, true], conta: ["Minha conta", telaConta], tutorial: ["Tutorial", telaTutorial] };
 async function rotear() {
   if (!S.me) return;
@@ -1291,16 +1366,22 @@ async function telaUnidades() {
 // ───────── início e avisos ─────────
 let _poll = null;
 async function checar() {
-  if (!S.me || document.hidden) return;
+  if (!S.me) return;
   try {
-    const primeira = S.nv === null;
-    const n = await api("GET", primeira ? "/api/notify?init=1" : `/api/notify?v=${S.nv}&o=${S.no}`);
-    if (!primeira) {
-      n.novos.forEach(avisoCliente);
-      n.retornos.forEach((l) => aviso(`${l.name} voltou a abrir ${l.empreendimento}`));
-      if ((n.novos.length || n.retornos.length) && ["", "clientes", "corretor"].includes(S.rota)) rotear();
+    const primeira = S.nv === null, oculta = document.hidden;
+    const n = await api("GET", primeira ? "/api/notify?init=1" : `/api/notify?v=${S.nv}&o=${S.no}&p=${S.np || 0}`);
+    S.propNovas = n.nao_vistas || 0; pintarBadgeProp();
+    if (primeira) {
+      if (n.pendentes && n.pendentes.length) alertaProposta(n.pendentes.slice().reverse());  // chegaram com o painel fechado: o aviso fixo abre ao entrar
+    } else {
+      if (n.propostas && n.propostas.length) { alertaProposta(n.propostas.slice().reverse()); if (S.rota === "propostas") rotear(); }
+      if (!oculta) {  // clientes e retornos só entram com a aba à vista (como antes); a marca só avança quando eles foram mostrados
+        n.novos.forEach(avisoCliente);
+        n.retornos.forEach((l) => aviso(`${l.name} voltou a abrir ${l.empreendimento}`));
+        if ((n.novos.length || n.retornos.length) && ["", "clientes", "corretor"].includes(S.rota)) rotear();
+      }
     }
-    S.nv = n.v; S.no = n.o;
+    S.np = n.p; if (primeira || !oculta) { S.nv = n.v; S.no = n.o; }
   } catch { /* próximo ciclo */ }
 }
 // Holofote: um brilho bem suave que passa sozinho, em pontos aleatórios, pela barra lateral e pela barra superior (CSS: --hx/--hy/--ha).
@@ -1318,7 +1399,7 @@ function holofote() {
   };
   passo(); setInterval(passo, 9000);
 }
-function iniciar() { holofote(); try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = null; rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
+function iniciar() { holofote(); try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = S.np = null; fecharAlertaProp(); rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
 window.addEventListener("hashchange", rotear);
 entrada();
 

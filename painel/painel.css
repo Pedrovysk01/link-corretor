@@ -1046,3 +1046,46 @@ table.t th.acoes,table.t td.acoes{text-align:center}
 .olho[aria-pressed=true]{color:var(--brass-ink)}
 .olho:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
 .ia-trava-row .pw{flex:1;min-width:0}
+
+/* ───────── propostas: selo no menu, aviso fixo com anel pulsante, tela própria ───────── */
+.side .nav a{position:relative}
+.nav-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#dc2626;color:#fff;font:700 11px/20px var(--body);text-align:center;flex:none}
+.nav-badge[hidden]{display:none}
+body.sb-mini .nav-badge{position:absolute;top:1px;right:1px;margin:0;min-width:18px;height:18px;line-height:18px;font-size:10px}
+/* aviso fixo (fica até alguém fechar): topo da tela, acima de tudo (popover = camada superior) */
+#alerta-prop{position:fixed;inset:auto;top:84px;left:50%;translate:-50% 0;margin:0;padding:0;border:0;background:transparent;overflow:visible;width:min(580px,calc(100vw - 24px));color:#fff}
+#alerta-prop.sem-popover{z-index:2147483000}
+#alerta-prop:popover-open,#alerta-prop.sem-popover{animation:ap-entra .55s cubic-bezier(.2,1.5,.3,1) both}
+@keyframes ap-entra{from{opacity:0;transform:translateY(-28px) scale(.94)}to{opacity:1;transform:none}}
+.ap-corpo{position:relative;display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;padding:18px 20px;border-radius:18px;background:#0f172a;border:1px solid rgba(52,211,153,.45);box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset}
+.ap-anel{position:absolute;inset:-5px;border-radius:23px;border:2px solid #34d399;pointer-events:none;animation:ap-anel 1.5s ease-out infinite}
+@keyframes ap-anel{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.07)}}
+.ap-ic{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#10b981;color:#052e16;animation:ap-balanca 1.2s ease-in-out infinite}
+.ap-ic .ic{width:28px;height:28px}
+@keyframes ap-balanca{0%,100%{rotate:0deg}20%{rotate:-12deg}40%{rotate:10deg}60%{rotate:-6deg}80%{rotate:4deg}}
+.ap-txt{display:grid;gap:2px;min-width:0}
+.ap-eyebrow{margin:0;font:700 11px/1.3 var(--mono,monospace);letter-spacing:.16em;text-transform:uppercase;color:#6ee7b7}
+.ap-valor{font:700 1.5rem/1.15 var(--display);letter-spacing:-.02em}
+.ap-sub{color:#e2e8f0;font-weight:600}
+.ap-fluxo{color:#94a3b8}
+.ap-acoes{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.ap-acoes .btn{border-color:transparent!important}
+.ap-acoes .btn.primary{background:#10b981;color:#052e16}
+.ap-acoes .btn:not(.primary){background:rgba(255,255,255,.1);color:#fff}
+@media (prefers-reduced-motion:reduce){.ap-anel,.ap-ic,#alerta-prop:popover-open{animation:none}}
+@media (max-width:640px){#alerta-prop{top:70px}.ap-corpo{padding:14px 14px 16px}.ap-valor{font-size:1.25rem}}
+/* tela Propostas */
+.propostas-grade{margin-top:4px}
+.card.proposta{display:grid;gap:10px;align-content:start}
+.card.proposta.nova{border-color:#10b981!important;box-shadow:0 0 0 2px rgba(16,185,129,.25),var(--sh-0)}
+.pill.nova{background:#10b981;color:#052e16}
+.pr-unid{display:grid;gap:2px}
+.pr-apto{font:700 1.5rem/1.1 var(--display);letter-spacing:-.02em}
+.pr-preco{font-weight:600;color:var(--brass-ink,#047857)}
+.fluxo{display:grid;gap:4px;padding:10px 12px;border-radius:var(--r-md);background:var(--surface2)}
+.fluxo>div{display:flex;justify-content:space-between;gap:10px;font-size:var(--fs-sm)}
+.fluxo span{color:var(--muted)}
+.fluxo b{font-weight:600;white-space:nowrap}
+.pr-obs{margin:0;white-space:pre-wrap;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.selo-corretor{display:flex;align-items:center;gap:8px;min-width:0}
+.pr-acoes{margin-top:2px}

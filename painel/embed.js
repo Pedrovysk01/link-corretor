@@ -22,6 +22,7 @@
       reg_go: "Continuar na apresentação", reg_need: "Informe seu nome e um WhatsApp ou e-mail.", reg_agree: "Marque o aceite para continuar.", reg_fine: (c) => `Atendimento por ${c}. Seus dados ficam só com a construtora e o corretor.`,
       pr_tab: "Proposta", pr_t: "Monte sua proposta", pr_unit: "Unidade", pr_direto: "Direto com a construtora", pr_banco: "Banco nas chaves", pr_entrada: "Entrada (sinal)", pr_n: "Mensais na obra", pr_bal: "Balões", pr_balper: "Periodicidade", pr_balpct: "Total dos balões",
       pr_chaves: "Nas chaves", pr_banco_pct: "Financiado pelo banco", pr_obs: "Observações", pr_send: "Enviar proposta", pr_price: "Preço", pr_total: "Total", pr_sem: "semestrais", pr_anu: "anuais", pr_nobal: "sem balões",
+      pr_sent_t: "Proposta enviada!", pr_sent_wa: (c) => `Falar com ${c} no WhatsApp`, pr_sent_ok: "Ok, entendi", pr_sent_msg: (e, u) => `Olá! Acabei de enviar uma proposta para o apto ${u} do ${e}.`,
       pr_ok: (c) => `Proposta enviada. ${c} e a construtora já receberam e entram em contato para formalizar.`, pr_bad: "A soma de entrada, balões e chaves passa de 100%. Ajuste as porcentagens.",
       pr_ilus: "Valores ilustrativos: a tabela oficial da incorporadora ainda não foi divulgada. A proposta vale como intenção de compra.",
       pr_banco_t: "Em análise pela construtora", pr_banco_s: "Financiamento bancário e consórcio estão sendo negociados com os parceiros abaixo. Em breve você monta a proposta com as condições de cada um.", pr_banco_volta: "Montar proposta direto com a construtora", pr_fine: "Simulação sem compromisso. Condições sujeitas à aprovação da incorporadora.",
@@ -37,6 +38,7 @@
       reg_go: "Continue", reg_need: "Enter your name and a WhatsApp or email.", reg_agree: "Please accept to continue.", reg_fine: (c) => `Served by ${c}. Your data stays with the developer and the broker only.`,
       pr_tab: "Offer", pr_t: "Build your offer", pr_unit: "Unit", pr_direto: "Direct with the developer", pr_banco: "Bank at delivery", pr_entrada: "Down payment", pr_n: "Monthly during works", pr_bal: "Balloons", pr_balper: "Frequency", pr_balpct: "Balloons total",
       pr_chaves: "At delivery", pr_banco_pct: "Bank financed", pr_obs: "Notes", pr_send: "Send offer", pr_price: "Price", pr_total: "Total", pr_sem: "semiannual", pr_anu: "annual", pr_nobal: "no balloons",
+      pr_sent_t: "Offer sent!", pr_sent_wa: (c) => `Talk to ${c} on WhatsApp`, pr_sent_ok: "Got it", pr_sent_msg: (e, u) => `Hi! I just sent an offer for unit ${u} at ${e}.`,
       pr_ok: (c) => `Offer sent. ${c} and the developer have it and will get in touch to formalize.`, pr_bad: "Down payment, balloons and delivery add up to more than 100%. Adjust the percentages.",
       pr_ilus: "Illustrative values: the developer's official price list has not been released yet. The offer counts as a purchase intent.",
       pr_banco_t: "Under review by the developer", pr_banco_s: "Bank financing and consortium plans are being negotiated with the partners below. Soon you will build your offer with each partner's terms.", pr_banco_volta: "Build an offer direct with the developer", pr_fine: "Non-binding simulation. Terms subject to the developer's approval.",
@@ -52,6 +54,7 @@
       reg_go: "Continuar", reg_need: "Indica tu nombre y un WhatsApp o correo.", reg_agree: "Marca la aceptación para continuar.", reg_fine: (c) => `Atendido por ${c}. Tus datos quedan solo con la constructora y el corredor.`,
       pr_tab: "Propuesta", pr_t: "Arma tu propuesta", pr_unit: "Unidad", pr_direto: "Directo con la constructora", pr_banco: "Banco en la entrega", pr_entrada: "Entrada (señal)", pr_n: "Mensuales en obra", pr_bal: "Refuerzos", pr_balper: "Periodicidad", pr_balpct: "Total de refuerzos",
       pr_chaves: "En la entrega", pr_banco_pct: "Financiado por el banco", pr_obs: "Observaciones", pr_send: "Enviar propuesta", pr_price: "Precio", pr_total: "Total", pr_sem: "semestrales", pr_anu: "anuales", pr_nobal: "sin refuerzos",
+      pr_sent_t: "¡Propuesta enviada!", pr_sent_wa: (c) => `Hablar con ${c} por WhatsApp`, pr_sent_ok: "Entendido", pr_sent_msg: (e, u) => `¡Hola! Acabo de enviar una propuesta para la unidad ${u} de ${e}.`,
       pr_ok: (c) => `Propuesta enviada. ${c} y la constructora ya la recibieron y se pondrán en contacto para formalizar.`, pr_bad: "Entrada, refuerzos y entrega suman más del 100%. Ajusta los porcentajes.",
       pr_ilus: "Valores ilustrativos: la lista oficial de precios de la constructora aún no fue publicada. La propuesta vale como intención de compra.",
       pr_banco_t: "En análisis por la constructora", pr_banco_s: "Financiación bancaria y consorcio se están negociando con los socios de abajo. Pronto podrás armar la propuesta con las condiciones de cada uno.", pr_banco_volta: "Armar propuesta directo con la constructora", pr_fine: "Simulación sin compromiso. Condiciones sujetas a la aprobación de la constructora.",
@@ -114,6 +117,20 @@
   .gate{position:fixed;inset:0;z-index:2147483002;display:grid;place-items:center;padding:16px;background:rgba(10,18,15,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:fade .36s ease-out both}
   @keyframes fade{from{opacity:0}}
   .gate[hidden]{display:none}
+  .sent{position:fixed;inset:0;z-index:2147483003;display:grid;place-items:center;padding:16px;background:rgba(10,18,15,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:fade .3s ease-out both}
+  .sent-card{position:relative;width:min(420px,100%);background:#f3efe6;color:#16302e;border-radius:18px;padding:28px 24px 22px;text-align:center;display:grid;gap:10px;justify-items:center;box-shadow:0 30px 80px rgba(0,0,0,.45);animation:pop .5s cubic-bezier(.2,1.5,.3,1) both}
+  .sent-ring{position:absolute;inset:-6px;border-radius:24px;border:2px solid #10b981;pointer-events:none;animation:sentring 1.5s ease-out infinite}
+  @keyframes sentring{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.07)}}
+  .sent-ic{width:64px;height:64px;border-radius:50%;background:#10b981;color:#052e16;display:grid;place-items:center;animation:sentball 1.2s ease-in-out infinite}
+  .sent-ic svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes sentball{0%,100%{rotate:0deg}20%{rotate:-10deg}40%{rotate:8deg}60%{rotate:-5deg}80%{rotate:3deg}}
+  .sent h2{margin:0;font:400 2rem/1.05 "Instrument Serif",Georgia,serif}
+  .sent-v{margin:0;font:600 1.15rem/1.2 "Figtree",sans-serif}
+  .sent-s{margin:0;font-size:14px;line-height:1.45;color:#4d6460}
+  .sent-a{display:grid;gap:8px;width:100%;margin-top:6px}
+  .sent-a .btn{display:flex;justify-content:center;align-items:center;min-height:46px;padding:0 16px;border-radius:10px;font:600 14px "Figtree",sans-serif;text-decoration:none;cursor:pointer;border:0;background:#16302e;color:#f3efe6}
+  .sent-a .btn.ghost{background:transparent;color:#16302e;border:1px solid rgba(22,48,46,.28)}
+  @media (prefers-reduced-motion:reduce){.sent-ring,.sent-ic{animation:none}}
   .gate form{width:min(440px,100%);background:#f3efe6;color:#16302e;border-radius:14px;padding:26px 24px 20px;box-shadow:0 30px 80px rgba(0,0,0,.4);display:grid;gap:12px;animation:pop .36s cubic-bezier(.2,.8,.2,1) both;max-height:calc(100dvh - 32px);overflow-y:auto}
   .gate .eyebrow{margin:0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#80592a;font-weight:600}
   .gate h2{margin:-4px 0 0;font:400 1.9rem/1.05 "Instrument Serif",Georgia,serif}
@@ -246,6 +263,7 @@
     let noBrasil = nav.startsWith("pt"); try { noBrasil = noBrasil || TZ_BR.test(Intl.DateTimeFormat().resolvedOptions().timeZone || ""); } catch { /* sem Intl */ }
     let lembrado = null; try { lembrado = localStorage.getItem("lc_lang_" + CHAVE); } catch { /* sem storage */ }
     let lang = idiomas.includes(lembrado) ? lembrado : noBrasil && idiomas.includes("pt-BR") ? "pt-BR" : idiomas.find((l) => nav.startsWith(l.toLowerCase().split("-")[0])) || idiomas[0];  // no Brasil, sempre português
+    let envio = null; // proposta recém-enviada: o aviso fixo fica na tela até o cliente tocar em OK
     let t = T[lang] || T["pt-BR"], aba = info.ia ? "ia" : "contato", ocupado = false, aberto = false, msgs = null, gate = false, toques = 0, ultimo = 0;
     const LIMITE = 3;
     // Papel pelo login (resolvido no fim): "cliente" (ninguém logado), "corretor" (corretor logado) ou "equipe" (dono logado: só olha).
@@ -312,6 +330,11 @@
     const calc = () => { const u = (UN && UN.unidades.find((x) => x.id === P.unit)) || (UN && UN.unidades[0]); if (!u) return null;
       const price = u.price, entrada = price * P.entradaPct / 100, chaves = price * P.chavesPct / 100, balTot = P.balN ? price * P.balPct / 100 : 0, balV = P.balN ? balTot / P.balN : 0, resto = price - entrada - chaves - balTot;
       return { u, price, entrada, chaves, balTot, balV, resto, mensal: resto / P.n, ok: resto > 0 }; };
+    const carregarSom = () => new Promise((res) => { if (window.LC_SOM) return res(); const sc = document.createElement("script"); sc.src = "/painel/som-caixa.js?v=1"; sc.onload = res; sc.onerror = res; document.head.append(sc); });
+    if (info.proposta) carregarSom();  // já deixa o som pronto: ele toca quando a proposta for enviada
+    const enviada = () => !envio ? "" : `<div class="sent" role="alertdialog" aria-live="assertive" aria-labelledby="lc-sent-t"><div class="sent-card"><span class="sent-ring" aria-hidden="true"></span>
+      <div class="sent-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h2 id="lc-sent-t">${esc(t.pr_sent_t)}</h2><p class="sent-v">${esc(envio.unit)} · ${esc(envio.price)}</p><p class="sent-s">${esc(t.pr_ok(info.corretor).replace(/^[^.!]*[.!]\s*/, ""))}</p>
+      <div class="sent-a">${fone ? `<a class="btn" href="https://wa.me/${fone}?text=${encodeURIComponent(t.pr_sent_msg(info.empreendimento, envio.unit))}" target="_blank" rel="noopener">${esc(t.pr_sent_wa(info.corretor.split(" ")[0]))}</a>` : ""}<button class="btn ghost sent-x" type="button">${esc(t.pr_sent_ok)}</button></div></div></div>`;
     const proposta = () => {
       if (!UN) { carregarUnidades().then(() => { if (aba === "prop" && aberto) render(); }); return `<div class="pr"><p class="note">…</p></div>`; }
       if (!UN.unidades.length) return `<div class="pr"><p class="warn">${esc(t.fail)}</p></div>`;
@@ -350,9 +373,9 @@
       sh.querySelectorAll("[data-pr]").forEach((el) => { if (el.tagName === "TEXTAREA") el.addEventListener("input", () => { P.obs = el.value; }); else el.addEventListener("change", () => { const k = el.dataset.pr; P[k] = k === "unit" || k === "balPer" ? el.value : Number(el.value); render(); }); });
       sh.querySelectorAll("[data-modo]").forEach((b) => (b.onclick = () => { P.modo = b.dataset.modo; render(); }));
       const env = q("[data-enviar-pr]"); if (!env) return;
-      env.onclick = async () => { if (pedirCadastro()) return; const c = calc(); if (!c || !c.ok) return; const er = q(".pr .er"), ok = q(".pr .ok"); er.textContent = ok.textContent = ""; env.disabled = true;
+      env.onclick = async () => { if (pedirCadastro()) return; if (window.LC_SOM) window.LC_SOM.desbloquear(); const c = calc(); if (!c || !c.ok) return; const er = q(".pr .er"), ok = q(".pr .ok"); er.textContent = ok.textContent = ""; env.disabled = true;
         if (previa) { ok.textContent = "Visão da construtora: a proposta não é enviada."; env.disabled = false; return; }
-        try { await post("proposta", { unit: P.unit, modo: "direto", entrada_pct: P.entradaPct, mensais: P.n, baloes: P.balN, balao_period: P.balPer, baloes_pct: P.balPct, chaves_pct: P.chavesPct, obs: P.obs }); ok.textContent = t.pr_ok(info.corretor); }
+        try { await post("proposta", { unit: P.unit, modo: "direto", entrada_pct: P.entradaPct, mensais: P.n, baloes: P.balN, balao_period: P.balPer, baloes_pct: P.balPct, chaves_pct: P.chavesPct, obs: P.obs }); ok.textContent = t.pr_ok(info.corretor); envio = { unit: P.unit, price: brl(c.price) }; render(); carregarSom().then(() => window.LC_SOM && window.LC_SOM.caixa({ forcar: true })); }
         catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; env.disabled = false; } };
     }
 
@@ -424,7 +447,7 @@
       t = T[lang] || T["pt-BR"];
       if (papel === null || (papel === "equipe" && !previa)) { sh.innerHTML = ""; return; } // carregando, ou outra pessoa da equipe olhando: nada por cima do mapa
       if (papel === "corretor") { renderCorretor(); return; } // apresentação normal: sem faixa, sem IA, sem cadastro de cliente, sem batimento
-      sh.innerHTML = `<style>${CSS}</style>${cadastro()}
+      sh.innerHTML = `<style>${CSS}</style>${cadastro()}${enviada()}
         <div class="dockbar"><button class="fab" ${aberto ? "hidden" : ""} aria-label="${esc(t.open)}">${svg("chat")}${esc(info.ia ? t.ask : t.contact + " " + info.corretor.split(" ")[0])}</button>
         <button class="badge" type="button" ${rec.selo === false ? "hidden" : ""} title="${esc(t.open)}">${avHtml()}<span class="t"><small>${esc(t.served)}</small><b>${esc(nomes())}</b></span></button></div>
         <section class="panel" role="dialog" aria-label="${esc(t.open)}" ${aberto ? "" : "hidden"}>
@@ -437,6 +460,7 @@
           <div class="body">${aba === "ia" ? ia() : aba === "prop" ? proposta() : contato()}</div></section>`;
       if (msgs && aba === "ia") { sh.querySelector(".msgs").innerHTML = msgs; sh.querySelector(".sug")?.remove(); }
       ligar(); marcarChat(aberto);
+      const sx = sh.querySelector(".sent-x"); if (sx) { sx.onclick = () => { envio = null; render(); }; sx.focus(); }
     }
     function ligar() {
       const q = (s) => sh.querySelector(s), painel = q(".panel"), fab = q(".fab");
