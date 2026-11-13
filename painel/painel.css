@@ -1149,3 +1149,18 @@ a.ls-item:hover b,a.ls-item:hover>.wrap{text-decoration:underline}
   body.eh-corretor #avisos{bottom:84px}
 }
 @media (max-width:480px){.link-acoes .btn{padding:0 8px;font-size:13px;gap:6px}}
+
+/* conferência da tabela de preços lida do PDF */
+dialog.modal.largo{width:min(1040px,calc(100vw - 24px))}
+.cf-wrap{overflow:auto;max-height:52vh;border:1px solid var(--line);border-radius:var(--r-md)}
+table.t.cf td{vertical-align:top;padding:8px 10px}
+table.t.cf thead th{position:sticky;top:0;background:var(--surface);z-index:1}
+table.t.cf input[type=checkbox]{width:22px;height:22px;accent-color:#10b981;margin-top:8px}
+.cf-un{width:84px!important;min-height:38px!important;font-weight:700}
+.cf-rs{display:flex;align-items:center;gap:6px}.cf-rs span{color:var(--muted);font-size:var(--fs-sm)}
+.cf-pr{width:150px!important;min-height:38px!important;font-weight:700;font-variant-numeric:tabular-nums}
+.cf-lido code{display:block;font:var(--fs-sm)/1.4 var(--mono,monospace);color:var(--muted)}
+.cf-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.cf-tags .pill{text-transform:none;letter-spacing:0;white-space:normal}
+tr.cf-alerta td{background:rgba(245,158,11,.08)}
+@media (max-width:899px){table.t.cf thead{display:none}table.t.cf tr{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 10px;padding:10px}table.t.cf td{display:block;padding:0;border:0}.cf-lido{grid-column:1/-1}table.t.cf td.num{display:none}.cf-pr{width:100%!important}}

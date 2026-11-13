@@ -1412,21 +1412,79 @@ async function telaUnidades() {
   const prever = () => { const r = parse(ta.value); linhas = r.linhas; prev.textContent = r.linhas.length ? `${r.linhas.length} unidade(s) com preço` + (r.ignoradas ? ` · ${r.ignoradas} linha(s) ignorada(s)` : "") : ta.value.trim() ? "Nenhuma linha reconhecida. Use unidade;preco ou andar;final;preco." : ""; };
   ta.addEventListener("input", prever);
   const file = h("input", { type: "file", accept: ".csv,.txt,text/csv,text/plain", style: "display:none", onchange: async (e) => { const f = e.target.files[0]; if (!f) return; ta.value = await f.text(); prever(); e.target.value = ""; } });
+  // preços e unidades atuais deste empreendimento: servem para validar a tabela nova (unidade existe? preço mudou muito?)
+  const precoAtual = {}; (d.andares || []).forEach((a) => (a.aptos || []).forEach((x) => { precoAtual[String(x.id)] = Number(x.price) || 0; }));
+  const statusPdf = h("span", { class: "muted small", role: "status" });
+  const filePdf = h("input", { type: "file", accept: "application/pdf,.pdf", style: "display:none", onchange: async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try {
+      if (!window.LC_TABELA) await new Promise((ok, er) => { const sc = h("script", { src: "tabela-pdf.js?v=1" }); sc.onload = ok; sc.onerror = () => er(new Error("Não consegui carregar o leitor de PDF.")); document.head.append(sc); });
+      statusPdf.textContent = "Lendo o PDF…";
+      const lidas = await window.LC_TABELA.lerPdf(f, (pr) => { statusPdf.textContent = pr.etapa === "ocr" ? `Lendo imagem (OCR)… ${Math.round(pr.fracao * 100)}%` : `Lendo página ${pr.pagina} de ${pr.total}…`; });
+      const rows = window.LC_TABELA.interpretar(lidas, Object.keys(precoAtual)); statusPdf.textContent = "";
+      if (!rows.length) { aviso(`Li ${lidas.length} linha(s), mas não achei nenhuma com unidade e preço. Confira se o PDF é a tabela de preços.`, true); return; }
+      conferirPdf(f.name, rows, lidas.length, precoAtual, (aceitas) => { ta.value = aceitas.map((r) => `${r.unit};${r.price}`).join("\n"); prever(); aviso(`${aceitas.length} linha(s) conferida(s). Agora escolha onde aplicar e clique em Aplicar.`); });
+    } catch (x) { statusPdf.textContent = ""; aviso("Não consegui ler o PDF: " + x.message, true); }
+  } });
   const cks = h("div", { class: "un-cks" }, props.map((p) => caixa(p.name, p.id === prop.id, "p" + p.id)));
   const aplicar = h("button", { class: "btn primary", type: "button", onclick: async () => {
     const ids = [...cks.querySelectorAll("input:checked")].map((i) => Number(i.name.slice(1)));
     if (!linhas.length) { aviso("Cole ou envie a tabela de preços primeiro.", true); ta.focus(); return; }
     if (!ids.length) { aviso("Marque pelo menos um empreendimento.", true); return; }
+    if (!(await confirmarTabela(linhas, props.filter((p) => ids.includes(p.id)), precoAtual))) return;
     aplicar.disabled = true;
     try { const r = await api("POST", "/api/unidades/precos", { property_ids: ids, linhas }); const n = Object.values(r.atualizados).reduce((a, b) => a + b, 0), falt = Object.values(r.nao_encontradas).reduce((a, b) => a + b.length, 0);
       aviso(`${n} preço(s) atualizado(s) em ${Object.keys(r.atualizados).length} empreendimento(s).${falt ? ` ${falt} unidade(s) da tabela não existem.` : ""}`); rotear(); }
     catch (x) { aviso(x.message, true); } aplicar.disabled = false; } }, ic("upload"), "Aplicar nos selecionados");
   const precos = h("div", { class: "card stack un-precos" }, tituloCard("upload", "Tabela de preços"),
-    h("p", { class: "muted small", style: "margin:0" }, "Cole a tabela (uma unidade por linha) ou envie um CSV exportado da planilha. Colunas: unidade e preço, ou andar, final e preço."),
-    h("div", { class: "row", style: "gap:8px" }, h("button", { class: "btn sm", type: "button", onclick: () => file.click() }, ic("upload"), "Enviar CSV"), file), ta, prev,
+    h("p", { class: "muted small", style: "margin:0" }, "Cole a tabela, envie um CSV ou envie o PDF da tabela. O PDF é lido linha por linha (com OCR quando é imagem) e você confere cada preço antes de aplicar."),
+    h("div", { class: "row", style: "gap:8px" }, h("button", { class: "btn sm", type: "button", onclick: () => file.click() }, ic("upload"), "Enviar CSV"), file, h("button", { class: "btn sm", type: "button", onclick: () => filePdf.click() }, ic("upload"), "Enviar PDF"), filePdf, statusPdf), ta, prev,
     h("div", null, h("span", { class: "eyebrow" }, "Aplicar em"), cks), h("div", null, aplicar));
-  el.append(ativar, h("div", { class: "cols2 un-cols" }, mapa, precos));
+  if (ativar) el.append(ativar);
+  el.append(h("div", { class: "cols2 un-cols" }, mapa, precos));
   return el;
+}
+
+// ───────── tabela de preços: conferência do PDF e aviso antes de atualizar ─────────
+const variacao = (novo, atual) => (atual > 0 ? (novo - atual) / atual : null);
+// Conferência linha por linha: nada entra sem alguém marcar. Linha com alerta só entra marcada uma a uma.
+function conferirPdf(nome, rows, totalLidas, precoAtual, aoAceitar) {
+  rows.forEach((r) => { const v = variacao(r.price, precoAtual[r.unit] || 0); if (v !== null && Math.abs(v) > 0.2) r.alertas.push(`Preço ${v > 0 ? "subiu" : "caiu"} ${Math.round(Math.abs(v) * 100)}% em relação ao atual`); });
+  const comAlerta = rows.filter((r) => r.alertas.length).length, resumo = h("p", { class: "muted small", role: "status" });
+  const linha = (r) => {
+    const ck = h("input", { type: "checkbox", "aria-label": "Confirmar unidade " + r.unit, onchange: contar });
+    const un = h("input", { type: "text", value: r.unit, inputmode: "numeric", maxlength: 6, class: "cf-un", "aria-label": "Unidade", oninput: () => { ck.checked = false; contar(); } });
+    const pr = h("input", { type: "text", value: Number(r.price).toLocaleString("pt-BR"), inputmode: "decimal", class: "cf-pr", "aria-label": "Preço", oninput: () => { ck.checked = false; contar(); } });
+    const atual = precoAtual[r.unit] || 0;
+    r._ = { ck, un, pr };
+    return h("tr", { class: r.alertas.length ? "cf-alerta" : "" }, h("td", null, ck), h("td", null, un), h("td", null, h("div", { class: "cf-rs" }, h("span", null, "R$"), pr)),
+      h("td", { class: "num muted small" }, atual ? brlN(atual) : "—"),
+      h("td", { class: "cf-lido" }, h("code", { class: "wrap" }, r.texto), h("div", { class: "cf-tags" }, h("span", { class: "muted small" }, `pág. ${r.pagina}`), r.alertas.map((a) => pill(a, "warn")))));
+  };
+  const lerValor = (t) => { const n = Number(String(t).replace(/R\$|\s/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".")); return Number.isFinite(n) && n > 0 ? n : null; };
+  const aceitas = () => rows.filter((r) => r._.ck.checked).map((r) => ({ unit: r._.un.value.replace(/\D/g, ""), price: lerValor(r._.pr.value) })).filter((r) => r.unit && r.price);
+  function contar() { const n = aceitas().length; resumo.textContent = `${n} de ${rows.length} linha(s) confirmada(s).`; }
+  const corpo = [h("p", { class: "muted" }, `"${nome}": ${totalLidas} linha(s) lida(s), ${rows.length} com unidade e preço${comAlerta ? `, ${comAlerta} com alerta` : ""}. Compare cada linha com o PDF. Só as linhas marcadas entram na tabela.`),
+    h("div", { class: "row" }, h("button", { class: "btn sm", type: "button", onclick: () => { rows.forEach((r) => { if (!r.alertas.length) r._.ck.checked = true; }); contar(); } }, "Marcar as linhas sem alerta"), h("button", { class: "btn sm ghost", type: "button", onclick: () => { rows.forEach((r) => { r._.ck.checked = false; }); contar(); } }, "Desmarcar tudo")),
+    h("div", { class: "cf-wrap" }, h("table", { class: "t cf" }, h("thead", null, h("tr", null, h("th", null, "OK"), h("th", null, "Unidade"), h("th", null, "Preço novo"), h("th", { class: "num" }, "Preço atual"), h("th", null, "Como está no PDF"))), h("tbody", null, rows.map(linha)))), resumo];
+  dialogo("Conferir a tabela lida do PDF", corpo, [btnFechar(), btnOk("Usar as linhas confirmadas")], { onSubmit: async (f, fechar) => { const a = aceitas(); if (!a.length) throw new Error("Marque pelo menos uma linha depois de conferir."); fechar(); aoAceitar(a); } });
+  document.querySelector("dialog.modal:last-of-type")?.classList.add("largo"); contar();
+}
+// Aviso obrigatório antes de QUALQUER atualização de preços (colada, CSV ou PDF). Devolve true só com a confirmação marcada.
+function confirmarTabela(linhas, props, precoAtual) {
+  return new Promise((resolve) => {
+    const ps = linhas.map((l) => Number(l.price)).filter((v) => v > 0), mudou = linhas.filter((l) => { const v = variacao(Number(l.price), precoAtual[String(l.unit)] || 0); return v !== null && Math.abs(v) > 0.2; });
+    const fora = linhas.filter((l) => !(String(l.unit) in precoAtual)).length; let decidido = false;
+    const corpo = [h("div", { class: "alerta-card card", style: "box-shadow:none" }, h("b", null, "Preço errado vira oferta errada."), h("p", { class: "small", style: "margin:4px 0 0" }, "Os valores aparecem na hora para clientes e corretores e entram nas propostas.")),
+      h("div", { class: "perfil-linhas" }, h("div", null, h("span", null, "Unidades com preço"), h("b", null, fmtN(linhas.length))), h("div", null, h("span", null, "Empreendimento(s)"), h("b", { class: "wrap" }, props.map((p) => p.name).join(", "))),
+        h("div", null, h("span", null, "Menor preço"), h("b", null, ps.length ? brlN(Math.min(...ps)) : "—")), h("div", null, h("span", null, "Maior preço"), h("b", null, ps.length ? brlN(Math.max(...ps)) : "—"))),
+      mudou.length ? h("p", { class: "err", style: "display:block" }, `${mudou.length} unidade(s) mudam mais de 20% em relação ao preço atual: ${mudou.slice(0, 8).map((l) => l.unit).join(", ")}${mudou.length > 8 ? "…" : ""}.`) : null,
+      fora ? h("p", { class: "err", style: "display:block" }, `${fora} unidade(s) da tabela não existem neste empreendimento e serão ignoradas.`) : null,
+      h("label", { class: "check" }, h("input", { type: "checkbox", name: "conferi" }), h("span", null, "Conferi os valores com a tabela oficial e quero atualizar os preços."))];
+    dialogo("Atualizar a tabela de preços?", corpo, [h("button", { type: "button", class: "btn", onclick: (e) => { const dl = e.target.closest("dialog"); dl.close(); dl.remove(); if (!decidido) { decidido = true; resolve(false); } } }, "Cancelar"), btnOk("Atualizar preços")],
+      { onSubmit: async (f, fechar) => { if (f.get("conferi") !== "on") throw new Error("Marque a confirmação para atualizar."); decidido = true; fechar(); resolve(true); } });
+    const dl = document.querySelector("dialog.modal:last-of-type"); dl && dl.addEventListener("close", () => { if (!decidido) { decidido = true; resolve(false); } });
+  });
 }
 
 // ───────── início e avisos ─────────
