@@ -1089,3 +1089,63 @@ body.sb-mini .nav-badge{position:absolute;top:1px;right:1px;margin:0;min-width:1
 .pr-obs{margin:0;white-space:pre-wrap;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .selo-corretor{display:flex;align-items:center;gap:8px;min-width:0}
 .pr-acoes{margin-top:2px}
+
+/* ───────── painel do corretor: primeiro acesso, Início ("o que faço agora"), barra de navegação no celular ───────── */
+.boas-vindas .card{width:min(460px,100%)}
+.perfil-form .foto-linha{display:flex;gap:14px;align-items:center}
+.perfil-form .foto-prev .av{width:72px;height:72px;font-size:22px}
+.perfil-form label.btn{cursor:pointer}
+.perfil-linhas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px}
+.perfil-linhas>div{display:grid;gap:2px;min-width:0}.perfil-linhas span{font-size:var(--fs-sm);color:var(--muted)}
+.inicio-grade{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+.inicio-col{display:grid;gap:16px;min-width:0}
+.quentes{display:grid}
+.quente{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.quente:last-child{border-bottom:0;padding-bottom:2px}
+.quente-n{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--surface2);font:700 12px var(--body);color:var(--muted)}
+.quente:first-child .quente-n{background:#10b981;color:#052e16}
+.quente-m{display:grid;gap:4px;min-width:0}
+.quente-m .cell-main{color:inherit;text-decoration:none;font-size:1rem}
+.quente-m .cell-main:hover{text-decoration:underline}
+.motivos{display:flex;gap:6px;flex-wrap:wrap}
+.pill.motivo{background:var(--surface2);color:var(--text);text-transform:none;letter-spacing:0;font-weight:600}
+.pill.motivo.forte{background:rgba(16,185,129,.16);color:#047857}
+:root[data-modo="dark"] .pill.motivo.forte{color:#6ee7b7}
+.quente-recado{margin:2px 0 0;color:var(--muted);font-style:italic}
+.quente-a{display:flex;gap:8px;align-items:center}
+.quente-a .sel-status{max-width:132px}
+.lista-simples{display:grid}
+.ls-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none;min-width:0}
+.ls-item.col{flex-direction:column;align-items:flex-start;gap:3px}
+.ls-item:last-child{border-bottom:0;padding-bottom:2px}
+a.ls-item:hover b,a.ls-item:hover>.wrap{text-decoration:underline}
+.ls-item b,.ls-item span{display:block}
+.ls-valor{white-space:nowrap;flex:none}
+.meu-link{display:grid;gap:12px}
+.meu-link select{width:100%}
+.link-acoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.link-acoes .btn{width:100%}
+.semana{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.sem-n{display:grid;gap:2px;padding:12px 8px;border-radius:var(--r-md);background:var(--surface2);text-align:center}
+.sem-n b{font:700 1.5rem/1.1 var(--display);letter-spacing:-.02em}
+.sem-n span{font-size:11px;color:var(--muted);line-height:1.25}
+/* barra de navegação embaixo (só corretor, só celular): mesma cor da moldura */
+.tabbar{display:none}
+@media (max-width:899px){
+  .inicio-grade{grid-template-columns:minmax(0,1fr)}
+  .inicio-col{display:contents}
+  .ic-quentes{order:1}.ic-props{order:2}.ic-link{order:3}.ic-perg{order:4}.ic-semana{order:5}.ic-un{order:6}
+  .quente{grid-template-columns:auto minmax(0,1fr)}
+  .quente-a{grid-column:2;justify-content:flex-start}
+  .semana{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.eh-corretor .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--bar-bg,#1e293b);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 20px rgba(0,0,0,.18)}
+  .tabbar a{position:relative;display:grid;justify-items:center;gap:3px;padding:6px 2px;min-height:52px;border-radius:12px;color:var(--bar-muted,#94a3b8);text-decoration:none;font:600 10.5px/1.1 var(--body)}
+  .tabbar a .ic{width:22px;height:22px}
+  .tabbar a[aria-current=page]{color:#fff;background:rgba(255,255,255,.1)}
+  .tabbar a[aria-current=page] .ic{color:#34d399}
+  .tabbar .nav-badge{position:absolute;top:2px;left:calc(50% + 6px);margin:0;min-width:18px;height:18px;line-height:18px;font-size:10px}
+  body.eh-corretor #conteudo{padding-bottom:96px}
+  body.eh-corretor .menu-mobile{display:none}
+  body.eh-corretor #avisos{bottom:84px}
+}
+@media (max-width:480px){.link-acoes .btn{padding:0 8px;font-size:13px;gap:6px}}

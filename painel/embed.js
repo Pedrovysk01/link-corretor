@@ -1,6 +1,6 @@
 /* Link Corretor — widget da apresentação (injetado em /p/<código>/).
    Não há tela de perfil: quem abre o link é CLIENTE (faixa "atendido por <corretor>", IA, contato e cadastro depois de 30 s ou na 3ª interação).
-   Quem está logado no painel é EQUIPE e vê só o seu papel: o corretor apresenta (sem coleta; cartão com assinatura uma única vez e "Enviar ao cliente"),
+   Quem está logado no painel é EQUIPE e vê só o seu papel: o corretor apresenta (sem coleta; os dados vêm do perfil no painel e "Enviar ao cliente"),
    a construtora só olha (aba "← Painel" do voltar.js). Shadow DOM: não herda nem vaza estilo. */
 (() => {
   "use strict";
@@ -379,36 +379,21 @@
         catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; env.disabled = false; } };
     }
 
-    // ───── Corretor: dados para proposta (nome, telefone, e-mail, assinatura digital) → ficam no painel da construtora ─────
-    const CK = "lc_corretor_card", SK = "lc_cartao_" + code;
-    let cartaoAberto = false, enviarAberto = false, adiado = false;
-    const lerCartao = () => { try { return JSON.parse(localStorage.getItem(CK) || "null"); } catch { return null; } };
-    const cartaoOk = () => !!info.cartao;  // vem do servidor: uma vez cadastrado (pela construtora ou pelo corretor), o popup não abre mais
+    // ───── Corretor: os dados (nome, WhatsApp, e-mail) vêm do perfil dele no painel (Minha conta). Não há cadastro nem assinatura aqui. ─────
+    let enviarAberto = false;
     const publicar = (c) => { window.LC_CORRETOR = c; document.dispatchEvent(new CustomEvent("lc:corretor", { detail: c })); };
-    const dadosCorretor = () => { const l = lerCartao(); return { nome: info.corretor, telefone: info.whatsapp, email: info.corretor_email || "", ...(l && l.nome === info.corretor ? { assinatura: l.assinatura } : {}) }; };
-    if (info.cartao) publicar(dadosCorretor());
-    const formCorretor = () => { const c = {}; return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-ct-t"><form class="reg ct" novalidate>
-      <p class="eyebrow">${esc(info.empresa || info.empreendimento)} · Corretor</p><h2 id="lc-ct-t">Seus dados para a proposta</h2>
-      <p class="lead">Nome, contato e assinatura vão na proposta que você enviar ao cliente e ficam à disposição da construtora no painel dela. <b>Este cadastro é feito uma única vez</b>: para alterar depois, fale com a construtora.</p>
-      <label>Nome<input class="t" name="nome" type="text" autocomplete="name" maxlength="120" value="${esc(c.nome || "")}"></label>
-      <div class="two"><label>Telefone / WhatsApp<input class="t" name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(47) 99999-9999" value="${esc(c.telefone || "")}"></label>
-      <label>E-mail<input class="t" name="email" type="email" autocomplete="email" value="${esc(c.email || "")}"></label></div>
-      <div class="sig-w"><span style="font-weight:600;font-size:13px">Assinatura digital</span><canvas class="sig" width="720" height="240" aria-label="Quadro de assinatura: desenhe com o dedo ou o mouse"></canvas>
-      <div class="row"><span>Desenhe com o dedo ou o mouse.</span><button type="button" data-limpar>Limpar</button></div></div>
-      <label class="ck"><input name="ok" type="checkbox"><span>Confirmo que sou o corretor responsável por este atendimento e autorizo o uso dos meus dados e da assinatura nas propostas.</span></label>
-      <p class="er" role="alert"></p><button class="btn" type="submit">Salvar e continuar</button><button class="btn alt2" type="button" data-nao>Agora não</button></form></div>`; };
+    const dadosCorretor = () => ({ nome: info.corretor, telefone: info.whatsapp, email: info.corretor_email || "" });
+    publicar(dadosCorretor());
     const enviarForm = () => { const c = window.LC_CORRETOR || dadosCorretor(); return `<div class="gate" role="dialog" aria-modal="true" aria-labelledby="lc-en-t"><form class="reg ct" novalidate>
       <p class="eyebrow">${esc(info.empreendimento)}</p><h2 id="lc-en-t">Enviar ao cliente</h2>
-      <p class="lead">Mensagem com o link da apresentação e a sua assinatura (${esc(c.nome || "corretor")}).</p>
+      <p class="lead">Mensagem com o link da apresentação e o seu contato (${esc(c.nome || "corretor")}).</p>
       <label>Nome do cliente<input class="t" name="cn" type="text" autocomplete="off" maxlength="120"></label>
       <div class="two"><label>WhatsApp do cliente<input class="t" name="ct" type="tel" inputmode="tel" placeholder="(47) 99999-9999"></label><label>E-mail do cliente<input class="t" name="ce" type="email"></label></div>
       <button class="btn" type="button" data-wa>Enviar pelo WhatsApp</button><button class="btn alt2" type="button" data-mail>Enviar por e-mail</button><button class="btn alt2" type="button" data-fechar>Fechar</button></form></div>`; };
     function renderCorretor() {
-      if (!info.cartao && !adiado) { cartaoAberto = true; enviarAberto = false; }
-      sh.innerHTML = `<style>${CSS}</style>${cartaoAberto ? formCorretor() : ""}${enviarAberto ? enviarForm() : ""}<div class="modo" role="status"><span>${esc(MODO[lang] || MODO["pt-BR"])}</span>
-        ${info.cartao ? '<button class="sep" type="button" data-enviar>Enviar ao cliente</button>' : '<button class="sep" type="button" data-cartao>Meus dados</button>'}</div>`;
-      const bc = sh.querySelector("[data-cartao]"); if (bc) bc.onclick = () => { adiado = false; cartaoAberto = true; render(); };
-      const be = sh.querySelector("[data-enviar]"); if (be) be.onclick = () => { enviarAberto = true; cartaoAberto = false; render(); };
+      sh.innerHTML = `<style>${CSS}</style>${enviarAberto ? enviarForm() : ""}<div class="modo" role="status"><span>${esc(MODO[lang] || MODO["pt-BR"])}</span>
+        <button class="sep" type="button" data-enviar>Enviar ao cliente</button><a class="sep" href="/painel/#/" style="color:inherit;text-decoration:none">Meu painel</a></div>`;
+      const be = sh.querySelector("[data-enviar]"); if (be) be.onclick = () => { enviarAberto = true; render(); };
       const fe = sh.querySelector(".gate form"); if (!fe) return;
       if (fe.querySelector("[data-fechar]")) {
         fe.querySelector("[data-fechar]").onclick = () => { enviarAberto = false; render(); };
@@ -418,28 +403,6 @@
         fe.querySelector("[data-mail]").onclick = () => { const m = msg(); location.href = `mailto:${fe.elements.ce.value.trim()}?subject=${encodeURIComponent("Apresentação · " + info.empreendimento)}&body=${encodeURIComponent(m.texto)}`; };
         return;
       }
-      // formulário de dados + assinatura
-      const cv = fe.querySelector("canvas.sig"), cx = cv.getContext("2d"); let desenhando = false, tracos = 0, ult = null;
-      cx.lineWidth = 3.4; cx.lineCap = "round"; cx.lineJoin = "round"; cx.strokeStyle = "#16302e";
-      const pt = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
-      cv.onpointerdown = (e) => { desenhando = true; ult = pt(e); cv.setPointerCapture(e.pointerId); cx.beginPath(); cx.arc(ult[0], ult[1], 1.2, 0, 7); cx.fill(); tracos++; e.preventDefault(); };
-      cv.onpointermove = (e) => { if (!desenhando) return; const p = pt(e); cx.beginPath(); cx.moveTo(ult[0], ult[1]); cx.lineTo(p[0], p[1]); cx.stroke(); ult = p; tracos++; };
-      cv.onpointerup = cv.onpointercancel = () => { desenhando = false; };
-      fe.querySelector("[data-limpar]").onclick = () => { cx.clearRect(0, 0, cv.width, cv.height); tracos = 0; };
-      fe.querySelector("[data-nao]").onclick = () => { adiado = true; cartaoAberto = false; render(); };
-      setTimeout(() => fe.elements.nome.focus(), 50);
-      fe.onsubmit = async (e) => { e.preventDefault(); const er = fe.querySelector(".er"), g = (n) => fe.elements[n].value.trim(); er.textContent = "";
-        if (g("nome").length < 2) return (er.textContent = "Informe seu nome.");
-        if (g("telefone").replace(/\D/g, "").length < 10) return (er.textContent = "Informe um telefone com DDD.");
-        if (!/^\S+@\S+\.\S+$/.test(g("email"))) return (er.textContent = "Informe um e-mail válido.");
-        if (tracos < 8) return (er.textContent = "Faça a assinatura digital no quadro.");
-        if (!fe.elements.ok.checked) return (er.textContent = "Marque a confirmação para continuar.");
-        const b = fe.querySelector("button[type=submit]"); b.disabled = true; const assinatura = cv.toDataURL("image/png");
-        try { await post("corretor", { nome: g("nome"), telefone: g("telefone"), email: g("email"), assinatura, consentimento: true });
-          const cartao = { nome: g("nome"), telefone: g("telefone"), email: g("email"), assinatura };
-          try { localStorage.setItem(CK, JSON.stringify(cartao)); sessionStorage.setItem(SK, "1"); } catch { /* sem storage */ }
-          info.cartao = true; publicar({ ...cartao, email: cartao.email }); cartaoAberto = false; render();
-        } catch (x) { er.textContent = x.message === "erro" || x instanceof TypeError ? t.net : x.message; b.disabled = false; if (/já foram cadastrados/.test(x.message)) { info.cartao = true; setTimeout(() => { cartaoAberto = false; render(); }, 1800); } } };
     }
     // nomes de quem atende: "A", "A e B" ou "A, B e C" (comissão dividida mostra todos)
     const nomes = () => { const l = info.corretores && info.corretores.length ? info.corretores : [info.corretor]; return l.length < 2 ? l[0] : l.slice(0, -1).join(", ") + " e " + l[l.length - 1]; };

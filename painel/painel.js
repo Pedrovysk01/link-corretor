@@ -167,6 +167,7 @@ const btnOk = (txt) => h("button", { type: "submit", class: "btn primary" }, txt
 
 // ───────── casca ─────────
 function menu() {
+  if (S.me && S.me.role === "broker") return [{ r: "", t: "Início", i: "dash" }, { r: "clientes", t: "Clientes", i: "people" }, { r: "propostas", t: "Propostas", i: "cash" }, { r: "links", t: "Meus links", i: "link" }, { r: "conta", t: "Minha conta", i: "user" }];
   const m = [{ r: "", t: "Resumo", i: "dash" }, { r: "propostas", t: "Propostas", i: "cash" }, { r: "clientes", t: "Clientes", i: "people" }];
   if (gestao()) m.push({ r: "corretores", t: dono() ? "Corretores" : "Meus corretores", i: "users" });
   if (dono()) m.push({ r: "empreendimentos", t: "Empreendimentos", i: "building" }, { r: "unidades", t: "Unidades", i: "grid" });
@@ -378,7 +379,8 @@ function casca() {
     h("span", { class: "canto", "aria-hidden": "true" }), h("span", { class: "canto d", "aria-hidden": "true" }));
   const scrim = h("div", { class: "scrim", onclick: () => document.body.classList.remove("sb-open") });
   const main = h("div", { class: "main" }, topo, h("main", { id: "conteudo", tabindex: "-1" }));
-  $("#raiz").replaceChildren(scrim, lateral, main); pintarSino();
+  $("#raiz").replaceChildren(scrim, lateral, main, S.me.role === "broker" ? h("nav", { class: "tabbar", "aria-label": "Navegação" }, itens.map((m) => h("a", { href: "#/" + m.r, "aria-current": m.r === atual ? "page" : null }, ic(m.i), h("span", null, m.t.replace("Meus links", "Links").replace("Minha conta", "Conta")), m.r === "propostas" ? h("span", { class: "nav-badge nav-badge-prop", hidden: !(S.propNovas > 0) }, String(S.propNovas || 0)) : null))) : null);
+  document.body.classList.toggle("eh-corretor", S.me.role === "broker"); pintarSino();
 }
 async function sair() { try { await api("POST", "/api/logout", {}); } catch { /* já saiu */ } S.me = null; entrada(); }
 
@@ -469,6 +471,71 @@ function telaSetup() {
 }
 
 // ───────── roteador ─────────
+// ───────── painel do corretor ─────────
+// Primeiro acesso: nome e WhatsApp (obrigatórios); foto e CRECI (opcionais). Uma tela só, pensada para o celular.
+function formPerfil({ titulo, botao, aoSalvar }) {
+  const erro = h("p", { class: "err", role: "alert" }), prev = h("span", { class: "foto-prev" }, avatar(S.me.name, "lg", fotoDe(S.me.id, S.me.tem_foto))); let foto;
+  const arq = h("input", { type: "file", accept: "image/png,image/jpeg,image/webp", class: "sr", onchange: async () => { try { foto = await fotoQuadrada(arq.files[0]); if (foto) prev.replaceChildren(avatar(S.me.name, "lg", foto)); } catch (x) { erro.textContent = x.message; } } });
+  return h("form", { class: "card stack perfil-form", novalidate: true, onsubmit: async (e) => { e.preventDefault(); erro.textContent = ""; const f = new FormData(e.target), tel = String(f.get("telefone") || "").replace(/\D/g, "");
+    if (String(f.get("nome") || "").trim().length < 2) { erro.textContent = "Informe seu nome."; return; } if (tel.length < 10) { erro.textContent = "Informe seu WhatsApp com DDD."; return; }
+    const b = e.target.querySelector("button[type=submit]"); b.disabled = true;
+    try { const corpo = { nome: f.get("nome"), telefone: f.get("telefone"), creci: f.get("creci") || "" }; if (foto) corpo.foto = foto; const r = await api("POST", "/api/me/perfil", corpo); S.me = r.user; S_FOTO.v = Date.now(); aoSalvar(); } catch (x) { erro.textContent = x.message; b.disabled = false; } } },
+    titulo,
+    h("div", { class: "foto-linha" }, prev, h("div", null, h("label", { class: "btn sm", tabindex: "0", onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); arq.click(); } } }, arq, S.me.tem_foto ? "Trocar foto" : "Adicionar foto"), h("p", { class: "muted small", style: "margin-top:6px" }, "Opcional. O cliente vê quem está atendendo."))),
+    campo("Seu nome", h("input", { type: "text", name: "nome", value: S.me.name || "", autocomplete: "name", maxlength: 120, required: true })),
+    campo("WhatsApp", h("input", { type: "tel", name: "telefone", value: S.me.phone ? fone(S.me.phone) : "", inputmode: "tel", autocomplete: "tel", placeholder: "(47) 99999-9999", required: true }), "É por ele que o cliente fala com você na apresentação."),
+    campo("CRECI (opcional)", h("input", { type: "text", name: "creci", value: S.me.creci || "", maxlength: 20, placeholder: "Ex.: 12345-F/SC", autocomplete: "off" })),
+    erro, h("button", { class: "btn primary", type: "submit" }, botao));
+}
+function telaBoasVindas() {
+  document.title = "Bem-vindo · Link Corretor";
+  return h("div", { class: "entrada boas-vindas" }, formPerfil({ botao: "Entrar no meu painel", aoSalvar: () => { iniciar(); aviso("Tudo pronto. Bom trabalho!"); },
+    titulo: h("div", null, h("p", { class: "eyebrow" }, S.empresa || "Link Corretor"), h("h1", null, `Olá, ${(S.me.name || "").split(" ")[0]}`), h("p", { class: "muted" }, "Antes de começar, confirme seus dados. Leva menos de um minuto e você pode mudar depois em Minha conta.")) }));
+}
+function cardPerfilCorretor() { return formPerfil({ botao: "Salvar meus dados", aoSalvar: () => { aviso("Dados salvos."); casca(); rotear(); }, titulo: tituloCard("user", "Meus dados de atendimento") }); }
+
+const urlDoLink = (code) => `${location.origin}/r/${code}`;
+async function telaInicioCorretor() {
+  const d = await api("GET", "/api/corretor/inicio"), eu = S.me.name.split(" ")[0];
+  const falar = (c) => wa(c.phone, `Olá ${c.name.split(" ")[0]}, aqui é ${eu}${S.empresa ? ", da " + S.empresa : ""}. Vi seu interesse no ${c.empreendimento}. Posso te ajudar com alguma dúvida?`);
+  // 1) quem chamar agora
+  const quente = (c, i) => h("div", { class: "quente" }, h("span", { class: "quente-n", "aria-hidden": "true" }, String(i + 1)),
+    h("div", { class: "quente-m" }, h("a", { class: "cell-main wrap", href: "#/cliente/" + c.id }, c.name), h("div", { class: "motivos" }, c.motivos.map((m, k) => pill(m, k === 0 ? "motivo forte" : "motivo"))),
+      h("span", { class: "muted small wrap" }, [c.empreendimento, c.ultima ? "abriu " + quando(c.ultima) : null].filter(Boolean).join(" · ")), c.recado && h("p", { class: "quente-recado wrap small" }, "“" + c.recado + "”")),
+    h("div", { class: "quente-a" }, c.phone ? h("a", { class: "btn-wa", href: falar(c), target: "_blank", rel: "noopener", title: "Chamar " + c.name + " no WhatsApp", "aria-label": "Chamar " + c.name + " no WhatsApp" }, icWa()) : null, selStatus(c)));
+  const cardQuentes = h("section", { class: "card ic-quentes" }, h("div", { class: "row between" }, tituloCard("bell", "Quem chamar agora"), d.total_quentes > d.quentes.length ? h("a", { class: "small", href: "#/clientes" }, `Ver todos (${d.total_quentes})`) : null),
+    d.quentes.length ? h("div", { class: "quentes" }, d.quentes.map(quente)) : vazio("check", d.total_clientes ? "Ninguém esperando por você agora" : "Você ainda não tem clientes", d.total_clientes ? "Quando um cliente abrir a apresentação, perguntar algo ou enviar proposta, ele aparece aqui com o motivo." : "Envie o seu link. Quem abrir e se cadastrar fica no seu nome."));
+  // 2) propostas em aberto
+  const cardProps = d.propostas.length ? h("section", { class: "card ic-props" }, h("div", { class: "row between" }, tituloCard("cash", "Propostas em aberto"), h("a", { class: "small", href: "#/propostas" }, "Ver todas")),
+    h("div", { class: "lista-simples" }, d.propostas.map((p) => h("a", { class: "ls-item", href: "#/cliente/" + p.visitor_id }, h("div", { style: "min-width:0" }, h("b", { class: "wrap" }, p.cliente), h("span", { class: "muted small wrap" }, `Apto ${p.unit} · ${p.empreendimento} · ${quando(p.created)}`)), h("b", { class: "ls-valor" }, brlN(p.price)))))) : null;
+  // 3) meu link (um por empreendimento; cria na hora se ainda não existir)
+  const caixaLink = h("div", { class: "meu-link" }); let propSel = (d.links[0] && d.links[0].property_id) || (d.empreendimentos[0] && d.empreendimentos[0].id);
+  const pintarLink = () => {
+    const emp = d.empreendimentos.find((e) => e.id === Number(propSel)), l = d.links.find((x) => x.property_id === Number(propSel) && x.channel === "whatsapp") || d.links.find((x) => x.property_id === Number(propSel));
+    const sel = d.empreendimentos.length > 1 ? h("select", { "aria-label": "Empreendimento", onchange: (e) => { propSel = e.target.value; pintarLink(); } }, d.empreendimentos.map((e) => h("option", { value: e.id, selected: e.id === Number(propSel) ? true : null }, e.name))) : h("b", { class: "wrap" }, emp ? emp.name : "");
+    if (!emp) { caixaLink.replaceChildren(h("p", { class: "muted" }, "Nenhum empreendimento ativo no momento.")); return; }
+    if (!l) { caixaLink.replaceChildren(sel, h("p", { class: "muted small" }, "Você ainda não tem link deste empreendimento."), h("button", { class: "btn primary", type: "button", onclick: async (e) => { e.currentTarget.disabled = true; try { await api("POST", "/api/links", { property_id: emp.id, channel: "whatsapp" }); aviso("Link criado."); rotear(); } catch (x) { aviso(x.message, true); } } }, ic("plus"), "Criar meu link")); return; }
+    const url = urlDoLink(l.code), msg = `Olá! Preparei uma apresentação interativa do ${l.empreendimento} para você: ${url}`;
+    caixaLink.replaceChildren(sel, h("div", { class: "linkbox" }, h("code", null, url.replace(/^https?:\/\//, ""))),
+      h("div", { class: "link-acoes" }, h("button", { class: "btn primary", type: "button", onclick: () => copiar(url, "Link copiado.") }, "Copiar link"),
+        h("a", { class: "btn", href: wa("", msg), target: "_blank", rel: "noopener" }, ic("send"), "Enviar no WhatsApp"), h("button", { class: "btn", type: "button", onclick: () => mostrarQr(l) }, ic("qr"), "QR Code"),
+        h("a", { class: "btn ghost", href: `/p/${l.code}/`, target: "_blank", rel: "noopener" }, ic("ext"), "Abrir")),
+      h("span", { class: "muted small" }, `${fmtN(l.cliques)} cliques · ${fmtN(l.clientes)} clientes cadastrados por este link`));
+  };
+  pintarLink();
+  const cardLink = h("section", { class: "card ic-link" }, tituloCard("link", "Meu link"), h("p", { class: "muted small", style: "margin:-6px 0 12px" }, "Quem abrir por ele e se cadastrar fica no seu nome."), caixaLink);
+  // 4) perguntas e recados recentes
+  const cardPerg = d.perguntas.length ? h("section", { class: "card ic-perg" }, tituloCard("chat", "O que seus clientes perguntaram"), h("div", { class: "lista-simples" }, d.perguntas.map((x) => h("a", { class: "ls-item col", href: "#/cliente/" + x.visitor_id }, h("span", { class: "wrap" }, "“" + x.question + "”"), h("span", { class: "muted small" }, `${x.cliente} · ${quando(x.ts)}${x.answer ? "" : " · a IA não respondeu"}`))))) : null;
+  // 5) a semana em 4 números
+  const n = (v, l) => h("div", { class: "sem-n" }, h("b", null, fmtN(v)), h("span", null, l));
+  const cardSemana = h("section", { class: "card ic-semana" }, tituloCard("barras", "Seus últimos 7 dias"), h("div", { class: "semana" }, n(d.semana.cliques, "cliques no link"), n(d.semana.cadastros, "cadastros"), n(d.semana.aberturas, "aberturas"), n(d.semana.propostas, "propostas")));
+  // 6) unidades disponíveis
+  const cardUn = d.unidades.length ? h("section", { class: "card ic-un" }, tituloCard("grid", "Unidades"), h("div", { class: "lista-simples" }, d.unidades.map((u) => h("div", { class: "ls-item" }, h("div", { style: "min-width:0" }, h("b", { class: "wrap" }, u.name), h("span", { class: "muted small" }, `${u.res} reservadas · ${u.vend} vendidas${u.desde ? " · a partir de " + brlN(u.desde) : ""}`)), h("b", { class: "ls-valor" }, `${u.disp} disp.`))))) : null;
+  return h("div", { class: "stack inicio-c" },
+    h("div", { class: "page-h" }, h("div", { style: "min-width:0" }, h("h1", { class: "wrap" }, `Olá, ${eu}`), h("p", { class: "sub" }, d.total_quentes ? `${d.total_quentes} ${d.total_quentes === 1 ? "cliente para chamar" : "clientes para chamar"} agora.` : "Nenhum cliente esperando. Bom momento para enviar o seu link."))),
+    h("div", { class: "inicio-grade" }, h("div", { class: "inicio-col" }, cardQuentes, cardProps, cardPerg), h("div", { class: "inicio-col" }, cardLink, cardSemana, cardUn)));
+}
+
 // ───────── propostas ─────────
 // A proposta é a notificação mais importante: abre um aviso FIXO no alto da tela (fica até alguém fechar), toca o som de caixa registradora,
 // pisca o título da aba e põe um selo vermelho no menu. Vale para a construtora, o gerente e o corretor (cada um vê as dele).
@@ -672,6 +739,7 @@ function cartaoGrafico(icone, titulo, serie, chave, rotulo, padrao, vazioNode) {
   return h("div", { class: "card" }, h("div", { class: "card-topo" }, tituloCard(icone, titulo), h("div", { class: "gmodos", role: "group", "aria-label": "Tipo de gráfico" }, btn("barras", "Palitos"), btn("linha", "Linha"))), area);
 }
 async function telaResumo() {
+  if (S.me.role === "broker") return telaInicioCorretor();
   const dias = Number(sessionStorage.getItem("lc_dias") || 30);
   const d = await api("GET", `/api/dashboard?dias=${dias}`), t = d.totais;
   const sel = h("select", { "aria-label": "Período", onchange: (e) => { sessionStorage.setItem("lc_dias", e.target.value); rotear(); } }, [7, 14, 30, 90].map((n) => h("option", { value: n, selected: n === dias }, `Últimos ${n} dias`)));
@@ -847,10 +915,8 @@ async function telaCorretor(id) {
         h("a", { class: "btn sm", href: "/clientes.csv?corretor=" + b.id, download: "clientes.csv" }, ic("down"), "CSV dos clientes")))),
     h("div", { class: "kpis" }, h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.clientes)), h("span", { class: "l" }, "clientes")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.novos)), h("span", { class: "l" }, "novos para atender")),
       h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.aberturas)), h("span", { class: "l" }, "aberturas")), h("div", { class: "card kpi" }, h("span", { class: "n" }, fmtN(b.fechados)), h("span", { class: "l" }, "fechados"))),
-    h("div", { class: "card" }, tituloCard("user", "Dados para proposta"), b.cartao ? h("div", { class: "cartao-c" }, h("img", { class: "assin", src: b.cartao.signature, alt: "Assinatura digital de " + b.cartao.name }),
-      h("div", null, h("b", { class: "wrap" }, b.cartao.name), h("p", { class: "muted wrap" }, [fone(b.cartao.phone), b.cartao.email].filter(Boolean).join(" · ")), h("p", { class: "muted small" }, "Cadastrado em " + dataHora(b.cartao.created) + " · o corretor não consegue alterar; só você."),
-        h("div", { class: "row", style: "margin-top:10px" }, h("button", { class: "btn sm", onclick: () => formCartao(b) }, ic("edit"), "Editar contato"),
-          h("button", { class: "btn sm", onclick: async () => { if (!confirm("Apagar os dados e a assinatura? O popup abrirá uma única vez para o corretor preencher de novo.")) return; await api("POST", `/api/brokers/${b.id}/cartao/liberar`, {}); aviso("Liberado: o corretor preenche de novo no próximo acesso."); rotear(); } }, "Liberar novo cadastro")))) : h("p", { class: "muted" }, "Ainda não cadastrou. Na primeira vez que ele escolher o perfil Corretor numa apresentação, o popup pede nome, telefone, e-mail e assinatura digital — uma única vez. Depois, só você altera aqui.")),
+    h("div", { class: "card" }, tituloCard("user", "Dados de atendimento"), h("p", { class: "muted small", style: "margin:-6px 0 10px" }, b.onboarded ? "Preenchidos pelo corretor no primeiro acesso ao painel dele. Ele pode atualizar em Minha conta." : "O corretor ainda não fez o primeiro acesso: os dados abaixo são os do cadastro."),
+      h("div", { class: "perfil-linhas" }, h("div", null, h("span", null, "WhatsApp"), h("b", null, b.phone ? fone(b.phone) : "—")), h("div", null, h("span", null, "E-mail"), h("b", { class: "wrap" }, b.email)), h("div", null, h("span", null, "CRECI"), h("b", null, b.creci || "—")), h("div", null, h("span", null, "Primeiro acesso"), h("b", null, b.onboarded ? "Feito" : "Pendente")))),
     h("div", { class: "card" }, tituloCard("people", `Clientes de ${b.name.split(" ")[0]}`), b.clientes_lista.length ? listaPessoas(b.clientes_lista, { semCorretor: true }) : vazio("people", "Nenhum cliente ainda", "Quando alguém se identificar num link dele, aparece aqui.")),
     h("div", { class: "card" }, h("div", { class: "row between" }, tituloCard("link", "Links"), h("button", { class: "btn sm", onclick: () => formLink(null, [b], b.id) }, ic("plus"), "Novo link")), b.links.length ? tabelaLinks(b.links, true) : h("p", { class: "muted" }, "Sem links ainda.")));
   return el;
@@ -1270,7 +1336,7 @@ async function telaConta() {
     inp.focus(); inp.select();
   };
   verNome();
-  const col = h("div", { class: "conta-col" },
+  const col = h("div", { class: "conta-col" }, S.me.role === "broker" ? cardPerfilCorretor() : null,
     h("div", { class: "card hero-p hero-grande" }, avatar(S.me.name, "xl", fotoDe(S.me.id, S.me.tem_foto)), h("div", { class: "hero-info" }, nomeBox, h("div", { class: "muted wrap" }, S.me.email), h("div", null, pill(papelNome(), "on")),
       h("div", { class: "row", style: "margin-top:8px" }, h("button", { class: "btn sm", type: "button", onclick: () => escolherFoto(async (d) => { await api("POST", "/api/me/foto", { foto: d }); S.me.tem_foto = true; S_FOTO.v = Date.now(); aviso("Foto salva."); casca(); rotear(); }) }, S.me.tem_foto ? "Trocar foto" : "Adicionar foto"),
         S.me.tem_foto && h("button", { class: "btn sm ghost", type: "button", onclick: async () => { await api("POST", "/api/me/foto", { foto: "" }); S.me.tem_foto = false; aviso("Foto removida."); casca(); rotear(); } }, "Remover")),
@@ -1399,7 +1465,7 @@ function holofote() {
   };
   passo(); setInterval(passo, 9000);
 }
-function iniciar() { holofote(); try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = S.np = null; fecharAlertaProp(); rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
+function iniciar() { if (S.me && S.me.role === "broker" && !S.me.onboarded) { clearInterval(_poll); $("#raiz").replaceChildren(telaBoasVindas()); $("#raiz input")?.focus(); return; } holofote(); try { document.body.classList.toggle("sb-mini", localStorage.getItem("lc_sbmini") === "1"); } catch { /* sem storage */ } if (!location.hash) location.replace("#/"); S.nv = S.no = S.np = null; fecharAlertaProp(); rotear(); checar(); clearInterval(_poll); _poll = setInterval(checar, 12000); }
 window.addEventListener("hashchange", rotear);
 entrada();
 

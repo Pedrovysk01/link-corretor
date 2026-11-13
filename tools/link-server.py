@@ -149,6 +149,9 @@ def init_db():
         c.execute("ALTER TABLE users ADD COLUMN manager_id INTEGER")
     if "photo" not in [r[1] for r in c.execute("PRAGMA table_info(users)")]:
         c.execute("ALTER TABLE users ADD COLUMN photo TEXT NOT NULL DEFAULT ''")  # foto 1:1 do corretor (data URL reduzida no navegador)
+    ucols = [r[1] for r in c.execute("PRAGMA table_info(users)")]
+    if "creci" not in ucols: c.execute("ALTER TABLE users ADD COLUMN creci TEXT NOT NULL DEFAULT ''")
+    if "onboarded" not in ucols: c.execute("ALTER TABLE users ADD COLUMN onboarded INTEGER NOT NULL DEFAULT 0")  # 1 = o corretor já confirmou nome e WhatsApp no primeiro acesso
     if "seen" not in [r[1] for r in c.execute("PRAGMA table_info(proposals)")]:
         c.execute("ALTER TABLE proposals ADD COLUMN seen INTEGER NOT NULL DEFAULT 0")  # 0 = ainda não aberta pelo corretor/construtora (alimenta o aviso fixo e o contador do menu)
     if "city_cards" not in [r[1] for r in c.execute("PRAGMA table_info(properties)")]:
@@ -322,7 +325,7 @@ def perguntar_ia(prop, pergunta, lang, corretor):
 
 
 # ───────────────────────── consultas do painel ─────────────────────────
-def usuario_publico(u): return {"id": u["id"], "role": u["role"], "name": u["name"], "email": u["email"], "phone": u["phone"], "demo": bool(u["demo"]) if "demo" in u.keys() else False, "tem_foto": bool(u["photo"] if "photo" in u.keys() else "")}
+def usuario_publico(u): return {"id": u["id"], "role": u["role"], "name": u["name"], "email": u["email"], "phone": u["phone"], "demo": bool(u["demo"]) if "demo" in u.keys() else False, "creci": (u["creci"] if "creci" in u.keys() else ""), "onboarded": bool(u["role"] != "broker" or (u["onboarded"] if "onboarded" in u.keys() else 0)), "tem_foto": bool(u["photo"] if "photo" in u.keys() else "")}
 
 
 def escopo(user, col="v.broker_id"):
@@ -784,7 +787,7 @@ def r_unidades_precos(h, u, q_, b):
 
 
 BROKER_SQL = """SELECT u.id, u.name, u.email, u.phone, u.active, u.demo, u.created, (u.photo<>'') tem_foto, u.manager_id, (SELECT m.name FROM users m WHERE m.id=u.manager_id) gerente,
-  COALESCE((SELECT bc.phone FROM broker_cards bc WHERE bc.broker_id=u.id AND bc.phone<>'' ORDER BY bc.id DESC LIMIT 1), u.phone) whatsapp,
+  u.phone whatsapp, u.creci, u.onboarded,
   (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id) clientes, (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='novo') novos,
   (SELECT COUNT(*) FROM visitors v WHERE v.broker_id=u.id AND v.status='fechado') fechados,
   (SELECT COUNT(*) FROM opens o JOIN visitors v ON v.id=o.visitor_id WHERE v.broker_id=u.id) aberturas, (SELECT MAX(o.ts) FROM opens o JOIN visitors v ON v.id=o.visitor_id WHERE v.broker_id=u.id) ultima,
@@ -838,7 +841,7 @@ def r_gerente_edit(h, u, q_, b, gid):
 def r_broker(h, u, q_, b, bid):
     r = q(BROKER_SQL + " AND u.id=?", (int(bid),), one=True); need(r, "Corretor não encontrado.", 404); equipe_ok(u, r)
     r["clientes_lista"] = lista_clientes(u, broker=r["id"]); r["links"] = [l for l in lista_links(u) if l["broker_id"] == r["id"]]
-    r["cartao"] = q("SELECT name, phone, email, signature, created FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (r["id"],), one=True)  # dados e assinatura para propostas
+    r["cartao"] = None  # dados e assinatura para propostas
     return r
 
 
@@ -1017,6 +1020,57 @@ def lista_propostas(sc, sa, extra="", limite=500, params=()):
     return q(sql, (*params, *sa2))
 
 
+def r_me_perfil(h, u, q_, b):
+    """Perfil de quem está logado. No primeiro acesso do corretor: nome e WhatsApp (obrigatórios), CRECI e foto (opcionais)."""
+    nome = txt(b.get("nome"), 120, "o nome", True); need(len(nome) >= 2, "Informe seu nome.")
+    fone = so_digitos(b.get("telefone")); need(len(fone) >= 10, "Informe seu WhatsApp com DDD.")
+    creci = txt(b.get("creci"), 20, "o CRECI")
+    run("UPDATE users SET name=?, phone=?, creci=?, onboarded=1 WHERE id=?", (nome, fone_br(fone), creci, u["id"]))
+    if "foto" in b: run("UPDATE users SET photo=? WHERE id=?", (foto_ok(b["foto"]), u["id"]))
+    return {"user": usuario_publico(q("SELECT * FROM users WHERE id=?", (u["id"],), one=True))}
+
+
+PRECO_RE = re.compile(r"pre[cç]o|valor|quanto|parcel|entrada|financ|pagamento|desconto|condi[cç]", re.I)
+
+
+def r_corretor_inicio(h, u, q_, b):
+    """Tela inicial do corretor: 'o que eu faço agora'. Clientes quentes (com o motivo), propostas em aberto, links, perguntas e a semana."""
+    sc, sa = escopo(u); sl, sla = escopo(u, "l.broker_id")
+    cl = q(f"""SELECT v.id, v.name, v.phone, v.status, v.message, v.created, p.name AS empreendimento,
+      (SELECT COUNT(*) FROM opens o WHERE o.visitor_id=v.id) aberturas,
+      (SELECT COUNT(*) FROM opens o WHERE o.visitor_id=v.id AND o.ts>=datetime('now','-1 day')) ab24,
+      (SELECT MAX(o.last_seen) FROM opens o WHERE o.visitor_id=v.id) ultima,
+      (SELECT MAX(CAST((julianday(o.last_seen)-julianday(o.ts))*86400 AS INTEGER)) FROM opens o WHERE o.visitor_id=v.id AND o.ts>=datetime('now','-7 day')) seg,
+      (SELECT COUNT(*) FROM ai_questions a WHERE a.visitor_id=v.id AND a.ts>=datetime('now','-7 day')) perg7,
+      (SELECT group_concat(a.question, ' | ') FROM ai_questions a WHERE a.visitor_id=v.id AND a.ts>=datetime('now','-7 day')) pergs,
+      (SELECT COUNT(*) FROM proposals pr WHERE pr.visitor_id=v.id) props,
+      (julianday('now')-julianday(v.created))*24 AS horas_cad
+      FROM visitors v JOIN properties p ON p.id=v.property_id WHERE v.status NOT IN ('fechado','perdido'){sc} ORDER BY v.id DESC LIMIT 2000""", sa)
+    quentes = []
+    for c in cl:
+        pts, motivos = 0, []
+        if c["props"]: pts += 50; motivos.append("Enviou proposta")
+        if c["ab24"] >= 2: pts += 35; motivos.append(f"Abriu {c['ab24']}x nas últimas 24 h")
+        elif c["ab24"] == 1: pts += 25; motivos.append("Abriu nas últimas 24 h")
+        if c["perg7"] and PRECO_RE.search(c["pergs"] or ""): pts += 20; motivos.append("Perguntou sobre preço")
+        elif c["perg7"]: pts += 10; motivos.append(f"Fez {c['perg7']} pergunta(s) à IA")
+        if (c["message"] or "").strip(): pts += 15; motivos.append("Deixou recado")
+        if (c["seg"] or 0) >= 180: pts += 10; motivos.append(f"Ficou {round(c['seg'] / 60)} min na apresentação")
+        if c["status"] == "novo" and (c["horas_cad"] or 99) <= 48: pts += 15; motivos.append("Cadastro novo")
+        if pts: quentes.append({"id": c["id"], "name": c["name"], "phone": c["phone"], "status": c["status"], "empreendimento": c["empreendimento"], "ultima": c["ultima"], "pontos": pts, "motivos": motivos[:2], "recado": (c["message"] or "").strip()[:140]})
+    quentes.sort(key=lambda x: (-x["pontos"], x["id"]))
+    semana = {
+        "cliques": q(f"SELECT COUNT(*) n FROM clicks c JOIN links l ON l.id=c.link_id WHERE c.ts>=datetime('now','-7 day'){sl}", sla, one=True)["n"],
+        "cadastros": q(f"SELECT COUNT(*) n FROM visitors v WHERE v.created>=datetime('now','-7 day'){sc}", sa, one=True)["n"],
+        "aberturas": q(f"SELECT COUNT(*) n FROM opens o JOIN visitors v ON v.id=o.visitor_id WHERE o.ts>=datetime('now','-7 day'){sc}", sa, one=True)["n"],
+        "propostas": q(f"SELECT COUNT(*) n FROM proposals pr JOIN visitors v ON v.id=pr.visitor_id WHERE pr.created>=datetime('now','-7 day'){sc}", sa, one=True)["n"]}
+    perguntas = q(f"SELECT a.id, a.ts, a.question, a.answer, v.id AS visitor_id, v.name AS cliente FROM ai_questions a JOIN visitors v ON v.id=a.visitor_id WHERE a.ts>=datetime('now','-7 day'){sc} ORDER BY a.id DESC LIMIT 5", sa)
+    unidades = q("SELECT p.id, p.name, SUM(x.status='d') disp, SUM(x.status='r') res, SUM(x.status='v') vend, MIN(CASE WHEN x.status='d' AND x.price>0 THEN x.price END) desde FROM units x JOIN properties p ON p.id=x.property_id WHERE p.active=1 GROUP BY p.id ORDER BY p.id")
+    return {"quentes": quentes[:6], "total_quentes": len(quentes), "total_clientes": len(cl), "propostas": lista_propostas(sc, sa, "AND v.status='proposta'", 4), "semana": semana,
+            "links": [l for l in lista_links(u) if l["active"]], "perguntas": perguntas, "unidades": unidades,
+            "empreendimentos": q("SELECT id, name FROM properties WHERE active=1 ORDER BY id")}
+
+
 def r_propostas(h, u, q_, b):
     sc, sa = escopo(u)
     rs = lista_propostas(sc, sa)
@@ -1102,8 +1156,8 @@ def r_pub_info(h, u, q_, b, code):
             "empreendimento": L["name"], "corretor": atendido["name"], "whatsapp": atendido["phone"] or L["whatsapp"], "ia": bool(L["ai_on"]), "form": bool(L["form_on"]),
             "idiomas": json.loads(L["languages"] or "[]"), "recursos": recursos_de(L), "cliente": {"nome": v["name"], "id": v["id"]} if v else None, "empresa": setting("business_name", ""),
             "outro_corretor": bool(v) and v["broker_id"] != L["broker_id"] and L["corretor"],
-            "cartao": bool(q("SELECT 1 FROM broker_cards WHERE broker_id=?", (L["broker_id"],), one=True)),  # só diz SE já cadastrou; a assinatura nunca vai para o cliente
-            "corretor_email": (q("SELECT email FROM broker_cards WHERE broker_id=? ORDER BY id DESC LIMIT 1", (L["broker_id"],), one=True) or {}).get("email", "") if (u and (u["role"] == "owner" or u["id"] == L["broker_id"])) else "",
+            "cartao": True,  # só diz SE já cadastrou; a assinatura nunca vai para o cliente
+            "corretor_email": (q("SELECT email FROM users WHERE id=?", (L["broker_id"],), one=True) or {}).get("email", "") if (u and (u["role"] == "owner" or u["id"] == L["broker_id"])) else "",
             "corretores": corretores, "pid": L["id"], "dono": bool(u and u["role"] in ("owner", "manager")), "equipe": bool(u), "meu_link": bool(u and u["role"] == "broker" and u["id"] == L["broker_id"])}  # quem está logado: "meu_link" = o corretor dono deste link
 
 
@@ -1136,6 +1190,7 @@ def r_pub_register(h, u, q_, b, code):
 
 def r_pub_corretor(h, u, q_, b, code):
     """Corretor (perfil 'Corretor' da apresentação) deixa nome, telefone, e-mail e assinatura para propostas: ficam no painel da construtora."""
+    need(False, "O cadastro do corretor agora é feito no painel, em Minha conta.", 410)
     L = link_publico(code); need(L, "Link indisponível.", 404)
     need(u and u["role"] == "broker" and u["id"] == L["broker_id"], "Entre no painel com o seu acesso de corretor para cadastrar seus dados.", 403)
     need(rate_ok(f"card:{h.client_address[0]}", 8, 600), "Muitos envios em pouco tempo. Aguarde alguns minutos.", 429)
@@ -1308,7 +1363,7 @@ def r_pub_message(h, u, q_, b, code):
 OWNER, ANY, PUB = "owner", "any", None
 GESTAO = "gestao"  # dono OU gerente de vendas
 ROTAS = [
-    ("GET", r"/api/me", r_me, PUB), ("GET", r"/api/ia-cliente", r_ia_cliente, OWNER), ("POST", r"/api/ia-cliente/liberar", r_ia_cliente_liberar, OWNER), ("POST", r"/api/ia-cliente/chave", r_ia_cliente_chave, OWNER), ("POST", r"/api/ia-cliente/ativar", r_ia_cliente_ativar, OWNER), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY), ("POST", r"/api/me/foto", r_me_foto, ANY), ("POST", r"/api/me/nome", r_me_nome, ANY), ("GET", r"/api/foto/(\d+)", r_foto, ANY),
+    ("GET", r"/api/me", r_me, PUB), ("GET", r"/api/ia-cliente", r_ia_cliente, OWNER), ("POST", r"/api/ia-cliente/liberar", r_ia_cliente_liberar, OWNER), ("POST", r"/api/ia-cliente/chave", r_ia_cliente_chave, OWNER), ("POST", r"/api/ia-cliente/ativar", r_ia_cliente_ativar, OWNER), ("POST", r"/api/setup", r_setup, PUB), ("POST", r"/api/login", r_login, PUB), ("POST", r"/api/logout", r_logout, PUB), ("POST", r"/api/me/senha", r_senha, ANY), ("POST", r"/api/me/foto", r_me_foto, ANY), ("POST", r"/api/me/perfil", r_me_perfil, ANY), ("GET", r"/api/corretor/inicio", r_corretor_inicio, ANY), ("POST", r"/api/me/nome", r_me_nome, ANY), ("GET", r"/api/foto/(\d+)", r_foto, ANY),
     ("GET", r"/api/dashboard", r_dashboard, ANY), ("GET", r"/api/notify", r_notify, ANY), ("GET", r"/api/propostas", r_propostas, ANY), ("POST", r"/api/propostas/lidas", r_propostas_lidas, ANY), ("POST", r"/api/propostas/teste", r_proposta_teste, ANY), ("PATCH", r"/api/propostas/(\d+)", r_proposta_vista, ANY),
     ("GET", r"/api/properties", r_props, ANY), ("POST", r"/api/properties", r_prop_new, OWNER), ("PATCH", r"/api/properties/(\d+)", r_prop_edit, OWNER), ("GET", r"/api/sources", r_sources, OWNER),
     ("GET", r"/api/properties/(\d+)/unidades", r_unidades, OWNER), ("POST", r"/api/properties/(\d+)/unidades/importar", r_unidades_importar, OWNER), ("PATCH", r"/api/properties/(\d+)/unidades", r_unidades_edit, OWNER), ("POST", r"/api/unidades/precos", r_unidades_precos, OWNER),
@@ -1385,8 +1440,8 @@ class H(BaseHTTPRequestHandler):
             if recursos is not None: tag = f'<script src="/painel/recursos.js?v=1" data-recursos=\'{json.dumps({k: v for k, v in recursos.items() if k != "cidade"})}\'></script>' + tag  # liga/desliga módulos
             if casca: tag = '<script src="/painel/materiais.js?v=3"></script><script src="/painel/casca.js?v=5"></script>' + tag  # Bossa/Felicità: materiais (galeria, planta, antes/depois) + cabeçalho padrão; o Montemerano tem os seus
             # v2: o cabeçalho, o rodapé e os materiais são do próprio mapa (apresentacao-montemerano); aqui entram só o cliente (cadastro, IA, contato) e a aba do painel.
-            if injetar_code: tag += f'<script src="/painel/embed.js?v=29" data-code="{injetar_code}" defer></script>'
-            elif pre_pid: tag += f'<script src="/painel/embed.js?v=29" data-pid="{pre_pid}" defer></script>'  # pré-visualização: selo e chat da construtora'
+            if injetar_code: tag += f'<script src="/painel/embed.js?v=30" data-code="{injetar_code}" defer></script>'
+            elif pre_pid: tag += f'<script src="/painel/embed.js?v=30" data-pid="{pre_pid}" defer></script>'  # pré-visualização: selo e chat da construtora'
             html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
             return self.resp(200, html.encode("utf-8"), tipo, {"Cache-Control": "no-store"})
         tam = caminho.stat().st_size; ini, fim, code = 0, tam - 1, 200
