@@ -4,6 +4,8 @@ try { D = await fetch("data/empreendimento.json").then(r => { if (!r.ok) throw n
 catch (err) { document.body.classList.add("erro"); throw err }
 export { D };
 export const EXP = D.experiencias, VIEWS = D.mapa.views;
+// Legenda e crédito por vídeo (cenas da região): { "regiao/<id>": { t, local, texto, credito, url } }
+export const VINFO = D.videoInfo || {};
 export const IMG = k => `media/hi/${k}.jpg`, IMGM = k => `media/hi/m-${k}.jpg`, TH = k => `media/hi/t-${k}.jpg`;
 // Panoramas 360° equirretangulares (2:1) por imagem de ambiente. Imagem com panorama abre girável.
 const PANOS = new Set(["living-estar", "living-jantar", "sacada", "suite"]);

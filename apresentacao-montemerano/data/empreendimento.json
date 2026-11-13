@@ -499,6 +499,76 @@
    ],
    "v-externa-noturna",
    null
+  ],
+  [
+   "reg-porto-belo",
+   "Porto Belo vista do alto",
+   "A cidade do Villa Montemerano: Perequê, centro histórico, ilha e praias.",
+   [
+    "v:regiao/pb-oporto-pereque",
+    "v:regiao/pb-marina-pereque",
+    "v:regiao/pb-aproximacao",
+    "v:regiao/pb-rota-br101",
+    "v:regiao/pb-igreja-centro-historico",
+    "v:regiao/pb-ilha-joao-da-cunha",
+    "v:regiao/pb-caixa-daco",
+    "v:regiao/pb-aerodromo-costa-esmeralda"
+   ],
+   "regiao/pb-oporto-pereque",
+   null
+  ],
+  [
+   "reg-itapema",
+   "Itapema, a cidade vizinha",
+   "Meia Praia, a BR-101 e o Mirante do Encanto, do outro lado do rio Perequê.",
+   [
+    "v:regiao/it-aproximacao",
+    "v:regiao/it-meia-praia",
+    "v:regiao/it-acesso-br101",
+    "v:regiao/it-mirante-encanto"
+   ],
+   "regiao/it-aproximacao",
+   null
+  ],
+  [
+   "reg-bombinhas",
+   "Bombinhas",
+   "A península e a Praia da Sepultura, a poucos quilômetros.",
+   [
+    "v:regiao/bb-peninsula",
+    "v:regiao/bb-sepultura"
+   ],
+   "regiao/bb-peninsula",
+   null
+  ],
+  [
+   "reg-bc",
+   "Balneário Camboriú",
+   "Orla, roda-gigante, Pontal Norte e Barra Sul.",
+   [
+    "v:regiao/bc-aproximacao-earth",
+    "v:regiao/bc-aproximacao",
+    "v:regiao/bc-pontal-norte",
+    "v:regiao/bc-roda-gigante",
+    "v:regiao/bc-morros",
+    "v:regiao/bc-barra-sul-marina",
+    "v:regiao/bc-orla",
+    "v:regiao/bc-noite"
+   ],
+   "regiao/bc-aproximacao-earth",
+   null
+  ],
+  [
+   "reg-penha-itajai",
+   "Penha e Itajaí",
+   "Beto Carrero World, a enseada de Penha e o porto de Itajaí.",
+   [
+    "v:regiao/pe-beto-carrero",
+    "v:regiao/pe-armacao-pier",
+    "v:regiao/itj-porto"
+   ],
+   "regiao/pe-beto-carrero",
+   null
   ]
  ],
  "lazerPins": [
@@ -2120,5 +2190,182 @@
     940
    ]
   }
- ]
+ ],
+ "videoInfo": {
+  "regiao/pb-oporto-pereque": {
+   "t": "Região do Oporto, no Perequê",
+   "local": "Porto Belo (SC) — Av. Colombo Machado Salles, Perequê",
+   "texto": "Volta de 360° sobre a região da Av. Colombo Machado Salles, no Perequê, onde está o empreendimento Oporto. A imagem de satélite mostra a situação atual do bairro.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-marina-pereque": {
+   "t": "Marina do Perequê",
+   "local": "Porto Belo (SC) — Perequê Náutica Marina",
+   "texto": "Volta completa sobre a marina e a foz do rio Perequê, a cerca de 280 m de altura.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-aproximacao": {
+   "t": "Porto Belo vista da região",
+   "local": "Porto Belo (SC)",
+   "texto": "Aproximação de cerca de 41 km de altitude até a enseada central de Porto Belo e o Píer Turístico, com a baía de Itapema e a península de Bombinhas no início.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-rota-br101": {
+   "t": "Da BR-101 ao centro de Porto Belo",
+   "local": "Porto Belo (SC) — BR-101 → Av. Gov. Celso Ramos",
+   "texto": "Voo sobre o caminho de carro da BR-101 até o centro histórico de Porto Belo: cerca de 6,9 km pela Av. Governador Celso Ramos.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-igreja-centro-historico": {
+   "t": "Centro histórico",
+   "local": "Porto Belo (SC) — Igreja Senhor Bom Jesus dos Aflitos",
+   "texto": "Volta completa em torno da igreja e do centro histórico, a cerca de 260 m de altura.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-ilha-joao-da-cunha": {
+   "t": "Ilha João da Cunha",
+   "local": "Porto Belo (SC)",
+   "texto": "Volta completa em torno da Ilha de Porto Belo, a cerca de 420 m de altura, com a enseada e o continente ao fundo.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-caixa-daco": {
+   "t": "Praia do Caixa d'Aço",
+   "local": "Porto Belo (SC) — Araçá",
+   "texto": "Volta completa sobre a enseada do Caixa d'Aço, a cerca de 330 m de altura.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/pb-aerodromo-costa-esmeralda": {
+   "t": "Aeródromo Costa Esmeralda",
+   "local": "Porto Belo (SC) — BR-101, km 156",
+   "texto": "Volta ampla sobre o aeródromo Costa Esmeralda, junto à BR-101, a cerca de 10 km do centro de Porto Belo. O aeroporto comercial mais próximo é o de Navegantes.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/it-aproximacao": {
+   "t": "Itapema vista da região",
+   "local": "Itapema (SC)",
+   "texto": "Aproximação de cerca de 41 km de altitude até a orla de Itapema, terminando onde a BR-101 passa junto à praia, com os molhes da foz do rio.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/it-meia-praia": {
+   "t": "Orla de Meia Praia",
+   "local": "Itapema (SC) — Meia Praia",
+   "texto": "Voo baixo ao longo de Meia Praia: faixa de areia larga, calçadão arborizado e a linha contínua de prédios de frente para o mar.",
+   "credito": "Vídeo: Drones Luiz (Luiz Henrique Costa) / YouTube · CC BY 3.0 · trecho editado, sem áudio",
+   "url": "https://www.youtube.com/watch?v=YXjQ4YUgLLk"
+  },
+  "regiao/it-acesso-br101": {
+   "t": "Chegada pela BR-101",
+   "local": "Itapema (SC)",
+   "texto": "A BR-101 atravessa Itapema entre os prédios; é o principal acesso rodoviário da cidade.",
+   "credito": "Vídeo: off leko / Pexels",
+   "url": "https://www.pexels.com/video/aerial-view-of-itapema-at-sunset-33624499/"
+  },
+  "regiao/it-mirante-encanto": {
+   "t": "Mirante do Encanto",
+   "local": "Itapema (SC) — Canto da Praia",
+   "texto": "A torre do Mirante do Encanto, com elevador panorâmico, no alto do morro do Canto da Praia — e a vista da baía de Itapema que se abre lá de cima.",
+   "credito": "Vídeo: O Catarinense / YouTube · CC BY 3.0 · trecho editado, sem áudio",
+   "url": "https://www.youtube.com/watch?v=Z47T7hy6YDc"
+  },
+  "regiao/bb-peninsula": {
+   "t": "Península de Bombinhas",
+   "local": "Bombinhas (SC)",
+   "texto": "Bombinhas vista do alto: a cidade numa faixa estreita entre duas enseadas, com os morros de mata atlântica ao fundo.",
+   "credito": "Vídeo: Interior visto de cima / YouTube · CC BY 3.0 · trecho editado, sem áudio",
+   "url": "https://www.youtube.com/watch?v=O60MshwTcfc"
+  },
+  "regiao/bb-sepultura": {
+   "t": "Praia da Sepultura",
+   "local": "Bombinhas (SC)",
+   "texto": "Pequena enseada de água verde e clara entre costões cobertos de mata, uma das praias mais procuradas de Bombinhas.",
+   "credito": "Vídeo: Marcelo Fraga / YouTube · CC BY 3.0 · trecho editado, sem áudio",
+   "url": "https://www.youtube.com/watch?v=bwI78HikET0"
+  },
+  "regiao/bc-aproximacao-earth": {
+   "t": "Balneário Camboriú vista da região",
+   "local": "Balneário Camboriú (SC)",
+   "texto": "Aproximação de cerca de 41 km de altitude até o centro de Balneário Camboriú, passando pela Praia Central.",
+   "credito": "Imagens: Google Earth (Earth Studio)",
+   "url": null
+  },
+  "regiao/bc-aproximacao": {
+   "t": "Orla e roda-gigante",
+   "local": "Balneário Camboriú (SC)",
+   "texto": "Voo entre as torres da Praia Central em direção à FG Big Wheel, no Pontal Norte, e à mata do morro ao lado.",
+   "credito": "Vídeo: Aleson Padilha / Pexels",
+   "url": "https://www.pexels.com/video/drone-view-of-balneario-camboriu-skyline-33322732/"
+  },
+  "regiao/bc-pontal-norte": {
+   "t": "Molhe do Pontal Norte",
+   "local": "Balneário Camboriú (SC) — Pontal Norte",
+   "texto": "Do molhe do Pontal Norte, com a Praia Central inteira ao fundo, até a roda-gigante e o morro.",
+   "credito": "Vídeo: Vitor Pinheiro Sousa / Pexels",
+   "url": "https://www.pexels.com/video/stunning-aerial-view-of-balneario-camboriu-skyline-33518262/"
+  },
+  "regiao/bc-roda-gigante": {
+   "t": "FG Big Wheel",
+   "local": "Balneário Camboriú (SC) — Pontal Norte",
+   "texto": "Aproximação da roda-gigante, entre os prédios do extremo norte da orla e a mata.",
+   "credito": "Vídeo: Elinton Padilha / Pexels",
+   "url": "https://www.pexels.com/video/scenic-view-of-ferris-wheel-in-balneario-camboriu-33282689/"
+  },
+  "regiao/bc-morros": {
+   "t": "Morros e baía",
+   "local": "Balneário Camboriú (SC)",
+   "texto": "Dos morros verdes junto ao Pontal Norte até a baía, com a Praia Central, o molhe e a roda-gigante.",
+   "credito": "Vídeo: Elinton Padilha / Pexels",
+   "url": "https://www.pexels.com/video/scenic-aerial-view-of-balneario-camboriu-beach-33282686/"
+  },
+  "regiao/bc-barra-sul-marina": {
+   "t": "Barra Sul e marinas",
+   "local": "Balneário Camboriú (SC) — Barra Sul, Rio Camboriú",
+   "texto": "Voo sobre o Rio Camboriú na Barra Sul: píeres com lanchas e iates, os prédios altos do fim da Praia Central e a ponte sobre o rio, ao fundo.",
+   "credito": "Vídeo: Marcelo Fraga / YouTube · CC BY 3.0 · trecho editado, sem áudio",
+   "url": "https://www.youtube.com/watch?v=QrsJuFiZlTI"
+  },
+  "regiao/bc-orla": {
+   "t": "Pontal Norte ao entardecer",
+   "local": "Balneário Camboriú (SC) — Pontal Norte",
+   "texto": "Movimento curto sobre o molhe do Pontal Norte com as torres contra o pôr do sol.",
+   "credito": "Vídeo: Elinton Padilha / Pexels",
+   "url": "https://www.pexels.com/video/aerial-view-of-balneario-camboriu-skyline-at-sunset-33282684/"
+  },
+  "regiao/bc-noite": {
+   "t": "Roda-gigante à noite",
+   "local": "Balneário Camboriú (SC)",
+   "texto": "A FG Big Wheel iluminada à noite, no Pontal Norte.",
+   "credito": "Vídeo: Otavio Henrique / Pexels",
+   "url": "https://www.pexels.com/video/balneario-camboriu-17903125/"
+  },
+  "regiao/pe-beto-carrero": {
+   "t": "Beto Carrero World",
+   "local": "Penha (SC)",
+   "texto": "O Beto Carrero World visto do alto: pistas, montanhas-russas e a torre central do parque, um dos maiores parques temáticos da América Latina.",
+   "credito": "Vídeo: Aleson Padilha / Pexels",
+   "url": "https://www.pexels.com/video/aerial-view-of-colorful-amusement-park-roller-coaster-34430969/"
+  },
+  "regiao/pe-armacao-pier": {
+   "t": "Enseada e trapiche de Penha",
+   "local": "Penha (SC)",
+   "texto": "Enseada de água calma em Penha, com barcos ancorados e o trapiche avançando mar adentro.",
+   "credito": "Vídeo: Aleson Padilha / Pexels",
+   "url": "https://www.pexels.com/video/scenic-aerial-view-of-brazilian-coastline-34328929/"
+  },
+  "regiao/itj-porto": {
+   "t": "Porto de Itajaí",
+   "local": "Itajaí (SC)",
+   "texto": "Navio porta-contêiner entrando no porto de Itajaí, um dos principais portos de contêineres do Brasil, com os molhes e a praia ao fundo.",
+   "credito": "Vídeo: Dan Melo / Pexels",
+   "url": "https://www.pexels.com/video/aerial-view-of-container-ship-entering-port-35690932/"
+  }
+ }
 }

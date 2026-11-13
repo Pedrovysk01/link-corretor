@@ -96,3 +96,6 @@ body.sunopen .legend{opacity:0;pointer-events:none}
 /* menos transparência / mais contraste: materiais viram superfícies sólidas com borda definida */
 @media (prefers-reduced-transparency:reduce){.brand,.controls,.legend,.dock,.sunchip,.sunbar{background:var(--paper);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media (prefers-contrast:more){.brand,.controls,.legend,.dock,.sunchip,.sunbar{background:var(--paper);border-color:var(--ink)}.seg{background:var(--linen-2)}}
+
+/* crédito do autor nos vídeos da região (licenças Pexels e CC BY 3.0 pedem o nome): sem caixa alta, cabe em duas linhas */
+.ilus.credito{text-transform:none;letter-spacing:.02em;line-height:1.3;max-width:calc(100% - 28px);font-size:var(--fs-sm)}

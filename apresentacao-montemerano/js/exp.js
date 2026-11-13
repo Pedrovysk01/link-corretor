@@ -1,6 +1,6 @@
 import {IC} from "./icons.js";
 // Experiências: grade de ambientes e player em tela cheia (vídeos e fotos).
-import {EXP,IMG,IMGM,TH,PANO,reduceM} from "./data.js";
+import {EXP,IMG,IMGM,TH,PANO,VINFO,reduceM} from "./data.js";
 import {mountPano} from "./pano360.js";
 let L360=null;
 import {closeCard} from "./ficha.js";
@@ -26,11 +26,17 @@ function setLB(i,j=0){clearTimeout(imgTimer);cancelAnimationFrame(rafP);lbi=(i+E
   setItem(j)}
 function setItem(j){clearTimeout(imgTimer);cancelAnimationFrame(rafP);const items=EXP[lbi][3];
   if(j>=items.length){setLB(lbi+1);return}if(j<0){const p=(lbi-1+EXP.length)%EXP.length;setLB(p,EXP[p][3].length-1);return}
-  lbj=j;const it=items[j];thumbs.querySelectorAll("button").forEach((b,k)=>b.setAttribute("aria-current",k===j));
+  lbj=j;const it=items[j];
+  // cena com legenda própria (vídeos da região): título, local e texto da cena; o crédito do autor fica no canto do quadro
+  {const vi=typeof it==="string"?VINFO[it.slice(2)]:null,il=lbf.querySelector(".ilus");
+   document.getElementById("lbt").textContent=vi?vi.t:EXP[lbi][1];document.getElementById("lbd").textContent=vi?[vi.local,vi.texto].filter(Boolean).join(" · "):EXP[lbi][2];
+   if(il){il.textContent=vi?vi.credito:"Imagens ilustrativas";il.classList.toggle("credito",!!vi)}}thumbs.querySelectorAll("button").forEach((b,k)=>b.setAttribute("aria-current",k===j));
   const cur=thumbs.querySelector(`[data-j="${j}"]`);if(cur)thumbs.scrollTo({left:cur.offsetLeft-thumbs.clientWidth/2+cur.clientWidth/2,behavior:"smooth"});lbp.style.width="0%";
   if(L360){L360.dispose();L360=null}lbf.classList.remove("is360");
   if(typeof it!=="string"&&PANO(it[0])){lbv.pause();lbv.hidden=true;lbimg.hidden=true;lbf.classList.add("is360");L360=mountPano(lbf,PANO(it[0]));return}
-  if(typeof it==="string"){lbimg.hidden=true;lbv.hidden=false;const s=it.slice(2);lbv.poster=`media/${s}.jpg`;lbv.src=`media/${s}.mp4`;lbv.play().catch(()=>{})}
+  if(typeof it==="string"){lbimg.hidden=true;lbv.hidden=false;const s=it.slice(2);lbv.poster=`media/${s}.jpg`;lbv.src=`media/${s}.mp4`;
+    // cenas da região são percursos curtos (2 s): tocam devagar e em repetição; quem avança é a pessoa (setas ou miniaturas)
+    const curto=!!VINFO[s];lbv.loop=curto;lbv.defaultPlaybackRate=lbv.playbackRate=curto?.35:1;lbv.play().catch(()=>{})}
   else{lbv.pause();lbv.hidden=true;lbimg.hidden=false;lbimg.classList.remove("kb");void lbimg.offsetWidth;lbimg.src=IMG(it[0]);lbimg.alt=it[1];if(!reduceM())lbimg.classList.add("kb");
     imgT0=performance.now();const tick=()=>{const k=Math.min(1,(performance.now()-imgT0)/IMG_MS);lbp.style.width=(k*100)+"%";if(k<1)rafP=requestAnimationFrame(tick)};tick();
     imgTimer=setTimeout(()=>setItem(lbj+1),IMG_MS)}}
